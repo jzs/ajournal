@@ -36,7 +36,7 @@ type Entry struct {
 // Repository interface for journal repositories
 type Repository interface {
 	Create(ctx context.Context, journal *Journal) (*Journal, error)
-	FindAll(ctx context.Context) ([]*Journal, error)
+	FindAll(ctx context.Context, userid int64) ([]*Journal, error)
 	AddEntry(ctx context.Context, entry *Entry, journalID int64) (*Entry, error)
 	UpdateEntry(ctx context.Context, entry *Entry) error
 	Entries(ctx context.Context, journalID int64) ([]*Entry, error)

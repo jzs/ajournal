@@ -81,13 +81,14 @@ self.login = function() {
 		if(data.Status != 200) {
 			self.errmsg = data.Error;
 			self.loginerr = true;
+			self.update();
+			return;
 		} else {
 			RiotControl.trigger('perform-login', data.Data);
 		}
-		// TODO Do proper redirect when logged in!
-
 		self.loggingin = false;
 		self.update();
+		route("/");
 	});
 	http.addEventListener("error", function(e) {
 	});

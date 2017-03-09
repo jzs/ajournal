@@ -11,7 +11,7 @@ import (
 type Service interface {
 	/* Create creates new journal with no entries in.*/
 	Create(c context.Context, journal *Journal) (*Journal, error)
-	Journals(c context.Context) ([]*Journal, error)
+	MyJournals(c context.Context) ([]*Journal, error)
 }
 
 type service struct {
@@ -37,14 +37,14 @@ func (s *service) Create(ctx context.Context, journal *Journal) (*Journal, error
 	return jrnl, err
 }
 
-func (s *service) Journals(ctx context.Context) ([]*Journal, error) {
+func (s *service) MyJournals(ctx context.Context) ([]*Journal, error) {
 	usr := user.FromContext(ctx)
 	if usr == nil {
 		return nil, errors.New("Cannot fetch journals without a user context")
 	}
 
 	// TODO: Use userid when looking up journals!
-	journals, err := s.repo.FindAll(ctx)
+	journals, err := s.repo.FindAll(ctx, usr.ID)
 	if err != nil {
 		return nil, err
 	}

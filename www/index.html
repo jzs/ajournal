@@ -5,9 +5,12 @@
 		<title>Journal</title>
 		<link rel="stylesheet" href="css/font-awesome.min.css">
 		<link rel="stylesheet" href="css/bulma.css">
+		<link rel="stylesheet" href="css/document.css">
 		<script src="js/riot.min.js"></script>
 		<script src="js/route.min.js"></script>
 		<script src="js/riotcontrol.js"></script>
+		<script src="js/showdown.min.js"></script>
+		<script src="js/utils.js"></script>
 		<script src="js/dist.js"></script>
 		<style>
 .hidden {
@@ -34,6 +37,7 @@
 		</div>
 
 		<script>
+
 var loginstore = new function() {
 	riot.observable(this);
 	var self = this;
@@ -77,6 +81,8 @@ riot.mount('*');
 
 var currentuser = localStorage.getItem('currentuser')
 loginstore.setUser(currentuser);
+
+route.start(true);
 
 // Check whether user is logged in or not... if not then redirect to login screen
 		</script>

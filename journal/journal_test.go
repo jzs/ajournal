@@ -30,7 +30,7 @@ func TestService(t *testing.T) {
 		Username: "jzs",
 	}
 	ctx := user.TestContextWithUser(u)
-	journals, err := js.Journals(ctx)
+	journals, err := js.MyJournals(ctx)
 	if err != nil {
 		t.Fatalf("Expected to fetch journals, got: %v", err.Error())
 	}
@@ -85,8 +85,14 @@ func (jr *journalRepo) Create(c context.Context, journal *journal.Journal) (*jou
 	return journal, nil
 }
 
-func (jr *journalRepo) FindAll(ctx context.Context) ([]*journal.Journal, error) {
-	return jr.journals, nil
+func (jr *journalRepo) FindAll(ctx context.Context, userid int64) ([]*journal.Journal, error) {
+	js := []*journal.Journal{}
+	for _, j := range jr.journals {
+		if j.UserID == userid {
+			js = append(js, j)
+		}
+	}
+	return js, nil
 }
 
 func (jr *journalRepo) AddEntry(c context.Context, entry *journal.Entry, journalID int64) (*journal.Entry, error) {

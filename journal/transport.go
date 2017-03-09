@@ -2,7 +2,6 @@ package journal
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -12,7 +11,7 @@ import (
 func SetupHandler(router *mux.Router, js Service) {
 
 	router.Path("/journals").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		journals, err := js.Journals(r.Context())
+		journals, err := js.MyJournals(r.Context())
 		err = JSONResp(w, journals, err)
 		if err != nil {
 			// TODO Log this error or panic
@@ -20,10 +19,22 @@ func SetupHandler(router *mux.Router, js Service) {
 	})
 
 	router.Path("/journals").Methods("POST").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("Post on journals")
 		// Parse request if needed.
+		journal := &Journal{}
+		dec := json.NewDecoder(r.Body)
+		err := dec.Decode(&journal)
+		if err != nil {
+			JSONResp(w, nil, err)
+			return
+		}
+
 		// Call service method for data.
+		journal, err = js.Create(r.Context(), journal)
 		// Output response in proper format.
+		err = JSONResp(w, journal, err)
+		if err != nil {
+			// TODO Log this error or panic
+		}
 	})
 }
 

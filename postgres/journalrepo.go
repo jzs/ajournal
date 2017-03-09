@@ -19,7 +19,7 @@ func NewJournalRepo(db *sqlx.DB) journal.Repository {
 
 func (jr *journalRepo) Create(ctx context.Context, journal *journal.Journal) (*journal.Journal, error) {
 	var id int64
-	err := jr.db.Get(&id, "INSERT INTO journal(UserID, Public, Title, Description, Created) VALUES($1, $2, $3, $4, $5)", journal.UserID, journal.Public, journal.Title, journal.Description, journal.Created)
+	err := jr.db.Get(&id, "INSERT INTO journal(UserID, Public, Title, Description, Created) VALUES($1, $2, $3, $4, $5) RETURNING id", journal.UserID, journal.Public, journal.Title, journal.Description, journal.Created)
 	if err != nil {
 		return nil, err
 	}
@@ -27,9 +27,9 @@ func (jr *journalRepo) Create(ctx context.Context, journal *journal.Journal) (*j
 	return journal, nil
 }
 
-func (jr *journalRepo) FindAll(ctx context.Context) ([]*journal.Journal, error) {
+func (jr *journalRepo) FindAll(ctx context.Context, userid int64) ([]*journal.Journal, error) {
 	journals := []*journal.Journal{}
-	err := jr.db.Select(journals, "SELECT * FROM journal")
+	err := jr.db.Select(&journals, "SELECT * FROM journal WHERE userid=$1", userid)
 	if err != nil {
 		return nil, err
 	}

@@ -3,7 +3,7 @@
 	<div class="nav-left">
 	</div>
 	<div class="nav-center">
-		<a class="nav-item" href="#/">Journal</a>
+		<a class="nav-item" href="#/">a-Journal</a>
 	</div>
 	<div class="nav-right">
 		<a class="nav-item" href="#" onclick={logout} if={user}>Log out</a>
