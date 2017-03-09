@@ -1,0 +1,7 @@
+development:
+    driver: postgres
+    open: user=jzs password=jzs dbname=journal sslmode=disable
+
+testing:
+    driver: postgres
+    open: user=jzs dbname=journaltest sslmode=disable

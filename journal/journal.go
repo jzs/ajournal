@@ -1,0 +1,43 @@
+package journal
+
+import (
+	"context"
+	"time"
+)
+
+// Journal describes a travel journal describing ones travel adventure.
+type Journal struct {
+	ID          int64
+	UserID      int64      // The user that the journal belongs to
+	Public      bool       // Describes whether the journal is public or private
+	Title       string     // The title of the journal.
+	Description string     // A description of the journal. It could be the initiary of the trip or the goal
+	Tags        []string   // Tags of journal.
+	Entries     []*Entry   // List of entries in the journal
+	From        *time.Time // Starting time of the journal. Especially interesting for a travel journal
+	To          *time.Time // The ending time of the journal.
+	Locations   []string   // Locations that was visited during the journal.
+	Created     time.Time  // The creation time of the journal
+}
+
+// Entry domain model
+type Entry struct {
+	ID          int64
+	JournalID   int64
+	Date        time.Time
+	Title       string    // The title of the entry in the journal
+	Content     string    // Content in markdown format
+	Tags        []string  // Tags of entry
+	Created     time.Time // The creation time of the entry
+	Published   time.Time // The publish time of the entry
+	IsPublished bool      // Marks whether the entry is published or not
+}
+
+// Repository interface for journal repositories
+type Repository interface {
+	Create(ctx context.Context, journal *Journal) (*Journal, error)
+	FindAll(ctx context.Context) ([]*Journal, error)
+	AddEntry(ctx context.Context, entry *Entry, journalID int64) (*Entry, error)
+	UpdateEntry(ctx context.Context, entry *Entry) error
+	Entries(ctx context.Context, journalID int64) ([]*Entry, error)
+}
