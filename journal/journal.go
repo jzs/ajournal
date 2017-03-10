@@ -2,8 +2,15 @@ package journal
 
 import (
 	"context"
+	"errors"
 	"time"
 )
+
+var ErrJournalNotExist error
+
+func init() {
+	ErrJournalNotExist = errors.New("Journal does not exist")
+}
 
 // Journal describes a travel journal describing ones travel adventure.
 type Journal struct {
@@ -36,8 +43,9 @@ type Entry struct {
 // Repository interface for journal repositories
 type Repository interface {
 	Create(ctx context.Context, journal *Journal) (*Journal, error)
+	FindByID(ctx context.Context, id int64) (*Journal, error)
 	FindAll(ctx context.Context, userid int64) ([]*Journal, error)
-	AddEntry(ctx context.Context, entry *Entry, journalID int64) (*Entry, error)
+	AddEntry(ctx context.Context, entry *Entry) (*Entry, error)
 	UpdateEntry(ctx context.Context, entry *Entry) error
-	Entries(ctx context.Context, journalID int64) ([]*Entry, error)
+	FindAllEntries(ctx context.Context, journalID int64) ([]*Entry, error)
 }

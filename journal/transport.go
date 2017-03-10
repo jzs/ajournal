@@ -2,7 +2,9 @@ package journal
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -16,6 +18,42 @@ func SetupHandler(router *mux.Router, js Service) {
 		if err != nil {
 			// TODO Log this error or panic
 		}
+	})
+
+	router.Path("/journals/{id}").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		idstr := vars["id"]
+		id, err := strconv.ParseInt(idstr, 10, 64)
+		if err != nil {
+			JSONResp(w, nil, err)
+			return
+		}
+		journal, err := js.Journal(r.Context(), id)
+		JSONResp(w, journal, err)
+	})
+
+	router.Path("/journals/{id}/entries").Methods("POST").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		idstr := vars["id"]
+		id, err := strconv.ParseInt(idstr, 10, 64)
+		if err != nil {
+			JSONResp(w, nil, err)
+			return
+		}
+		ntry := &Entry{}
+		dec := json.NewDecoder(r.Body)
+		err = dec.Decode(&ntry)
+		if err != nil {
+			JSONResp(w, nil, err)
+			return
+		}
+		if ntry.JournalID != id {
+			JSONResp(w, nil, errors.New("Mismatch between journal id's"))
+			return
+		}
+
+		ntry, err = js.CreateEntry(r.Context(), ntry)
+		JSONResp(w, ntry, err)
 	})
 
 	router.Path("/journals").Methods("POST").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -8,6 +8,9 @@
 				</p>
 			</section>
 			<section class="section">
+				<button class="button" onclick={newentry}>New Entry</button>
+			</section>
+			<section class="section">
 
 				<div class="box" each={entry in journal.Entries} onclick={onentry} style="cursor:pointer;">
 					<article class="media">
@@ -55,13 +58,18 @@ self.journal = {
 		Tags: ["diary"],
 		Created: "",
 		IsPublised: false
+	}, {
+		ID: 2,
+		Title: "My second entry",
+		Content: "",
+		Tags: []
 	}],
 	Created: ""
 };
 
 self.on('mount', function() {
 	_aj.get("/api/journals/" + opts.journalid, function(data, err) {
-		if(err != nil) {
+		if(err != null) {
 			self.err = err;
 			self.update();
 			return;
@@ -70,6 +78,10 @@ self.on('mount', function() {
 		self.update();
 	});
 });
+
+self.newentry = function(e) {
+	route("/journals/"+opts.journalid+"/entries/create");
+}
 
 self.onentry = function(e) {
 	route("/journals/"+opts.journalid+"/entries/"+e.item.entry.ID);

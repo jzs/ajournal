@@ -1,4 +1,4 @@
-riot.tag2('content', '<page-dash if="{loggedin && dash}"></page-dash> <page-login if="{loggedout}"></page-login> <page-journal-create if="{loggedin && journalcreate}"></page-journal-create> <page-journal if="{loggedin && journal}" journalid="{journalid}"></page-journal> <page-entryeditor if="{loggedin && entry}" entryid="{entryid}"></page-entryeditor>', '', '', function(opts) {
+riot.tag2('content', '<page-dash if="{loggedin && dash}"></page-dash> <page-login if="{loggedout}"></page-login> <page-journal-create if="{loggedin && journalcreate}"></page-journal-create> <page-journal if="{loggedin && journal}" journalid="{journalid}"></page-journal> <page-entryeditor if="{loggedin && entry}" journalid="{journalid}" entryid="{entryid}"></page-entryeditor>', '', '', function(opts) {
 var self = this;
 self.loggedin = false;
 self.loggedout = !self.loggedin;
@@ -34,12 +34,10 @@ route(function(collection, id, method, mid) {
 				self.journalcreate = true;
 			} else {
 				if(method == 'entries') {
-					if(mid == 'create') {
-					} else {
 
-						self.entryid = id;
-						self.entry = true;
-					}
+					self.journalid = id;
+					self.entryid = mid;
+					self.entry = true;
 
 				} else {
 
@@ -56,6 +54,139 @@ route(function(collection, id, method, mid) {
 	}
 	self.update();
 });
+});
+
+riot.tag2('datepicker', '<input class="input" type="text" placeholder="yyyy/mm/dd" onblur="{onblur}" onfocus="{onfocus}" onkeydown="{onkeydown}" onmouseup="{onmouseup}">', '', '', function(opts) {
+var self = this;
+
+var datestr = "yyyy/mm/dd";
+
+self.onfocus = function(e) {
+
+	e.target.value = datestr;
+	self.update();
+};
+
+var year = "yyyy";
+var month = "mm";
+var day = "dd";
+var KEY_DELETE = 8;
+var KEY_0 = 48;
+var KEY_1 = 49;
+var KEY_3 = 51;
+var KEY_9 = 57;
+var ARROW_LEFT = 37;
+var ARROW_RIGHT = 39;
+
+self.onkeydown = function(e) {
+	e.preventDefault();
+	var start = e.target.selectionStart;
+	var end = e.target.selectionEnd;
+	if( start <= 4 ) {
+		if(e.keyCode == KEY_DELETE) {
+			if(year.length > 0) {
+				year = year.substring(0, year.length -1);
+				datestr = year + "/" + month + "/" + day;
+				e.target.value = datestr;
+				e.target.setSelectionRange(start-1,start-1);
+			}
+		}
+		if(e.keyCode >= KEY_0 && e.keyCode <= KEY_9) {
+			if(year.length == 4) {
+				year = "";
+			}
+			year = year + e.key;
+			datestr = year + "/" + month + "/" + day;
+			e.target.value = datestr;
+			e.target.setSelectionRange(start+1,start+1);
+
+			if(year.length >= 4) {
+				e.target.setSelectionRange(5,7);
+			}
+		}
+	} else if( start <= 7 ) {
+		if(e.keyCode == KEY_DELETE) {
+			if(month.length > 0) {
+				month = month.substring(0, month.length -1);
+				datestr = year + "/" + month + "/" + day;
+				e.target.value = datestr;
+				e.target.setSelectionRange(start-1,start-1);
+			}
+		}
+		if(e.keyCode >= KEY_0 && e.keyCode <= KEY_9) {
+
+			if(month.length == 0 && e.keyCode > KEY_1) {
+				return;
+			}
+			if(month.length == 2) {
+				month = "";
+			}
+			month = month + e.key;
+			datestr = year + "/" + month + "/" + day;
+			e.target.value = datestr;
+			e.target.setSelectionRange(start+1,start+1);
+
+			if(month.length >= 2) {
+				e.target.setSelectionRange(8,10);
+			}
+
+		}
+		if(month.length >= 2) {
+			e.target.setSelectionRange(8,10);
+		}
+	} else if( start <= 10 ) {
+		if(e.keyCode == KEY_DELETE) {
+			if(day.length > 0) {
+				day = day.substring(0, day.length -1);
+				datestr = year + "/" + month + "/" + day;
+				e.target.value = datestr;
+				e.target.setSelectionRange(start-1,start-1);
+			}
+		}
+		if(e.keyCode >= KEY_0 && e.keyCode <= KEY_9) {
+
+			if(day.length == 0 && e.keyCode > KEY_3) {
+				return;
+			}
+			if(day.length >= 2 && start != end) {
+				day = "";
+			} else if(day.length == 2) {
+				return;
+			}
+			day = day + e.key;
+			datestr = year + "/" + month + "/" + day;
+			e.target.value = datestr;
+			e.target.setSelectionRange(start+1,start+1);
+		}
+
+	} else if( start <= 13 ) {
+	} else if( start <= 16 ) {
+	}
+};
+
+self.onblur = function(e) {
+};
+
+self.onmouseup = function(e) {
+	e.preventDefault();
+	var start = e.target.selectionStart;
+	var end = e.target.selectionEnd;
+	if( start <= 3 ) {
+		e.target.setSelectionRange(0,4);
+	} else if( start <= 6 ) {
+		e.target.setSelectionRange(5,7);
+	} else if( start <= 9 ) {
+		e.target.setSelectionRange(8,10);
+	} else if( start <= 12 ) {
+		e.target.setSelectionRange(11,13);
+	} else if( start <= 15 ) {
+		e.target.setSelectionRange(14,16);
+	}
+};
+
+self.date = function() {
+	return new Date(Date.UTC(year,month,day));
+};
 });
 
 riot.tag2('navbar', '<nav class="nav"> <div class="nav-left"> </div> <div class="nav-center"> <a class="nav-item" href="#/">a-Journal</a> </div> <div class="nav-right"> <a class="nav-item" href="#" onclick="{logout}" if="{user}">Log out</a> </div> </nav>', '', '', function(opts) {
@@ -112,15 +243,39 @@ self.createentry = function(e) {
 }
 });
 
-riot.tag2('page-entryeditor', '<div class="section"> <div class="container"> <div class="columns"> <div class="column"> <pre style="min-height:200px" contenteditable="true" onkeyup="{contentchange}">{entry.Content}</pre> <p> <button class="button">Publish</button> <button class="button">Save</button> </p> </div> <div class="column"> <raw class="markdown" content="{preview}"></raw> </div> </div> </div> </div>', '', '', function(opts) {
+riot.tag2('page-entryeditor', '<div class="section"> <div class="container"> <div class="columns"> <div class="column"> <label class="label">Title</label> <p class="control"> <input class="input" type="text" placeholder="Title" onkeyup="{onTitle}" value=""> </p> <label class="label">Date</label> <p> <datepicker></datepicker> </p> <label class="label">Content</label> <p class="control"> <textarea style="min-height: 200px;" class="textarea" placeholder="Textarea" onkeyup="{contentchange}">{entry.Content}</textarea> <span if="{err}" class="help is-danger">{err}</span> </p> <p> <br> <a class="button {is-link : showpreview}" onclick="{togglepreview}">Preview</a> <button class="button is-pulled-right {is-loading : saving}" onclick="{saveEntry}">Save</button> </p> </div> <div class="column" if="{showpreview}"> <label class="label">Preview</label> <raw class="markdown" content="{preview}"></raw> </div> </div> </div> </div>', '', '', function(opts) {
 var self = this;
+self.showpreview = false;
 self.preview = "";
+self.saving = false;
 var converter = new showdown.Converter();
 
+self.entry = {};
+
+self.on('mount', function() {
+
+	self.entry = {
+		JournalID: parseInt(opts.journalid),
+		Date: "",
+		Title: "",
+		Content: "",
+		Tags: []
+	};
+
+	if( opts.entryid != 'create' ) {
+
+		_aj.get("/api/journals/"+self.entry.JournalID+"/entries/"+opts.entryid, function(data, err) {
+
+			if(err != null) {
+
+				return;
+			}
+			self.entry = data;
+		});
+	}
+});
+
 self.editContent = "";
-self.entry = {
-	Content: "#Title\n\nThis is a paragraph"
-}
 
 self.on('mount', function() {
 	self.preview = converter.makeHtml(self.entry.Content);
@@ -128,10 +283,62 @@ self.on('mount', function() {
 });
 
 self.contentchange = function(e) {
-	self.editContent = e.target.innerText;
-	self.preview = converter.makeHtml(self.editContent);
+	self.editContent = e.target.value;
+	if(self.showpreview) {
+		self.preview = converter.makeHtml(self.editContent);
+	}
+	self.update();
+};
+
+self.onTitle = function(e) {
+	self.entry.Title = e.target.value;
+};
+
+self.saveEntry = function(e) {
+	self.saving = true;
+	self.entry.Date = self.tags.datepicker.date().toISOString();
+	if(typeof(self.entry.ID) != 'undefined') {
+
+		_aj.post("/api/journals/"+self.entry.JournalID+"/entries/"+self.entry.ID, self.entry, function(data, err) {
+			self.saving = false;
+
+			if( err != null ) {
+
+				self.err = err;
+				self.update();
+				return
+			}
+
+			self.update();
+		});
+
+	} else {
+
+		_aj.post("/api/journals/"+self.entry.JournalID+"/entries", self.entry, function(data, err) {
+			self.saving = false;
+
+			if( err != null ) {
+
+				self.err = err;
+				self.update();
+				return
+			}
+			self.entry.ID = data.ID;
+
+			self.update();
+		});
+	}
+	self.entry.Content = self.editContent;
+};
+
+self.togglepreview = function(e) {
+	self.showpreview = !self.showpreview;
+	if( self.showpreview ) {
+		self.preview = converter.makeHtml(self.editContent);
+	}
 	self.update();
 }
+
 });
 
 riot.tag2('page-journal-create', '<section class="section"> <div class="container"> <h3 class="title">New Journal</h3> <label class="label">Title</label> <p class="control"> <input class="input" type="text" placeholder="Title" onkeyup="{onTitle}" value=""> </p> <label class="label">Description</label> <p class="control"> <textarea class="textarea" placeholder="Description" onkeyup="{onDescription}"></textarea> <span if="{errmsg}" class="help is-danger">{errmsg}</span> </p> <p class="control"> <label class="checkbox"> <input type="checkbox" checked="{journal.Public}" onchange="{onPublic}"> Public </label> </p> <p class="control"> <label class="label">Tags</label> <p class="control has-addons"> <input class="input" type="text" placeholder="Tagname" onkeyup="{onjournaltag}"> <a class="button is-info" onclick="{addJournalTag}"> Add </a> </p> <span class="tag is-large" each="{t in journal.Tags}"> {t} <button class="delete" onclick="{deleteTag}"></button> </span> </p> <button class="button is-success is-pulled-right" onclick="{create}">Create</button> </div> </section>', '', '', function(opts) {
@@ -182,7 +389,7 @@ self.create = function() {
 };
 });
 
-riot.tag2('page-journal', '<section class="section"> <div class="container"> <section class="section"> <h3 class="title">Journal: {journal.Title}</h3> <p> {journal.Description} </p> </section> <section class="section"> <div class="box" each="{entry in journal.Entries}" onclick="{onentry}" style="cursor:pointer;"> <article class="media"> <div class="media-content"> <div class="content"> <p> <strong>{entry.Title}</strong> <small>@jzs</small> <small>31m</small> <br> <pre>{entry.Content.substring(0, 200)}...</pre> <br> <span each="{tag in parent.Tags}">{tag}</span> </p> </div> <nav class="level"> <div class="level-left"> <a class="level-item"> <span class="icon is-small"><i class="fa fa-reply"></i></span> </a> <a class="level-item"> <span class="icon is-small"><i class="fa fa-retweet"></i></span> </a> <a class="level-item"> <span class="icon is-small"><i class="fa fa-heart"></i></span> </a> </div> </nav> </div> </article> </div> </section> </div> </section>', '', '', function(opts) {
+riot.tag2('page-journal', '<section class="section"> <div class="container"> <section class="section"> <h3 class="title">Journal: {journal.Title}</h3> <p> {journal.Description} </p> </section> <section class="section"> <button class="button" onclick="{newentry}">New Entry</button> </section> <section class="section"> <div class="box" each="{entry in journal.Entries}" onclick="{onentry}" style="cursor:pointer;"> <article class="media"> <div class="media-content"> <div class="content"> <p> <strong>{entry.Title}</strong> <small>@jzs</small> <small>31m</small> <br> <pre>{entry.Content.substring(0, 200)}...</pre> <br> <span each="{tag in parent.Tags}">{tag}</span> </p> </div> <nav class="level"> <div class="level-left"> <a class="level-item"> <span class="icon is-small"><i class="fa fa-reply"></i></span> </a> <a class="level-item"> <span class="icon is-small"><i class="fa fa-retweet"></i></span> </a> <a class="level-item"> <span class="icon is-small"><i class="fa fa-heart"></i></span> </a> </div> </nav> </div> </article> </div> </section> </div> </section>', '', '', function(opts) {
 var self = this;
 self.journal = {
 	Title: "Journal title",
@@ -196,13 +403,18 @@ self.journal = {
 		Tags: ["diary"],
 		Created: "",
 		IsPublised: false
+	}, {
+		ID: 2,
+		Title: "My second entry",
+		Content: "",
+		Tags: []
 	}],
 	Created: ""
 };
 
 self.on('mount', function() {
 	_aj.get("/api/journals/" + opts.journalid, function(data, err) {
-		if(err != nil) {
+		if(err != null) {
 			self.err = err;
 			self.update();
 			return;
@@ -211,6 +423,10 @@ self.on('mount', function() {
 		self.update();
 	});
 });
+
+self.newentry = function(e) {
+	route("/journals/"+opts.journalid+"/entries/create");
+}
 
 self.onentry = function(e) {
 	route("/journals/"+opts.journalid+"/entries/"+e.item.entry.ID);

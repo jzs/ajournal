@@ -11,8 +11,20 @@ CREATE TABLE Journal(
 	Created timestamp NOT NULL
 );
 
+CREATE TABLE Entry(
+	ID BIGSERIAL primary key NOT NULL,
+	JournalID bigint references Journal(id) NOT NULL,
+	Date timestamp NOT NULL,
+	Title text NOT NULL,
+	Content text NOT NULL,
+	Created timestamp NOT NULL,
+	Published timestamp,
+	IsPublished boolean NOT NULL
+);
+
 
 -- +goose Down
 -- SQL section 'Down' is executed when this migration is rolled back
 
+DROP TABLE Entry;
 DROP TABLE Journal;

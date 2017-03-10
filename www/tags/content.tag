@@ -3,7 +3,7 @@
 	<page-login if={loggedout}></page-login>
 	<page-journal-create if={loggedin && journalcreate}></page-journal-create>
 	<page-journal if={loggedin && journal} journalid={journalid}></page-journal>
-	<page-entryeditor if={loggedin && entry} entryid={entryid}></page-entryeditor>
+	<page-entryeditor if={loggedin && entry} journalid={journalid} entryid={entryid}></page-entryeditor>
 	<script>
 var self = this;
 self.loggedin = false;
@@ -40,12 +40,10 @@ route(function(collection, id, method, mid) {
 				self.journalcreate = true;
 			} else {
 				if(method == 'entries') {
-					if(mid == 'create') {
-					} else {
-						// Show entry.
-						self.entryid = id;
-						self.entry = true;
-					}
+					// Show entry.
+					self.journalid = id;
+					self.entryid = mid;
+					self.entry = true;
 					// show entries
 				} else {
 					// show journal
