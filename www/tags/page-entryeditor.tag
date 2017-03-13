@@ -9,7 +9,7 @@
 					</p>
 					<label class="label">Date</label>
 					<p>
-					<datepicker></datepicker>
+					<datepicker date={entry.Date}></datepicker>
 					</p>
 					<label class="label">Content</label>
 					<p class="control">
@@ -85,6 +85,7 @@ self.onTitle = function(e) {
 self.saveEntry = function(e) {
 	self.saving = true;
 	self.entry.Date = self.tags.datepicker.date().toISOString();
+	self.entry.Content = self.editContent;
 	if(typeof(self.entry.ID) != 'undefined') {
 		// Update
 		_aj.post("/api/journals/"+self.entry.JournalID+"/entries/"+self.entry.ID, self.entry, function(data, err) {

@@ -1,9 +1,29 @@
 <datepicker>
-<input class="input" type="text" placeholder="yyyy/mm/dd" onblur={onblur} onfocus={onfocus} onkeydown={onkeydown} onmouseup={onmouseup}/>
+<input class="input" type="text" placeholder="yyyy/mm/dd" onblur={onblur} onfocus={onfocus} onkeydown={onkeydown} onmouseup={onmouseup} value={inputval}/>
 <script>
 var self = this;
 
+var year = "yyyy";
+var month = "mm";
+var day = "dd";
+
+self.inputval = "";
+
 var datestr = "yyyy/mm/dd";
+
+var optsdate = null;
+self.on('update', function() {
+	if(opts.date != '' && opts.date != optsdate) {
+		datestr = moment(opts.date).format('YYYY/MM/DD');
+		year = moment(opts.date).format('YYYY');
+		month = moment(opts.date).format('MM');
+		day = moment(opts.date).format('DD');
+		self.inputval = datestr;
+		optsdate = opts.date;
+		self.update();
+	}
+});
+
 
 self.onfocus = function(e) {
 	// input field blurred.
@@ -11,9 +31,6 @@ self.onfocus = function(e) {
 	self.update();
 };
 
-var year = "yyyy";
-var month = "mm";
-var day = "dd";
 var KEY_DELETE = 8;
 var KEY_0 = 48;
 var KEY_1 = 49;

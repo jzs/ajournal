@@ -153,8 +153,7 @@ func (s *service) UpdateEntry(ctx context.Context, entry *Entry) (*Entry, error)
 		return nil, ErrEntryNotExist
 	}
 
-	return ntry, nil
-
+	return entry, nil
 }
 
 func (s *service) Entry(ctx context.Context, id int64) (*Entry, error) {

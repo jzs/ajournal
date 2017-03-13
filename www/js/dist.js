@@ -66,10 +66,29 @@ route(function(collection, id, method, mid) {
 });
 });
 
-riot.tag2('datepicker', '<input class="input" type="text" placeholder="yyyy/mm/dd" onblur="{onblur}" onfocus="{onfocus}" onkeydown="{onkeydown}" onmouseup="{onmouseup}">', '', '', function(opts) {
+riot.tag2('datepicker', '<input class="input" type="text" placeholder="yyyy/mm/dd" onblur="{onblur}" onfocus="{onfocus}" onkeydown="{onkeydown}" onmouseup="{onmouseup}" riot-value="{inputval}">', '', '', function(opts) {
 var self = this;
 
+var year = "yyyy";
+var month = "mm";
+var day = "dd";
+
+self.inputval = "";
+
 var datestr = "yyyy/mm/dd";
+
+var optsdate = null;
+self.on('update', function() {
+	if(opts.date != '' && opts.date != optsdate) {
+		datestr = moment(opts.date).format('YYYY/MM/DD');
+		year = moment(opts.date).format('YYYY');
+		month = moment(opts.date).format('MM');
+		day = moment(opts.date).format('DD');
+		self.inputval = datestr;
+		optsdate = opts.date;
+		self.update();
+	}
+});
 
 self.onfocus = function(e) {
 
@@ -77,9 +96,6 @@ self.onfocus = function(e) {
 	self.update();
 };
 
-var year = "yyyy";
-var month = "mm";
-var day = "dd";
 var KEY_DELETE = 8;
 var KEY_0 = 48;
 var KEY_1 = 49;
@@ -253,7 +269,7 @@ self.createentry = function(e) {
 }
 });
 
-riot.tag2('page-entryeditor', '<div class="section"> <div class="container"> <div class="columns"> <div class="column"> <label class="label">Title</label> <p class="control"> <input class="input" type="text" placeholder="Title" onkeyup="{onTitle}" riot-value="{entry.Title}"> </p> <label class="label">Date</label> <p> <datepicker></datepicker> </p> <label class="label">Content</label> <p class="control"> <textarea style="min-height: 200px;" class="textarea" placeholder="Textarea" onkeyup="{contentchange}">{entry.Content}</textarea> <span if="{err}" class="help is-danger">{err}</span> </p> <p> <br> <a class="button {is-link : showpreview}" onclick="{togglepreview}">Preview</a> <button class="button is-pulled-right {is-loading : saving}" onclick="{saveEntry}">Save</button> </p> </div> <div class="column" if="{showpreview}"> <label class="label">Preview</label> <raw class="markdown" content="{preview}"></raw> </div> </div> </div> </div>', '', '', function(opts) {
+riot.tag2('page-entryeditor', '<div class="section"> <div class="container"> <div class="columns"> <div class="column"> <label class="label">Title</label> <p class="control"> <input class="input" type="text" placeholder="Title" onkeyup="{onTitle}" riot-value="{entry.Title}"> </p> <label class="label">Date</label> <p> <datepicker date="{entry.Date}"></datepicker> </p> <label class="label">Content</label> <p class="control"> <textarea style="min-height: 200px;" class="textarea" placeholder="Textarea" onkeyup="{contentchange}">{entry.Content}</textarea> <span if="{err}" class="help is-danger">{err}</span> </p> <p> <br> <a class="button {is-link : showpreview}" onclick="{togglepreview}">Preview</a> <button class="button is-pulled-right {is-loading : saving}" onclick="{saveEntry}">Save</button> </p> </div> <div class="column" if="{showpreview}"> <label class="label">Preview</label> <raw class="markdown" content="{preview}"></raw> </div> </div> </div> </div>', '', '', function(opts) {
 var self = this;
 self.showpreview = false;
 self.preview = "";
@@ -309,6 +325,7 @@ self.onTitle = function(e) {
 self.saveEntry = function(e) {
 	self.saving = true;
 	self.entry.Date = self.tags.datepicker.date().toISOString();
+	self.entry.Content = self.editContent;
 	if(typeof(self.entry.ID) != 'undefined') {
 
 		_aj.post("/api/journals/"+self.entry.JournalID+"/entries/"+self.entry.ID, self.entry, function(data, err) {

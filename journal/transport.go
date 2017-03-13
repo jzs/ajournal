@@ -84,8 +84,8 @@ func SetupHandler(router *mux.Router, js Service) {
 			JSONResp(w, nil, err)
 			return
 		}
-		if ntry.JournalID != id {
-			JSONResp(w, nil, errors.New("Mismatch between journal id's"))
+		if ntry.ID != id {
+			JSONResp(w, nil, errors.New("Mismatch between id's"))
 			return
 		}
 

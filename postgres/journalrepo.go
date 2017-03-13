@@ -73,7 +73,16 @@ func (jr *journalRepo) AddEntry(ctx context.Context, entry *journal.Entry) (*jou
 }
 
 func (jr *journalRepo) UpdateEntry(ctx context.Context, entry *journal.Entry) error {
-	panic("Not implemented")
+
+	var published *time.Time
+	if !entry.Published.IsZero() {
+		published = &entry.Published
+	}
+	_, err := jr.db.Exec("UPDATE Entry SET Date=$1, Title=$2, Content=$3, Published=$4, IsPublished=$5 WHERE id=$6", entry.Date, entry.Title, entry.Content, published, entry.IsPublished, entry.ID)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (jr *journalRepo) FindEntryByID(ctx context.Context, id int64) (*journal.Entry, error) {
