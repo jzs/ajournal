@@ -6,6 +6,7 @@
 				<p>
 				{journal.Description}
 				</p>
+				<a class="button" href="#/journals/{opts.journalid}/view">View Journal</a>
 			</section>
 			<section class="section">
 				<button class="button" onclick={newentry}>New Entry</button>

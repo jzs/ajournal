@@ -76,6 +76,19 @@ func (jr *journalRepo) UpdateEntry(ctx context.Context, entry *journal.Entry) er
 	panic("Not implemented")
 }
 
+func (jr *journalRepo) FindEntryByID(ctx context.Context, id int64) (*journal.Entry, error) {
+	e := &DBEntry{}
+	err := jr.db.Get(e, "SELECT * FROM Entry WHERE ID=$1", id)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, journal.ErrEntryNotExist
+	}
+
+	result := mapToEntry(e)
+
+	return result, nil
+}
+
 func (jr *journalRepo) FindAllEntries(ctx context.Context, journalID int64) ([]*journal.Entry, error) {
 	entries := []*DBEntry{}
 	err := jr.db.Select(&entries, "SELECT * FROM Entry WHERE journalid=$1 ORDER BY Created DESC", journalID)
@@ -84,21 +97,25 @@ func (jr *journalRepo) FindAllEntries(ctx context.Context, journalID int64) ([]*
 	}
 	result := []*journal.Entry{}
 	for _, e := range entries {
-		var date time.Time
-		if e.Published.Valid {
-			date = e.Published.Time
-		}
-		result = append(result, &journal.Entry{
-			ID:          e.ID,
-			JournalID:   e.JournalID,
-			Date:        e.Date,
-			Title:       e.Title,   // The title of the entry in the journal
-			Content:     e.Content, // Content in markdown format
-			Created:     e.Created, // The creation time of the entry
-			Published:   date,
-			IsPublished: e.IsPublished, // Marks whether the entry is published or not
-
-		})
+		result = append(result, mapToEntry(e))
 	}
 	return result, nil
+}
+
+func mapToEntry(e *DBEntry) *journal.Entry {
+	var date time.Time
+	if e.Published.Valid {
+		date = e.Published.Time
+	}
+	result := &journal.Entry{
+		ID:          e.ID,
+		JournalID:   e.JournalID,
+		Date:        e.Date,
+		Title:       e.Title,   // The title of the entry in the journal
+		Content:     e.Content, // Content in markdown format
+		Created:     e.Created, // The creation time of the entry
+		Published:   date,
+		IsPublished: e.IsPublished, // Marks whether the entry is published or not
+	}
+	return result
 }

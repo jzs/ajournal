@@ -64,7 +64,6 @@ func TestService(t *testing.T) {
 	// Test create entry in journal...
 	entry := &journal.Entry{}
 	ntry, err := js.CreateEntry(ctx, entry)
-	// TODO Build out tests to test for journal id, access etc...
 	if err == nil {
 		t.Fatalf("Expected error creating entry, got: %v", ntry)
 	}
@@ -89,6 +88,15 @@ func TestService(t *testing.T) {
 	}
 	if ntry.Title != entry.Title {
 		t.Fatalf("Expected title %v, got: %v", entry.Title, ntry.Title)
+	}
+
+	// Test if we can update the entry
+	ntry, err = js.UpdateEntry(ctx, ntry)
+	if err != nil {
+		t.Fatalf("Could not update the entry, got: %v", err.Error())
+	}
+	if ntry.Title != entry.Title {
+		t.Fatal("Expected title: %v, got %v", entry.Title, ntry.Title)
 	}
 
 	// Test if we now return 1 journal
@@ -144,6 +152,23 @@ func TestService(t *testing.T) {
 	ntry, err = js.CreateEntry(ctx, entry)
 	if err == nil {
 		t.Fatalf("Expected error creating entry, got: %v", ntry)
+	}
+
+	// Checking access fetching entry in other users journal
+	ntry, err = js.Entry(ctx, 1) // 1 is other users journal
+	if err == nil {
+		t.Fatalf("Expected error denied fetching entry, got: %v", ntry)
+	}
+	// Check if we can update an entry that is not ours
+	ntry, err = js.UpdateEntry(ctx, &journal.Entry{ID: 1, Title: "world"})
+	if err == nil {
+		t.Fatalf("Expected access denied, got: %v", ntry)
+	}
+
+	//TODO Test Journals for user...
+	journals, err = js.Journals(ctx, u.ID)
+	if err != nil {
+		t.Fatalf("Expected to get result, got %v", err.Error())
 	}
 }
 
@@ -208,6 +233,15 @@ func (jr *journalRepo) UpdateEntry(c context.Context, entry *journal.Entry) erro
 		}
 	}
 	return nil
+}
+
+func (jr *journalRepo) FindEntryByID(ctx context.Context, id int64) (*journal.Entry, error) {
+	for _, e := range jr.entries {
+		if e.ID == id {
+			return e, nil
+		}
+	}
+	return nil, journal.ErrEntryNotExist
 }
 
 func (jr *journalRepo) FindAllEntries(ctx context.Context, journalID int64) ([]*journal.Entry, error) {

@@ -5,7 +5,7 @@
 				<div class="column">
 					<label class="label">Title</label>
 					<p class="control">
-					<input class="input" type="text" placeholder="Title" onkeyup={onTitle} value="">
+					<input class="input" type="text" placeholder="Title" onkeyup={onTitle} value={entry.Title}>
 					</p>
 					<label class="label">Date</label>
 					<p>
@@ -57,6 +57,8 @@ self.on('mount', function() {
 				return;
 			}
 			self.entry = data;
+			self.editContent = self.entry.Content;
+			self.update();
 		});
 	}
 });

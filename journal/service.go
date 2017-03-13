@@ -3,6 +3,7 @@ package journal
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 
 	"bitbucket.org/sketchground/journal/user"
@@ -14,8 +15,10 @@ type Service interface {
 	Create(ctx context.Context, journal *Journal) (*Journal, error)
 	MyJournals(ctx context.Context) ([]*Journal, error)
 	Journal(ctx context.Context, id int64) (*Journal, error)
+	Journals(ctx context.Context, userid int64) ([]*Journal, error)
 	// Interfaces for entry creation
 	CreateEntry(ctx context.Context, entry *Entry) (*Entry, error)
+	UpdateEntry(ctx context.Context, entry *Entry) (*Entry, error)
 	Entry(ctx context.Context, id int64) (*Entry, error)
 }
 
@@ -81,6 +84,21 @@ func (s *service) Journal(ctx context.Context, id int64) (*Journal, error) {
 	return journal, nil
 }
 
+func (s *service) Journals(ctx context.Context, userid int64) ([]*Journal, error) {
+	journals, err := s.repo.FindAll(ctx, userid)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*Journal{}
+	for _, j := range journals {
+		if j.Public {
+			result = append(result, j)
+		}
+	}
+	return result, nil
+}
+
 func (s *service) CreateEntry(ctx context.Context, entry *Entry) (*Entry, error) {
 	if entry.ID != 0 {
 		return nil, errors.New("ID must not be set when creating a new entry")
@@ -107,6 +125,60 @@ func (s *service) CreateEntry(ctx context.Context, entry *Entry) (*Entry, error)
 	return s.repo.AddEntry(ctx, entry)
 }
 
+func (s *service) UpdateEntry(ctx context.Context, entry *Entry) (*Entry, error) {
+	if entry.ID == 0 {
+		return nil, ErrEntryNotExist
+	}
+
+	usr := user.FromContext(ctx)
+	if usr == nil {
+		return nil, errors.New("Cannot update entry without a user context")
+	}
+
+	ntry, err := s.repo.FindEntryByID(ctx, entry.ID)
+	if err != nil {
+		return nil, ErrEntryNotExist
+	}
+
+	journal, err := s.repo.FindByID(ctx, ntry.JournalID)
+	if err != nil {
+		return nil, err
+	}
+	if journal.UserID != usr.ID {
+		return nil, ErrEntryNotExist
+	}
+
+	err = s.repo.UpdateEntry(ctx, entry)
+	if err != nil {
+		return nil, ErrEntryNotExist
+	}
+
+	return ntry, nil
+
+}
+
 func (s *service) Entry(ctx context.Context, id int64) (*Entry, error) {
-	panic("Not implemented")
+	usr := user.FromContext(ctx)
+
+	entry, err := s.repo.FindEntryByID(ctx, id)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, errors.New("Cannot fetch entry")
+	}
+
+	j, err := s.repo.FindByID(ctx, entry.JournalID)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, ErrEntryNotExist
+	}
+	// If it is private and you are not logged in
+	if !j.Public && usr == nil {
+		return nil, ErrEntryNotExist
+	}
+	// If it is private and you are logged in as different user
+	if !j.Public && (usr != nil && usr.ID != j.UserID) {
+		return nil, ErrEntryNotExist
+	}
+
+	return entry, nil
 }

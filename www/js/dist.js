@@ -1,10 +1,12 @@
-riot.tag2('content', '<page-dash if="{loggedin && dash}"></page-dash> <page-login if="{loggedout}"></page-login> <page-journal-create if="{loggedin && journalcreate}"></page-journal-create> <page-journal if="{loggedin && journal}" journalid="{journalid}"></page-journal> <page-entryeditor if="{loggedin && entry}" journalid="{journalid}" entryid="{entryid}"></page-entryeditor>', '', '', function(opts) {
+riot.tag2('content', '<page-dash if="{loggedin && dash}"></page-dash> <page-login if="{loggedout}"></page-login> <page-journal-create if="{loggedin && journalcreate}"></page-journal-create> <page-journal if="{loggedin && journal}" journalid="{journalid}"></page-journal> <page-entryeditor if="{loggedin && entry}" journalid="{journalid}" entryid="{entryid}"></page-entryeditor> <page-viewjournal if="{viewjournal}" journalid="{journalid}"></page-viewjournal> <page-viewjournals if="{viewjournals}" userid="{userid}"></page-viewjournals>', '', '', function(opts) {
 var self = this;
 self.loggedin = false;
 self.loggedout = !self.loggedin;
 self.journalcreate = false;
 self.dash = false;
 self.entry = false
+self.viewjournals = false;
+self.viewjournal = false;
 
 RiotControl.on('logout', function() {
 	self.loggedin = false;
@@ -23,11 +25,19 @@ self.clear = function() {
 	self.journalcreate = false;
 	self.journal = false;
 	self.entry = false
+	self.viewjournals = false;
+	self.viewjournal = false;
 }
 
 route(function(collection, id, method, mid) {
 	self.clear()
 	switch(collection) {
+		case 'view':
+
+			if(method == "journal") {
+
+			}
+			break;
 		case 'journals':
 			if(id == 'create') {
 
@@ -243,7 +253,7 @@ self.createentry = function(e) {
 }
 });
 
-riot.tag2('page-entryeditor', '<div class="section"> <div class="container"> <div class="columns"> <div class="column"> <label class="label">Title</label> <p class="control"> <input class="input" type="text" placeholder="Title" onkeyup="{onTitle}" value=""> </p> <label class="label">Date</label> <p> <datepicker></datepicker> </p> <label class="label">Content</label> <p class="control"> <textarea style="min-height: 200px;" class="textarea" placeholder="Textarea" onkeyup="{contentchange}">{entry.Content}</textarea> <span if="{err}" class="help is-danger">{err}</span> </p> <p> <br> <a class="button {is-link : showpreview}" onclick="{togglepreview}">Preview</a> <button class="button is-pulled-right {is-loading : saving}" onclick="{saveEntry}">Save</button> </p> </div> <div class="column" if="{showpreview}"> <label class="label">Preview</label> <raw class="markdown" content="{preview}"></raw> </div> </div> </div> </div>', '', '', function(opts) {
+riot.tag2('page-entryeditor', '<div class="section"> <div class="container"> <div class="columns"> <div class="column"> <label class="label">Title</label> <p class="control"> <input class="input" type="text" placeholder="Title" onkeyup="{onTitle}" riot-value="{entry.Title}"> </p> <label class="label">Date</label> <p> <datepicker></datepicker> </p> <label class="label">Content</label> <p class="control"> <textarea style="min-height: 200px;" class="textarea" placeholder="Textarea" onkeyup="{contentchange}">{entry.Content}</textarea> <span if="{err}" class="help is-danger">{err}</span> </p> <p> <br> <a class="button {is-link : showpreview}" onclick="{togglepreview}">Preview</a> <button class="button is-pulled-right {is-loading : saving}" onclick="{saveEntry}">Save</button> </p> </div> <div class="column" if="{showpreview}"> <label class="label">Preview</label> <raw class="markdown" content="{preview}"></raw> </div> </div> </div> </div>', '', '', function(opts) {
 var self = this;
 self.showpreview = false;
 self.preview = "";
@@ -271,6 +281,8 @@ self.on('mount', function() {
 				return;
 			}
 			self.entry = data;
+			self.editContent = self.entry.Content;
+			self.update();
 		});
 	}
 });
@@ -389,7 +401,7 @@ self.create = function() {
 };
 });
 
-riot.tag2('page-journal', '<section class="section"> <div class="container"> <section class="section"> <h3 class="title">Journal: {journal.Title}</h3> <p> {journal.Description} </p> </section> <section class="section"> <button class="button" onclick="{newentry}">New Entry</button> </section> <section class="section"> <div class="box" each="{entry in journal.Entries}" onclick="{onentry}" style="cursor:pointer;"> <article class="media"> <div class="media-content"> <div class="content"> <p> <strong>{entry.Title}</strong> <small>@jzs</small> <small>31m</small> <br> <pre>{entry.Content.substring(0, 200)}...</pre> <br> <span each="{tag in parent.Tags}">{tag}</span> </p> </div> <nav class="level"> <div class="level-left"> <a class="level-item"> <span class="icon is-small"><i class="fa fa-reply"></i></span> </a> <a class="level-item"> <span class="icon is-small"><i class="fa fa-retweet"></i></span> </a> <a class="level-item"> <span class="icon is-small"><i class="fa fa-heart"></i></span> </a> </div> </nav> </div> </article> </div> </section> </div> </section>', '', '', function(opts) {
+riot.tag2('page-journal', '<section class="section"> <div class="container"> <section class="section"> <h3 class="title">Journal: {journal.Title}</h3> <p> {journal.Description} </p> <a class="button" href="#/journals/{opts.journalid}/view">View Journal</a> </section> <section class="section"> <button class="button" onclick="{newentry}">New Entry</button> </section> <section class="section"> <div class="box" each="{entry in journal.Entries}" onclick="{onentry}" style="cursor:pointer;"> <article class="media"> <div class="media-content"> <div class="content"> <p> <strong>{entry.Title}</strong> <small>@jzs</small> <small>31m</small> <br> <pre>{entry.Content.substring(0, 200)}...</pre> <br> <span each="{tag in parent.Tags}">{tag}</span> </p> </div> <nav class="level"> <div class="level-left"> <a class="level-item"> <span class="icon is-small"><i class="fa fa-reply"></i></span> </a> <a class="level-item"> <span class="icon is-small"><i class="fa fa-retweet"></i></span> </a> <a class="level-item"> <span class="icon is-small"><i class="fa fa-heart"></i></span> </a> </div> </nav> </div> </article> </div> </section> </div> </section>', '', '', function(opts) {
 var self = this;
 self.journal = {
 	Title: "Journal title",
@@ -519,6 +531,31 @@ self.register = function(e) {
 	http.send(JSON.stringify(user));
 };
 
+});
+
+
+riot.tag2('page-viewjournal', '<section class="section"> <div class="container"> <section class="section"> <h3 class="title">Journal: {journal.Title}</h3> <p> {journal.Description} </p> <a class="button" href="#/journals/{opts.journalid}/view">View Journal</a> </section> <section class="section"> <button class="button" onclick="{newentry}">New Entry</button> </section> <section class="section"> <div class="box" each="{entry in journal.Entries}" onclick="{onentry}" style="cursor:pointer;"> <article class="media"> <div class="media-content"> <div class="content"> <p> <strong>{entry.Title}</strong> <small>@jzs</small> <small>31m</small> <br> <pre>{entry.Content.substring(0, 200)}...</pre> <br> <span each="{tag in parent.Tags}">{tag}</span> </p> </div> <nav class="level"> <div class="level-left"> <a class="level-item"> <span class="icon is-small"><i class="fa fa-reply"></i></span> </a> <a class="level-item"> <span class="icon is-small"><i class="fa fa-retweet"></i></span> </a> <a class="level-item"> <span class="icon is-small"><i class="fa fa-heart"></i></span> </a> </div> </nav> </div> </article> </div> </section> </div> </section>', '', '', function(opts) {
+var self = this;
+self.journal = {
+	Tags: [],
+	Entries: []
+};
+
+self.on('mount', function() {
+	_aj.get("/api/journals/" + opts.journalid, function(data, err) {
+		if(err != null) {
+			self.err = err;
+			self.update();
+			return;
+		}
+		self.journal = data;
+		self.update();
+	});
+});
+});
+
+
+riot.tag2('page-viewjournals', '', '', '', function(opts) {
 });
 
 riot.tag2('raw', '<span></span>', '', '', function(opts) {

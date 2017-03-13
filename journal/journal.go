@@ -7,9 +7,11 @@ import (
 )
 
 var ErrJournalNotExist error
+var ErrEntryNotExist error
 
 func init() {
 	ErrJournalNotExist = errors.New("Journal does not exist")
+	ErrEntryNotExist = errors.New("Entry does not exist")
 }
 
 // Journal describes a travel journal describing ones travel adventure.
@@ -47,5 +49,6 @@ type Repository interface {
 	FindAll(ctx context.Context, userid int64) ([]*Journal, error)
 	AddEntry(ctx context.Context, entry *Entry) (*Entry, error)
 	UpdateEntry(ctx context.Context, entry *Entry) error
+	FindEntryByID(ctx context.Context, id int64) (*Entry, error)
 	FindAllEntries(ctx context.Context, journalID int64) ([]*Entry, error)
 }

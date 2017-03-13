@@ -11,6 +11,20 @@ import (
 
 // SetupHandler sets up routes for the journal service
 func SetupHandler(router *mux.Router, js Service) {
+	router.Path("/users/{id}/journals").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		idstr := vars["id"]
+		id, err := strconv.ParseInt(idstr, 10, 64)
+		if err != nil {
+			JSONResp(w, nil, err)
+			return
+		}
+		journals, err := js.Journals(r.Context(), id)
+		err = JSONResp(w, journals, err)
+		if err != nil {
+			// TODO Handle error...
+		}
+	})
 
 	router.Path("/journals").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		journals, err := js.MyJournals(r.Context())
@@ -53,6 +67,41 @@ func SetupHandler(router *mux.Router, js Service) {
 		}
 
 		ntry, err = js.CreateEntry(r.Context(), ntry)
+		JSONResp(w, ntry, err)
+	})
+	router.Path("/journals/{jid}/entries/{id}").Methods("POST").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		idstr := vars["id"]
+		id, err := strconv.ParseInt(idstr, 10, 64)
+		if err != nil {
+			JSONResp(w, nil, err)
+			return
+		}
+		ntry := &Entry{}
+		dec := json.NewDecoder(r.Body)
+		err = dec.Decode(&ntry)
+		if err != nil {
+			JSONResp(w, nil, err)
+			return
+		}
+		if ntry.JournalID != id {
+			JSONResp(w, nil, errors.New("Mismatch between journal id's"))
+			return
+		}
+
+		ntry, err = js.UpdateEntry(r.Context(), ntry)
+		JSONResp(w, ntry, err)
+	})
+
+	router.Path("/journals/{jid}/entries/{id}").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		idstr := vars["id"]
+		id, err := strconv.ParseInt(idstr, 10, 64)
+		if err != nil {
+			JSONResp(w, nil, err)
+			return
+		}
+		ntry, err := js.Entry(r.Context(), id)
 		JSONResp(w, ntry, err)
 	})
 
