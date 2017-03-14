@@ -70,31 +70,6 @@ RiotControl.on('login', function() {
 
 
 self.login = function() {
-	// Perform login
-	var http = new XMLHttpRequest();
-	http.open("POST", "/api/users/login", true);
-	//http.addEventListener("progress", function(e) {
-	//});
-	http.addEventListener("load", function(e) {
-		// Completed...
-		var data = JSON.parse(http.response);
-		if(data.Status != 200) {
-			self.errmsg = data.Error;
-			self.loginerr = true;
-			self.update();
-			return;
-		} else {
-			RiotControl.trigger('perform-login', data.Data);
-		}
-		self.loggingin = false;
-		self.update();
-		route("/");
-	});
-	http.addEventListener("error", function(e) {
-	});
-	http.addEventListener("abort", function(e) {
-	});
-
 	self.loggingin = true;
 	self.update();
 
@@ -102,35 +77,39 @@ self.login = function() {
 		Username: self.username,
 		Password: self.password
 	};
-	http.send(JSON.stringify(user));
+
+	// Perform login
+	_aj.post("/api/users/login", user, function(data, err) {
+		if( err != null ) {
+			self.errmsg = data.Error;
+			self.loginerr = true;
+			self.update();
+			return;
+		}
+		self.loggingin = false;
+		self.update();
+		data.Username = user.Username;
+		RiotControl.trigger('perform-login', data);
+		route("/");
+	});
 };
 
 self.register = function(e) {
-	var http = new XMLHttpRequest();
-	http.open("POST", "/api/users", true);
-	//http.addEventListener("progress", function(e) {
-	//});
-	http.addEventListener("load", function(e) {
-		// Completed...
-		var data = JSON.parse(http.response);
-		if (data.Status != 200) {
-			self.errmsg = data.Error;
-			self.loginerr = true;
-		} else {
-			self.login();
-		}
-		self.update();
-	});
-	http.addEventListener("error", function(e) {
-	});
-	http.addEventListener("abort", function(e) {
-	});
-
 	var user = {
 		Username: self.username,
 		Password: self.password
 	};
-	http.send(JSON.stringify(user));
+	_aj.post("/api/users", user, function(data, err) {
+		if( err != null ) {
+			// Do shit!
+			self.errmsg = data.Error;
+			self.loginerr = true;
+			self.update();
+			return;
+		}
+		self.login();
+		self.update();
+	});
 };
 
 	</script>

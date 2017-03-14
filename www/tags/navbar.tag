@@ -6,12 +6,13 @@
 		<a class="nav-item" href="#/">a-Journal</a>
 	</div>
 	<div class="nav-right">
-		<a class="nav-item" href="#" onclick={logout} if={user}>Log out</a>
+		<a class="nav-item" href="#/profile">{user.Username}</a>
+		<a class="nav-item" href="#" onclick={logout} if={user.Username}>Log out</a>
 	</div>
 </nav>
 	<script>
 var self = this;
-self.user = null;
+self.user = {};
 
 self.logout = function(e) {
 	e.preventDefault();
@@ -19,11 +20,15 @@ self.logout = function(e) {
 };
 
 RiotControl.on('login', function(user) {
-	self.user = user;
+	if(self.user == null) {
+		self.user = {};
+	} else {
+		self.user = user;
+	}
 	self.update();
 });
 RiotControl.on('logout', function() {
-	self.user = null;
+	self.user = {};
 	self.update();
 });
 	</script>

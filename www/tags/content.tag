@@ -6,6 +6,7 @@
 	<page-entryeditor if={loggedin && entry} journalid={journalid} entryid={entryid}></page-entryeditor>
 	<page-viewjournal if={viewjournal} journalid={journalid}></page-viewjournal>
 	<page-viewjournals if={viewjournals} userid={userid}></page-viewjournals>
+	<page-profile if={profile} userid={userid}></page-profile>
 	<script>
 var self = this;
 self.loggedin = false;
@@ -15,6 +16,7 @@ self.dash = false;
 self.entry = false
 self.viewjournals = false;
 self.viewjournal = false;
+self.profile = false;
 
 RiotControl.on('logout', function() {
 	self.loggedin = false;
@@ -22,7 +24,8 @@ RiotControl.on('logout', function() {
 
 	self.update();
 });
-RiotControl.on('login', function() {
+RiotControl.on('login', function(user) {
+	self.user = user;
 	self.loggedin = true;
 	self.loggedout = !self.loggedin;
 	self.update();
@@ -35,6 +38,7 @@ self.clear = function() {
 	self.entry = false
 	self.viewjournals = false;
 	self.viewjournal = false;
+	self.profile = false;
 }
 
 route(function(collection, id, method, mid) {
@@ -66,6 +70,10 @@ route(function(collection, id, method, mid) {
 					self.journal = true;
 				}
 			}
+			break;
+		case 'profile':
+			self.userid = self.user.ID;
+			self.profile = true;
 			break;
 		default:
 			self.clear()

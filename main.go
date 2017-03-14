@@ -15,7 +15,6 @@ import (
 )
 
 func main() {
-
 	db, err := sqlx.Connect("postgres", "user=jzs dbname=journal sslmode=disable")
 	if err != nil {
 		log.Println("Could not connect to database!")

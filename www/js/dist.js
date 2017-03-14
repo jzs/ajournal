@@ -1,4 +1,4 @@
-riot.tag2('content', '<page-dash if="{loggedin && dash}"></page-dash> <page-login if="{loggedout}"></page-login> <page-journal-create if="{loggedin && journalcreate}"></page-journal-create> <page-journal if="{loggedin && journal}" journalid="{journalid}"></page-journal> <page-entryeditor if="{loggedin && entry}" journalid="{journalid}" entryid="{entryid}"></page-entryeditor> <page-viewjournal if="{viewjournal}" journalid="{journalid}"></page-viewjournal> <page-viewjournals if="{viewjournals}" userid="{userid}"></page-viewjournals>', '', '', function(opts) {
+riot.tag2('content', '<page-dash if="{loggedin && dash}"></page-dash> <page-login if="{loggedout}"></page-login> <page-journal-create if="{loggedin && journalcreate}"></page-journal-create> <page-journal if="{loggedin && journal}" journalid="{journalid}"></page-journal> <page-entryeditor if="{loggedin && entry}" journalid="{journalid}" entryid="{entryid}"></page-entryeditor> <page-viewjournal if="{viewjournal}" journalid="{journalid}"></page-viewjournal> <page-viewjournals if="{viewjournals}" userid="{userid}"></page-viewjournals> <page-profile if="{profile}" userid="{userid}"></page-profile>', '', '', function(opts) {
 var self = this;
 self.loggedin = false;
 self.loggedout = !self.loggedin;
@@ -7,6 +7,7 @@ self.dash = false;
 self.entry = false
 self.viewjournals = false;
 self.viewjournal = false;
+self.profile = false;
 
 RiotControl.on('logout', function() {
 	self.loggedin = false;
@@ -14,7 +15,8 @@ RiotControl.on('logout', function() {
 
 	self.update();
 });
-RiotControl.on('login', function() {
+RiotControl.on('login', function(user) {
+	self.user = user;
 	self.loggedin = true;
 	self.loggedout = !self.loggedin;
 	self.update();
@@ -27,6 +29,7 @@ self.clear = function() {
 	self.entry = false
 	self.viewjournals = false;
 	self.viewjournal = false;
+	self.profile = false;
 }
 
 route(function(collection, id, method, mid) {
@@ -55,6 +58,10 @@ route(function(collection, id, method, mid) {
 					self.journal = true;
 				}
 			}
+			break;
+		case 'profile':
+			self.userid = self.user.ID;
+			self.profile = true;
 			break;
 		default:
 			self.clear()
@@ -211,13 +218,13 @@ self.onmouseup = function(e) {
 };
 
 self.date = function() {
-	return new Date(Date.UTC(year,month,day));
+	return new Date(Date.UTC(year,month-1,day));
 };
 });
 
-riot.tag2('navbar', '<nav class="nav"> <div class="nav-left"> </div> <div class="nav-center"> <a class="nav-item" href="#/">a-Journal</a> </div> <div class="nav-right"> <a class="nav-item" href="#" onclick="{logout}" if="{user}">Log out</a> </div> </nav>', '', '', function(opts) {
+riot.tag2('navbar', '<nav class="nav"> <div class="nav-left"> </div> <div class="nav-center"> <a class="nav-item" href="#/">a-Journal</a> </div> <div class="nav-right"> <a class="nav-item" href="#/profile">{user.Username}</a> <a class="nav-item" href="#" onclick="{logout}" if="{user.Username}">Log out</a> </div> </nav>', '', '', function(opts) {
 var self = this;
-self.user = null;
+self.user = {};
 
 self.logout = function(e) {
 	e.preventDefault();
@@ -225,11 +232,15 @@ self.logout = function(e) {
 };
 
 RiotControl.on('login', function(user) {
-	self.user = user;
+	if(self.user == null) {
+		self.user = {};
+	} else {
+		self.user = user;
+	}
 	self.update();
 });
 RiotControl.on('logout', function() {
-	self.user = null;
+	self.user = {};
 	self.update();
 });
 });
@@ -301,14 +312,12 @@ self.on('mount', function() {
 			self.update();
 		});
 	}
-});
 
-self.editContent = "";
-
-self.on('mount', function() {
 	self.preview = converter.makeHtml(self.entry.Content);
 	self.update();
 });
+
+self.editContent = "";
 
 self.contentchange = function(e) {
 	self.editContent = e.target.value;
@@ -487,30 +496,6 @@ RiotControl.on('login', function() {
 });
 
 self.login = function() {
-
-	var http = new XMLHttpRequest();
-	http.open("POST", "/api/users/login", true);
-
-	http.addEventListener("load", function(e) {
-
-		var data = JSON.parse(http.response);
-		if(data.Status != 200) {
-			self.errmsg = data.Error;
-			self.loginerr = true;
-			self.update();
-			return;
-		} else {
-			RiotControl.trigger('perform-login', data.Data);
-		}
-		self.loggingin = false;
-		self.update();
-		route("/");
-	});
-	http.addEventListener("error", function(e) {
-	});
-	http.addEventListener("abort", function(e) {
-	});
-
 	self.loggingin = true;
 	self.update();
 
@@ -518,38 +503,56 @@ self.login = function() {
 		Username: self.username,
 		Password: self.password
 	};
-	http.send(JSON.stringify(user));
+
+	_aj.post("/api/users/login", user, function(data, err) {
+		if( err != null ) {
+			self.errmsg = data.Error;
+			self.loginerr = true;
+			self.update();
+			return;
+		}
+		self.loggingin = false;
+		self.update();
+		data.Username = user.Username;
+		RiotControl.trigger('perform-login', data);
+		route("/");
+	});
 };
 
 self.register = function(e) {
-	var http = new XMLHttpRequest();
-	http.open("POST", "/api/users", true);
-
-	http.addEventListener("load", function(e) {
-
-		var data = JSON.parse(http.response);
-		if (data.Status != 200) {
-			self.errmsg = data.Error;
-			self.loginerr = true;
-		} else {
-			self.login();
-		}
-		self.update();
-	});
-	http.addEventListener("error", function(e) {
-	});
-	http.addEventListener("abort", function(e) {
-	});
-
 	var user = {
 		Username: self.username,
 		Password: self.password
 	};
-	http.send(JSON.stringify(user));
+	_aj.post("/api/users", user, function(data, err) {
+		if( err != null ) {
+
+			self.errmsg = data.Error;
+			self.loginerr = true;
+			self.update();
+			return;
+		}
+		self.login();
+		self.update();
+	});
 };
 
 });
 
+riot.tag2('page-profile', '<div> Hello world!! wefewf </div>', '', '', function(opts) {
+var self = this;
+
+self.on('mount', function() {
+
+	_aj.get("/api/profile", null, function(data, err) {
+		if ( err != null ) {
+			return;
+		}
+		self.profile = data;
+	});
+});
+
+});
 
 riot.tag2('page-viewjournal', '<section class="section"> <div class="container"> <section class="section"> <h3 class="title">Journal: {journal.Title}</h3> <p> {journal.Description} </p> <a class="button" href="#/journals/{opts.journalid}/view">View Journal</a> </section> <section class="section"> <button class="button" onclick="{newentry}">New Entry</button> </section> <section class="section"> <div class="box" each="{entry in journal.Entries}" onclick="{onentry}" style="cursor:pointer;"> <article class="media"> <div class="media-content"> <div class="content"> <p> <strong>{entry.Title}</strong> <small>@jzs</small> <small>31m</small> <br> <pre>{entry.Content.substring(0, 200)}...</pre> <br> <span each="{tag in parent.Tags}">{tag}</span> </p> </div> <nav class="level"> <div class="level-left"> <a class="level-item"> <span class="icon is-small"><i class="fa fa-reply"></i></span> </a> <a class="level-item"> <span class="icon is-small"><i class="fa fa-retweet"></i></span> </a> <a class="level-item"> <span class="icon is-small"><i class="fa fa-heart"></i></span> </a> </div> </nav> </div> </article> </div> </section> </div> </section>', '', '', function(opts) {
 var self = this;

@@ -61,14 +61,12 @@ self.on('mount', function() {
 			self.update();
 		});
 	}
-});
 
-self.editContent = "";
-
-self.on('mount', function() {
 	self.preview = converter.makeHtml(self.entry.Content);
 	self.update();
 });
+
+self.editContent = "";
 
 self.contentchange = function(e) {
 	self.editContent = e.target.value;
