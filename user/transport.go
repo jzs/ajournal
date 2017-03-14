@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"bitbucket.org/sketchground/journal/utils"
+
 	"github.com/gorilla/mux"
 )
 
@@ -56,7 +58,7 @@ func SetupHandler(r *mux.Router, us Service) {
 			panic("bad args")
 		}
 		err = us.Register(r.Context(), u)
-		err = JSONResp(w, nil, err)
+		err = utils.JSONResp(w, nil, err)
 		if err != nil {
 			// TODO Log this error or panic
 		}
@@ -70,7 +72,7 @@ func SetupHandler(r *mux.Router, us Service) {
 
 		token, err := us.Login(r.Context(), u.Username, u.Password)
 		if err != nil {
-			JSONResp(w, token, err)
+			utils.JSONResp(w, token, err)
 			return
 		}
 
@@ -84,7 +86,7 @@ func SetupHandler(r *mux.Router, us Service) {
 		}
 		http.SetCookie(w, cookie)
 
-		err = JSONResp(w, token, err)
+		err = utils.JSONResp(w, token, err)
 		if err != nil {
 			// TODO: Handle Error.
 		}
@@ -95,7 +97,7 @@ func SetupHandler(r *mux.Router, us Service) {
 		cookie, err := r.Cookie(cookieName)
 		if err != nil {
 			//TODO: Try to get the cookie from elsewhere
-			err = JSONResp(w, nil, nil) // nil, nil since we ignore the error and just "log out" the user.
+			err = utils.JSONResp(w, nil, nil) // nil, nil since we ignore the error and just "log out" the user.
 			return
 		}
 		us.Logout(r.Context(), cookie.Value)
@@ -105,41 +107,7 @@ func SetupHandler(r *mux.Router, us Service) {
 		cookie.Name = cookieName
 		cookie.HttpOnly = true
 		http.SetCookie(w, cookie)
-		JSONResp(w, nil, nil)
+		utils.JSONResp(w, nil, nil)
 	})
 
-}
-
-// Json response handling and error handling!
-
-type jsonresp struct {
-	Data   interface{}
-	Status int64
-	Error  string
-}
-
-// JSONResp writes a json response to the responsewriter
-func JSONResp(w http.ResponseWriter, data interface{}, err error) error {
-	w.Header().Set("content-type", "application/json")
-	enc := json.NewEncoder(w)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		resp := jsonresp{
-			Status: http.StatusInternalServerError,
-			Error:  err.Error(),
-		}
-		err = enc.Encode(resp)
-		if err != nil {
-			// Log this error or panic!
-			return err
-		}
-		return nil
-	}
-
-	resp := jsonresp{
-		Data:   data,
-		Status: http.StatusOK,
-	}
-	enc.Encode(resp)
-	return nil
 }
