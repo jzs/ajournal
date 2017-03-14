@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"bitbucket.org/sketchground/journal/user"
+	"bitbucket.org/sketchground/ajournal/user"
+
 	"github.com/jmoiron/sqlx"
 )
 

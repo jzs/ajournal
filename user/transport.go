@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"bitbucket.org/sketchground/journal/utils"
+	"bitbucket.org/sketchground/ajournal/utils"
 
 	"github.com/gorilla/mux"
 )

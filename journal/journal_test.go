@@ -4,8 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"bitbucket.org/sketchground/journal/journal"
-	"bitbucket.org/sketchground/journal/user"
+	"bitbucket.org/sketchground/ajournal/journal"
+	"bitbucket.org/sketchground/ajournal/user"
+
 	"github.com/gorilla/mux"
 )
 

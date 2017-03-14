@@ -3,8 +3,8 @@ package profile_test
 import (
 	"testing"
 
-	"bitbucket.org/sketchground/journal/profile"
-	"bitbucket.org/sketchground/journal/user"
+	"bitbucket.org/sketchground/ajournal/profile"
+	"bitbucket.org/sketchground/ajournal/user"
 )
 
 func TestService(t *testing.T) {

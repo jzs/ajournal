@@ -4,9 +4,9 @@ import (
 	"log"
 	"net/http"
 
-	"bitbucket.org/sketchground/journal/journal"
-	"bitbucket.org/sketchground/journal/postgres"
-	"bitbucket.org/sketchground/journal/user"
+	"bitbucket.org/sketchground/ajournal/journal"
+	"bitbucket.org/sketchground/ajournal/postgres"
+	"bitbucket.org/sketchground/ajournal/user"
 
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"

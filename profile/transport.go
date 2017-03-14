@@ -3,7 +3,7 @@ package profile
 import (
 	"net/http"
 
-	"bitbucket.org/sketchground/journal/utils"
+	"bitbucket.org/sketchground/ajournal/utils"
 
 	"github.com/gorilla/mux"
 )

@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"bitbucket.org/sketchground/journal/user"
+	"bitbucket.org/sketchground/ajournal/user"
 )
 
 // Service interface for journals

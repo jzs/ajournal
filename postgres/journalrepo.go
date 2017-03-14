@@ -5,10 +5,10 @@ import (
 	"log"
 	"time"
 
+	"bitbucket.org/sketchground/ajournal/journal"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
-
-	"bitbucket.org/sketchground/journal/journal"
 )
 
 type DBEntry struct {
