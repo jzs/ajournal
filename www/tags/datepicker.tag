@@ -146,7 +146,7 @@ self.onmouseup = function(e) {
 };
 
 self.date = function() {
-	return new Date(Date.UTC(year,month,day));
+	return new Date(Date.UTC(year,month-1,day));
 };
 </script>
 </datepicker>
