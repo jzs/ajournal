@@ -7,6 +7,7 @@ import (
 	"bitbucket.org/sketchground/ajournal/journal"
 	"bitbucket.org/sketchground/ajournal/postgres"
 	"bitbucket.org/sketchground/ajournal/user"
+	"bitbucket.org/sketchground/ajournal/utils/logger"
 
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
@@ -37,7 +38,7 @@ func main() {
 	// Setup static file handler
 	baserouter.PathPrefix("/").Handler(http.FileServer(http.Dir("www")))
 
-	base := negroni.Classic()
+	base := negroni.New(negroni.NewRecovery(), logger.NewLogger())
 	// Setup middleware that injects currently logged in user into the stack.
 	base.Use(negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		nr := user.ApplyUserToRequest(r, us)

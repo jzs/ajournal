@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"fmt"
 
 	"bitbucket.org/sketchground/ajournal/user"
 
@@ -29,7 +28,6 @@ func (ur *repo) FindByUsername(ctx context.Context, username string) (*user.User
 
 func (ur *repo) FindByToken(ctx context.Context, token string) (*user.User, error) {
 	u := &user.User{}
-	fmt.Println(token)
 	err := ur.db.Get(u, "SELECT _User.* FROM _User JOIN UserToken on UserToken.UserID=_User.id WHERE UserToken.Token=$1", token)
 	if err != nil {
 		return nil, user.ErrUserNotExist

@@ -2,10 +2,10 @@ package postgres
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"bitbucket.org/sketchground/ajournal/journal"
+	"bitbucket.org/sketchground/ajournal/utils/logger"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
@@ -36,6 +36,7 @@ func (jr *journalRepo) Create(ctx context.Context, journal *journal.Journal) (*j
 	var id int64
 	err := jr.db.Get(&id, "INSERT INTO journal(UserID, Public, Title, Description, Created) VALUES($1, $2, $3, $4, $5) RETURNING id", journal.UserID, journal.Public, journal.Title, journal.Description, journal.Created)
 	if err != nil {
+		logger.Error(ctx, err)
 		return nil, err
 	}
 	journal.ID = id
@@ -46,7 +47,7 @@ func (jr *journalRepo) FindByID(ctx context.Context, id int64) (*journal.Journal
 	j := &journal.Journal{}
 	err := jr.db.Get(j, "SELECT * FROM Journal WHERE id=$1", id)
 	if err != nil {
-		log.Println(err.Error())
+		logger.Error(ctx, err)
 		return nil, journal.ErrJournalNotExist
 	}
 	return j, nil
@@ -56,6 +57,7 @@ func (jr *journalRepo) FindAll(ctx context.Context, userid int64) ([]*journal.Jo
 	journals := []*journal.Journal{}
 	err := jr.db.Select(&journals, "SELECT * FROM journal WHERE userid=$1", userid)
 	if err != nil {
+		logger.Error(ctx, err)
 		return nil, err
 	}
 	return journals, nil
@@ -65,7 +67,7 @@ func (jr *journalRepo) AddEntry(ctx context.Context, entry *journal.Entry) (*jou
 	var id int64
 	err := jr.db.Get(&id, "INSERT INTO Entry(JournalID, Date, Title, Content, Created, IsPublished) VALUES($1, $2, $3, $4, $5, $6) RETURNING id", entry.JournalID, entry.Date, entry.Title, entry.Content, entry.Created, entry.IsPublished)
 	if err != nil {
-		log.Println(err)
+		logger.Error(ctx, err)
 		return nil, err
 	}
 	entry.ID = id
@@ -80,6 +82,7 @@ func (jr *journalRepo) UpdateEntry(ctx context.Context, entry *journal.Entry) er
 	}
 	_, err := jr.db.Exec("UPDATE Entry SET Date=$1, Title=$2, Content=$3, Published=$4, IsPublished=$5 WHERE id=$6", entry.Date, entry.Title, entry.Content, published, entry.IsPublished, entry.ID)
 	if err != nil {
+		logger.Error(ctx, err)
 		return err
 	}
 	return nil
@@ -89,7 +92,7 @@ func (jr *journalRepo) FindEntryByID(ctx context.Context, id int64) (*journal.En
 	e := &DBEntry{}
 	err := jr.db.Get(e, "SELECT * FROM Entry WHERE ID=$1", id)
 	if err != nil {
-		log.Println(err.Error())
+		logger.Error(ctx, err)
 		return nil, journal.ErrEntryNotExist
 	}
 
@@ -102,7 +105,7 @@ func (jr *journalRepo) FindAllEntries(ctx context.Context, journalID int64) ([]*
 	entries := []*DBEntry{}
 	err := jr.db.Select(&entries, "SELECT * FROM Entry WHERE journalid=$1 ORDER BY Created DESC", journalID)
 	if err != nil {
-		return nil, err
+		logger.Error(ctx, err)
 	}
 	result := []*journal.Entry{}
 	for _, e := range entries {
