@@ -16,3 +16,4 @@ Planned Coming features:
 *   Stripe integration
 *   Solid backend logging
 *   Frontend logging
+*   Better documentation of everything
