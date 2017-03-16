@@ -6,6 +6,7 @@ import (
 
 	"bitbucket.org/sketchground/ajournal/journal"
 	"bitbucket.org/sketchground/ajournal/postgres"
+	"bitbucket.org/sketchground/ajournal/profile"
 	"bitbucket.org/sketchground/ajournal/user"
 	"bitbucket.org/sketchground/ajournal/utils/logger"
 
@@ -32,6 +33,10 @@ func main() {
 	ur := postgres.NewUserRepo(db)
 	us := user.NewService(ur)
 	user.SetupHandler(apirouter, us)
+
+	pr := postgres.NewProfileRepo(db)
+	ps := profile.NewService(pr)
+	profile.SetupHandler(apirouter, ps)
 
 	// Setup api router
 	baserouter.PathPrefix("/api").Handler(negroni.New(negroni.Wrap(apirouter)))

@@ -539,12 +539,13 @@ self.register = function(e) {
 
 });
 
-riot.tag2('page-profile', '<div> Hello world!! wefewf </div>', '', '', function(opts) {
+riot.tag2('page-profile', '<div class="container"> <h3 class="title">Hi {profile.Name}</h3> Hello world!! wefewf </div>', '', '', function(opts) {
 var self = this;
+self.profile = {};
 
 self.on('mount', function() {
 
-	_aj.get("/api/profile", null, function(data, err) {
+	_aj.get("/api/profile", function(data, err) {
 		if ( err != null ) {
 			return;
 		}

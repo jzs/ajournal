@@ -4,7 +4,8 @@
 
 CREATE TABLE Profile(
 	UserID bigint references _User(id) NOT NULL UNIQUE,
-	Name text NOT NULL
+	Name text NOT NULL,
+	Email text NOT NULL
 );
 
 -- +goose Down
