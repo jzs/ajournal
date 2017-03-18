@@ -33,6 +33,15 @@ func (pr *profileRepo) Create(ctx context.Context, p *profile.Profile) (*profile
 	return p, nil
 }
 
+func (pr *profileRepo) Update(ctx context.Context, p *profile.Profile) (*profile.Profile, error) {
+	_, err := pr.db.Exec("UPDATE Profile SET Name = $1, Email = $2", p.Name, p.Email)
+	if err != nil {
+		logger.Error(ctx, err)
+		return nil, err
+	}
+	return p, nil
+}
+
 func (pr *profileRepo) FindByID(ctx context.Context, id int64) (*profile.Profile, error) {
 	prof := &DBProfile{}
 	err := pr.db.Get(prof, "SELECT * FROM Profile WHERE UserID=$1", id)

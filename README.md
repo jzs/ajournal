@@ -17,3 +17,4 @@ Planned Coming features:
 *   Solid backend logging
 *   Frontend logging
 *   Better documentation of everything
+*   Add Integration tests to services

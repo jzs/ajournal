@@ -25,25 +25,59 @@ func TestService(t *testing.T) {
 	if p.Name != "" {
 		t.Fatalf("Expected profile name to be empty, got: %v", p.Name)
 	}
+	if p.Plan != profile.PlanFree {
+		t.Fatalf("Expected to have the plan set to free, got: %v", p.Plan)
+	}
+	if p.ID != u.ID {
+		t.Fatalf("Profile ID %v, got %v", u.ID, p.ID)
+	}
+
+	// Test update profile
+	_, err = ps.UpdateProfile(ctx, p)
+	if err != nil {
+		t.Fatalf("Expected update success, got: %v", err.Error())
+	}
+
+	np, err := ps.Profile(ctx)
+	if err != nil {
+		t.Fatalf("Expected fetching profile, got: %v", err.Error())
+	}
+	if np.Name != p.Name {
+		t.Fatalf("Expected %v, Got: %v", p.Name, np.Name)
+	}
+
+	np.ID = 1
+	_, err = ps.UpdateProfile(ctx, np)
+	if err == nil {
+		t.Fatal("Expected an error updating other persons profile, got %v", np)
+	}
+
+	// Test Create subscription!
 }
 
 type profileRepo struct {
 	profiles []*profile.Profile
-	id       int64
 }
 
 func NewInmemRepo() profile.Repository {
 	repo := &profileRepo{
-		id:       1,
 		profiles: []*profile.Profile{},
 	}
 	return repo
 }
 
 func (pr *profileRepo) Create(ctx context.Context, p *profile.Profile) (*profile.Profile, error) {
-	p.ID = pr.id
 	pr.profiles = append(pr.profiles, p)
-	pr.id = pr.id + 1
+	return p, nil
+}
+
+func (pr *profileRepo) Update(ctx context.Context, p *profile.Profile) (*profile.Profile, error) {
+	for i, prof := range pr.profiles {
+		if prof.ID == p.ID {
+			pr.profiles[i] = p
+			break
+		}
+	}
 	return p, nil
 }
 

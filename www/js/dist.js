@@ -539,20 +539,106 @@ self.register = function(e) {
 
 });
 
-riot.tag2('page-profile', '<div class="container"> <h3 class="title">Hi {profile.Name}</h3> Hello world!! wefewf </div>', '', '', function(opts) {
+riot.tag2('page-profile', '<div class="container"> <section class="section"> <h3 class="title">Hi {profile.Name}</h3> <div class="container"> <label class="label">Full Name</label> <p class="control"> <input class="input" type="text" placeholder="Full Name" onkeyup="{onFullName}" riot-value="{profile.Name}"> </p> <label class="label">E-mail</label> <p class="control"> <input class="input" type="text" placeholder="E-mail" onkeyup="{onEmail}" riot-value="{profile.Email}"> </p> <button class="button is-primary is-medium" onclick="{save}">Save</button> </div> </section> <section class="section"> <h3 class="title">Memberships</h3> <hr> <p> You are currently subscribed to the basic plan. You can upgrade your subscription below. </p> <div class="columns"> <div class="column"> <div class="box"> <article class="media"> <div class="media-content"> <h3 class="title">Basic Plan</h3> <hr> <ul> <li>5 journals</li> <li>100 posts per journal</li> </ul> <p class="has-text-centered"> <h3 class="title has-text-centered">Free</h3> </p> <p class="hero-buttons"> <button class="button is-large is-primary">Free</button> </p> </div> </article> </div> </div> <div class="column"> <div class="box"> <article class="media"> <div class="media-content"> <h3 class="title">Full Plan</h3> <hr> <ul> <li>Unlimited journals</li> <li>Unlimited posts per journal</li> </ul> <p class="has-text-centered"> <h3 class="title has-text-centered">100 dkk/year</h3> </p> <p class="hero-buttons"> <button class="button is-large is-primary" onclick="{upgrade}">Upgrade</button> </p> </div> </article> </div> </div> </div> </section> <div class="modal {is-active : showmodal}"> <div class="modal-background"></div> <div class="modal-card"> <form action="/charge" method="post" id="payment-form"> <header class="modal-card-head"> <p class="modal-card-title">Upgrade to Paid plan</p> <button class="delete" onclick="{closemodal}"></button> </header> <section class="modal-card-body"> <p class="control"> <label for="email-element" class="label"> E-mail </label> <div id="email-element"> <input class="input" placeholder="E-mail" type="text" riot-value="{profile.Email}" onkeyup="{onemail}"> </div> <div id="email-errors">{emailerr}</div> </p> <p class="control"> <label for="card-element" class="label"> Credit or debit card </label> <div id="card-element"> </div> <div id="card-errors">{carderr}</div> </p> </section> <footer class="modal-card-foot"> <a class="button is-success" onclick="{performUpgrade}">Pay 100 dkk</a> <a class="button" onclick="{closemodal}">Cancel</a> </footer> </form> </div> </div> </div>', '', '', function(opts) {
 var self = this;
+self.showmodal = false;
+self.stripe = null;
+self.card = null;
+self.carderr = null;
+
 self.profile = {};
 
 self.on('mount', function() {
+
+	self.stripe = Stripe('pk_test_4XUbWX7yh2AAiIsDCktzIRPE');
+	var elements = self.stripe.elements();
+
+	var classes = {
+		base: "stripe-cardelem"
+	};
+	var style = {
+		base: {
+			lineHeight: "2"
+		}
+	};
+
+	self.card = elements.create('card', {style: style, classes: classes});
+	self.card.addEventListener('change', function(event) {
+		if(event.error) {
+			self.carderr = event.error.message;
+		} else {
+			self.carderr = null;
+		}
+		self.update();
+	});
+
+	self.card.mount('#card-element');
 
 	_aj.get("/api/profile", function(data, err) {
 		if ( err != null ) {
 			return;
 		}
 		self.profile = data;
+		self.update();
 	});
 });
 
+self.save = function(e) {
+	_aj.post("/api/profile", self.profile, function(data, err) {
+		if ( err != null ) {
+
+			return;
+		}
+		self.profile = data;
+		self.update();
+	});
+}
+
+self.onFullName = function(e) {
+	self.profile.Name = e.target.value;
+	self.update();
+};
+self.onEmail = function(e) {
+	self.profile.Email = e.target.value;
+};
+
+self.upgrade = function(e) {
+	self.showmodal = true;
+	self.update();
+}
+self.closemodal = function(e) {
+	e.preventDefault();
+	self.showmodal = false;
+	self.update();
+}
+
+self.performUpgrade = function(e) {
+	e.preventDefault();
+
+	self.stripe.createToken(self.card).then(function(result) {
+		if (result.error) {
+
+			self.carderr = result.error.message;
+			self.update();
+		} else {
+
+			var args = {Profile: self.profile, Source: result.token, Plan: 2};
+			_aj.post("/api/profile/signup", args, function(data, err) {
+				if( err != null ) {
+					self.carderr = err;
+					self.update();
+
+					return;
+				}
+				console.log(data);
+			});
+		}
+	});
+}
+
+});
+
+riot.tag2('page-profileupdate', '<div> </div>', '', '', function(opts) {
 });
 
 riot.tag2('page-viewjournal', '<section class="section"> <div class="container"> <section class="section"> <h3 class="title">Journal: {journal.Title}</h3> <p> {journal.Description} </p> <a class="button" href="#/journals/{opts.journalid}/view">View Journal</a> </section> <section class="section"> <button class="button" onclick="{newentry}">New Entry</button> </section> <section class="section"> <div class="box" each="{entry in journal.Entries}" onclick="{onentry}" style="cursor:pointer;"> <article class="media"> <div class="media-content"> <div class="content"> <p> <strong>{entry.Title}</strong> <small>@jzs</small> <small>31m</small> <br> <pre>{entry.Content.substring(0, 200)}...</pre> <br> <span each="{tag in parent.Tags}">{tag}</span> </p> </div> <nav class="level"> <div class="level-left"> <a class="level-item"> <span class="icon is-small"><i class="fa fa-reply"></i></span> </a> <a class="level-item"> <span class="icon is-small"><i class="fa fa-retweet"></i></span> </a> <a class="level-item"> <span class="icon is-small"><i class="fa fa-heart"></i></span> </a> </div> </nav> </div> </article> </div> </section> </div> </section>', '', '', function(opts) {
