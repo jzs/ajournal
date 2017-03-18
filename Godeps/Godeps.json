@@ -1,0 +1,50 @@
+{
+	"ImportPath": "bitbucket.org/sketchground/ajournal",
+	"GoVersion": "go1.8",
+	"GodepVersion": "v79",
+	"Deps": [
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Comment": "v1.3.0-5-g599cba5",
+			"Rev": "599cba5e7b6137d46ddf58fb1765f5d928e69604"
+		},
+		{
+			"ImportPath": "github.com/jmoiron/sqlx",
+			"Comment": "sqlx-v1.1-117-gf407684",
+			"Rev": "f4076845477b10ac2453a16377a8383467aafe72"
+		},
+		{
+			"ImportPath": "github.com/jmoiron/sqlx/reflectx",
+			"Comment": "sqlx-v1.1-117-gf407684",
+			"Rev": "f4076845477b10ac2453a16377a8383467aafe72"
+		},
+		{
+			"ImportPath": "github.com/lib/pq",
+			"Comment": "go1.0-cutoff-151-gba5d4f7",
+			"Rev": "ba5d4f7a35561e22fbdf7a39aa0070f4d460cfc0"
+		},
+		{
+			"ImportPath": "github.com/lib/pq/oid",
+			"Comment": "go1.0-cutoff-151-gba5d4f7",
+			"Rev": "ba5d4f7a35561e22fbdf7a39aa0070f4d460cfc0"
+		},
+		{
+			"ImportPath": "github.com/satori/go.uuid",
+			"Comment": "v1.1.0-6-gb061729",
+			"Rev": "b061729afc07e77a8aa4fad0a2fd840958f1942a"
+		},
+		{
+			"ImportPath": "github.com/urfave/negroni",
+			"Comment": "v0.2.0-104-gc0db5fe",
+			"Rev": "c0db5feaa33826cd5117930c8f4ee5c0f565eec6"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/bcrypt",
+			"Rev": "728b753d0135da6801d45a38e6f43ff55779c5c2"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/blowfish",
+			"Rev": "728b753d0135da6801d45a38e6f43ff55779c5c2"
+		}
+	]
+}
