@@ -1,0 +1,32 @@
+# Supfile for ajournal
+---
+version: 0.4
+
+
+networks: #Groups of hosts
+  dev:
+    env:
+      AJBUILD: DEVEL
+    hosts:
+      - localhost
+  release:
+    env:
+      AJBUILD: RELEASE
+      GOOS: linux
+      GOARCH: amd64
+    hosts:
+      - localhost # TODO Replace with release host!
+
+commands:
+  clean:
+    desc: Clean dist folder
+    local: rm -rf dist
+
+  dist: # We always build on local machine
+    desc: Build a version that can be distributed
+    local: ./scripts/dist.sh 
+
+targets:
+  rebuild:
+    - clean
+    - dist
