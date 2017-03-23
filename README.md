@@ -32,6 +32,9 @@ To migrate the database, simply run `goose up` inside the root folder of the pro
 
 For packaging and deploying i use a tool called Sup [https://github.com/pressly/sup](https://github.com/pressly/sup) which makes it easy to deploy to multiple hosts etc. It is not strictly necessary and one could run the build scripts located in the scripts folder manually. Remember to set the correct environment variables for this.
 
+The frontend is using the riotjs [http://www.riotjs.com](http://www.riotjs.com) library to do the ui. The riot compiler needs to be installed in case you are making changes to any of the tag files in www/tags
+The riot compiler can be installed from npm `npm install riot -g`. Omit -g if you do not want to pollute your global npm install.
+
 
 ## Architecture
 TODO Here will be a description of how the code is organized and the methodology behind.
