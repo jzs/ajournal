@@ -49,9 +49,8 @@ route(function(collection, id, method, mid) {
 			// id == userid,
 			// method == journal
 			// 
-			if(method == "journal") {
-				// Present journal...
-			}
+			self.viewjournal = true;
+			self.journalid = id;
 			break;
 		case 'journals':
 			if(id == 'create') {

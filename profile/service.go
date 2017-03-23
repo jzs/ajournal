@@ -13,12 +13,13 @@ type Service interface {
 	Subscribe(ctx context.Context, sub *Subscription) error
 }
 
-func NewService(pr Repository) Service {
-	return &service{pr: pr}
+func NewService(pr Repository, sr SubscriptionRepository) Service {
+	return &service{pr: pr, sr: sr}
 }
 
 type service struct {
 	pr Repository
+	sr SubscriptionRepository
 }
 
 func (s *service) Profile(ctx context.Context) (*Profile, error) {
@@ -52,5 +53,9 @@ func (s *service) UpdateProfile(ctx context.Context, p *Profile) (*Profile, erro
 }
 
 func (s *service) Subscribe(ctx context.Context, sub *Subscription) error {
-	return errors.New("Not implemented")
+	_, err := s.sr.Create(ctx, sub)
+	if err != nil {
+		return err
+	}
+	return nil
 }

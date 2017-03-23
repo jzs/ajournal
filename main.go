@@ -1,12 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"bitbucket.org/sketchground/ajournal/journal"
 	"bitbucket.org/sketchground/ajournal/postgres"
 	"bitbucket.org/sketchground/ajournal/profile"
+	"bitbucket.org/sketchground/ajournal/services"
 	"bitbucket.org/sketchground/ajournal/user"
 	"bitbucket.org/sketchground/ajournal/utils/logger"
 
@@ -16,8 +19,35 @@ import (
 	"github.com/urfave/negroni"
 )
 
+var (
+	BuildVersionDevel   = "DEVEL"
+	BuildVersionStaging = "STAGING"
+	BuildVersionProd    = "PROD"
+	// BuildVersion is overwritten from build script when deploying
+	BuildVersion = "next"
+	BuildType    = BuildVersionDevel
+	// BuildTime is overwritten from build script when deploying
+	BuildTime = "2015-08-19"
+)
+
 func main() {
-	db, err := sqlx.Connect("postgres", "user=jzs dbname=journal sslmode=disable")
+
+	stripeKey := os.Getenv("AJ_STRIPE_SK")
+	if stripeKey == "" {
+		fmt.Println("Stripe key missing!")
+		return
+	}
+
+	dbuser := os.Getenv("AJ_DB_USER")
+	if dbuser == "" {
+		dbuser = "jzs"
+	}
+	dbname := os.Getenv("AJ_DB_NAME")
+	if dbname == "" {
+		dbname = "journal"
+	}
+
+	db, err := sqlx.Connect("postgres", fmt.Sprintf("user=%v dbname=%v sslmode=disable", dbuser, dbname))
 	if err != nil {
 		log.Println("Could not connect to database!")
 		log.Fatalln(err)
@@ -35,11 +65,28 @@ func main() {
 	user.SetupHandler(apirouter, us)
 
 	pr := postgres.NewProfileRepo(db)
-	ps := profile.NewService(pr)
+	sr := services.NewStripeSubscriptionRepo(stripeKey, db)
+	ps := profile.NewService(pr, sr)
 	profile.SetupHandler(apirouter, ps)
 
 	// Setup api router
 	baserouter.PathPrefix("/api").Handler(negroni.New(negroni.Wrap(apirouter)))
+
+	// Setup helper routes that redirects to public journal page
+	baserouter.HandleFunc("/journal/{journalid}", func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		id := vars["journalid"]
+
+		http.Redirect(w, r, fmt.Sprintf("/#/view/%v", id), http.StatusFound)
+	})
+	// Setup helper routes that redirects to public user page with his/her journals
+	baserouter.HandleFunc("/user/{id}", func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		id := vars["id"]
+
+		http.Redirect(w, r, fmt.Sprintf("/#/viewuser/%v", id), http.StatusFound)
+	})
+
 	// Setup static file handler
 	baserouter.PathPrefix("/").Handler(http.FileServer(http.Dir("www")))
 
