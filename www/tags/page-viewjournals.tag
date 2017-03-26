@@ -1,0 +1,2 @@
+<page-viewjournals>
+</page-viewjournals>

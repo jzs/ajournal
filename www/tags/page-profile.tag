@@ -82,13 +82,17 @@
 						<label for="email-element" class="label">
 							E-mail
 						</label>
-						<div id="email-element">
-							<input class="input" placeholder="E-mail" type="text" value={profile.Email} onkeyup={onemail}/>
-							<!-- a Stripe Element will be inserted here. -->
-						</div>
+						<input class="input" placeholder="E-mail" type="text" value={profile.Email} onkeyup={onemail}/>
 
 						<!-- Used to display Element errors -->
 						<div id="email-errors">{emailerr}</div>
+						</p>
+
+						<p class="control">
+						<label class="label">
+							Name on debit or credit card
+						</label>
+						<input class="input" name="cardholder-name" placeholder="Name on debit or credit card" type="text" />
 						</p>
 
 						<p class="control">
@@ -106,7 +110,7 @@
 
 					</section>
 					<footer class="modal-card-foot">
-						<a class="button is-success" onclick={performUpgrade}>Pay 100 dkk</a>
+						<a class="button is-success {is-loading: upgrading}" onclick={performUpgrade}>Pay 100 dkk</a>
 						<a class="button" onclick={closemodal}>Cancel</a>
 					</footer>
 
@@ -193,8 +197,11 @@ self.closemodal = function(e) {
 
 self.performUpgrade = function(e) {
 	e.preventDefault();
+	self.upgrading = true;
+	self.update();
 	// TODO disable submit button
 	self.stripe.createToken(self.card).then(function(result) {
+		self.upgrading = false;
 		if (result.error) {
 			// Inform the user if there was an error
 			self.carderr = result.error.message;
@@ -202,7 +209,7 @@ self.performUpgrade = function(e) {
 		} else {
 			// Send the token to your server
 			// stripeTokenHandler(result.token);
-			var args = {Profile: self.profile, Source: result.token, Plan: 2};
+			var args = {Profile: self.profile, Token: result.token.id, Plan: 2};
 			_aj.post("/api/profile/signup", args, function(data, err) {
 				if( err != null ) {
 					self.carderr = err;

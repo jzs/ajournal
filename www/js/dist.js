@@ -1,4 +1,4 @@
-riot.tag2('content', '<page-dash if="{loggedin && dash}"></page-dash> <page-login if="{loggedout}"></page-login> <page-journal-create if="{loggedin && journalcreate}"></page-journal-create> <page-journal if="{loggedin && journal}" journalid="{journalid}"></page-journal> <page-entryeditor if="{loggedin && entry}" journalid="{journalid}" entryid="{entryid}"></page-entryeditor> <page-viewjournal if="{viewjournal}" journalid="{journalid}"></page-viewjournal> <page-viewjournals if="{viewjournals}" userid="{userid}"></page-viewjournals> <page-profile if="{profile}" userid="{userid}"></page-profile>', '', '', function(opts) {
+riot.tag2('content', '<page-dash if="{loggedin && dash}"></page-dash> <page-login if="{loggedout}"></page-login> <page-journal-create if="{loggedin && journalcreate}"></page-journal-create> <page-journal if="{loggedin && journal}" journalid="{journalid}"></page-journal> <page-entryeditor if="{loggedin && entry}" journalid="{journalid}" entryid="{entryid}"></page-entryeditor> <page-viewjournalentry if="{viewjournalentry}" journalid="{journalid}" entryid="{entryid}"></page-viewjournalentry> <page-viewjournal if="{viewjournal}" journalid="{journalid}"></page-viewjournal> <page-viewjournals if="{viewjournals}" userid="{userid}"></page-viewjournals> <page-profile if="{profile}" userid="{userid}"></page-profile>', '', '', function(opts) {
 var self = this;
 self.loggedin = false;
 self.loggedout = !self.loggedin;
@@ -7,6 +7,7 @@ self.dash = false;
 self.entry = false
 self.viewjournals = false;
 self.viewjournal = false;
+self.viewjournalentry = false;
 self.profile = false;
 
 RiotControl.on('logout', function() {
@@ -29,6 +30,7 @@ self.clear = function() {
 	self.entry = false
 	self.viewjournals = false;
 	self.viewjournal = false;
+	self.viewjournalentry = false;
 	self.profile = false;
 }
 
@@ -36,6 +38,11 @@ route(function(collection, id, method, mid) {
 	self.clear()
 	switch(collection) {
 		case 'view':
+			if(method == 'entries') {
+				self.entryid = mid;
+				self.viewjournalentry = true;
+				break;
+			}
 
 			self.viewjournal = true;
 			self.journalid = id;
@@ -538,7 +545,7 @@ self.register = function(e) {
 
 });
 
-riot.tag2('page-profile', '<div class="container"> <section class="section"> <h3 class="title">Hi {profile.Name}</h3> <div class="container"> <label class="label">Full Name</label> <p class="control"> <input class="input" type="text" placeholder="Full Name" onkeyup="{onFullName}" riot-value="{profile.Name}"> </p> <label class="label">E-mail</label> <p class="control"> <input class="input" type="text" placeholder="E-mail" onkeyup="{onEmail}" riot-value="{profile.Email}"> </p> <button class="button is-primary is-medium" onclick="{save}">Save</button> </div> </section> <section class="section"> <h3 class="title">Memberships</h3> <hr> <p> You are currently subscribed to the basic plan. You can upgrade your subscription below. </p> <div class="columns"> <div class="column"> <div class="box"> <article class="media"> <div class="media-content"> <h3 class="title">Basic Plan</h3> <hr> <ul> <li>5 journals</li> <li>100 posts per journal</li> </ul> <p class="has-text-centered"> <h3 class="title has-text-centered">Free</h3> </p> <p class="hero-buttons"> <button class="button is-large is-primary">Free</button> </p> </div> </article> </div> </div> <div class="column"> <div class="box"> <article class="media"> <div class="media-content"> <h3 class="title">Full Plan</h3> <hr> <ul> <li>Unlimited journals</li> <li>Unlimited posts per journal</li> </ul> <p class="has-text-centered"> <h3 class="title has-text-centered">100 dkk/year</h3> </p> <p class="hero-buttons"> <button class="button is-large is-primary" onclick="{upgrade}">Upgrade</button> </p> </div> </article> </div> </div> </div> </section> <div class="modal {is-active : showmodal}"> <div class="modal-background"></div> <div class="modal-card"> <form action="/charge" method="post" id="payment-form"> <header class="modal-card-head"> <p class="modal-card-title">Upgrade to Paid plan</p> <button class="delete" onclick="{closemodal}"></button> </header> <section class="modal-card-body"> <p class="control"> <label for="email-element" class="label"> E-mail </label> <div id="email-element"> <input class="input" placeholder="E-mail" type="text" riot-value="{profile.Email}" onkeyup="{onemail}"> </div> <div id="email-errors">{emailerr}</div> </p> <p class="control"> <label for="card-element" class="label"> Credit or debit card </label> <div id="card-element"> </div> <div id="card-errors">{carderr}</div> </p> </section> <footer class="modal-card-foot"> <a class="button is-success" onclick="{performUpgrade}">Pay 100 dkk</a> <a class="button" onclick="{closemodal}">Cancel</a> </footer> </form> </div> </div> </div>', '', '', function(opts) {
+riot.tag2('page-profile', '<div class="container"> <section class="section"> <h3 class="title">Hi {profile.Name}</h3> <div class="container"> <label class="label">Full Name</label> <p class="control"> <input class="input" type="text" placeholder="Full Name" onkeyup="{onFullName}" riot-value="{profile.Name}"> </p> <label class="label">E-mail</label> <p class="control"> <input class="input" type="text" placeholder="E-mail" onkeyup="{onEmail}" riot-value="{profile.Email}"> </p> <button class="button is-primary is-medium" onclick="{save}">Save</button> </div> </section> <section class="section"> <h3 class="title">Memberships</h3> <hr> <p> You are currently subscribed to the basic plan. You can upgrade your subscription below. </p> <div class="columns"> <div class="column"> <div class="box"> <article class="media"> <div class="media-content"> <h3 class="title">Basic Plan</h3> <hr> <ul> <li>5 journals</li> <li>100 posts per journal</li> </ul> <p class="has-text-centered"> <h3 class="title has-text-centered">Free</h3> </p> <p class="hero-buttons"> <button class="button is-large is-primary">Free</button> </p> </div> </article> </div> </div> <div class="column"> <div class="box"> <article class="media"> <div class="media-content"> <h3 class="title">Full Plan</h3> <hr> <ul> <li>Unlimited journals</li> <li>Unlimited posts per journal</li> </ul> <p class="has-text-centered"> <h3 class="title has-text-centered">100 dkk/year</h3> </p> <p class="hero-buttons"> <button class="button is-large is-primary" onclick="{upgrade}">Upgrade</button> </p> </div> </article> </div> </div> </div> </section> <div class="modal {is-active : showmodal}"> <div class="modal-background"></div> <div class="modal-card"> <form action="/charge" method="post" id="payment-form"> <header class="modal-card-head"> <p class="modal-card-title">Upgrade to Paid plan</p> <button class="delete" onclick="{closemodal}"></button> </header> <section class="modal-card-body"> <p class="control"> <label for="email-element" class="label"> E-mail </label> <input class="input" placeholder="E-mail" type="text" riot-value="{profile.Email}" onkeyup="{onemail}"> <div id="email-errors">{emailerr}</div> </p> <p class="control"> <label class="label"> Name on debit or credit card </label> <input class="input" name="cardholder-name" placeholder="Name on debit or credit card" type="text"> </p> <p class="control"> <label for="card-element" class="label"> Credit or debit card </label> <div id="card-element"> </div> <div id="card-errors">{carderr}</div> </p> </section> <footer class="modal-card-foot"> <a class="button is-success {is-loading: upgrading}" onclick="{performUpgrade}">Pay 100 dkk</a> <a class="button" onclick="{closemodal}">Cancel</a> </footer> </form> </div> </div> </div>', '', '', function(opts) {
 var self = this;
 self.showmodal = false;
 self.stripe = null;
@@ -613,15 +620,18 @@ self.closemodal = function(e) {
 
 self.performUpgrade = function(e) {
 	e.preventDefault();
+	self.upgrading = true;
+	self.update();
 
 	self.stripe.createToken(self.card).then(function(result) {
+		self.upgrading = false;
 		if (result.error) {
 
 			self.carderr = result.error.message;
 			self.update();
 		} else {
 
-			var args = {Profile: self.profile, Source: result.token, Plan: 2};
+			var args = {Profile: self.profile, Token: result.token.id, Plan: 2};
 			_aj.post("/api/profile/signup", args, function(data, err) {
 				if( err != null ) {
 					self.carderr = err;
@@ -655,8 +665,39 @@ self.on('mount', function() {
 		self.update();
 	});
 });
+
+self.onentry = function(e) {
+	route("/view/"+opts.journalid+"/entries/"+e.item.entry.ID);
+};
+
 });
 
+riot.tag2('page-viewjournalentry', '<div class="section"> <div class="container"> <div class="columns"> <div class="column"> <h1 class="title">{entry.Title}</h1> <h2 class="subtitle">{entry.Date}</h2> <hr> <div class="content"> {entry.HtmlContent} </div> </div> </div> </div> </div>', '', '', function(opts) {
+var self = this;
+self.entry = {};
+
+self.on('mount', function() {
+	self.entry = {
+		JournalID: parseInt(opts.journalid),
+		Date: "",
+		Title: "",
+		Content: "",
+		Tags: []
+	};
+
+	_aj.get("/api/journals/"+self.entry.JournalID+"/entries/"+opts.entryid, function(data, err) {
+
+		if(err != null) {
+
+			return;
+		}
+		self.entry = data;
+		self.update();
+	});
+
+});
+
+});
 
 riot.tag2('page-viewjournals', '', '', '', function(opts) {
 });

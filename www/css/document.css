@@ -1,3 +1,33 @@
 .markdown h1 {
 	color: #f00;
 }
+
+.markdown p {
+	font-size: 1.1rem;
+	color: #4a4a4a;
+	margin-top: 1em;
+}
+
+.markdown h1 {
+	/* TODO: Use bulma less and let markdown h1 inherit from bulma title! */
+	color: #363636;
+	font-size: 2rem;
+	font-weight: 300;
+	line-height: 1.125;
+}
+
+.markdown h2, .markdown h3, .markdown h4, .markdown h5 {
+	/* TODO: Use bulma less and let markdown h2 inherit from bulma subtitle! */
+	color: #4a4a4a;
+	font-size: 1.25rem;
+	font-weight: 300;
+	line-height: 1.25;
+}
+
+.markdown ul {
+	list-style: disc outside;
+	margin-left: 2em;
+	margin-right: 2em;
+	margin-top: 1em;
+}
+
