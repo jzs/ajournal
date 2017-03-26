@@ -34,7 +34,7 @@ func main() {
 
 	stripeKey := os.Getenv("AJ_STRIPE_SK")
 	if stripeKey == "" {
-		fmt.Println("Stripe key missing!")
+		fmt.Println("Environment variable AJ_STRIPE_SK not set!\nRemember to set your stripe private key")
 		return
 	}
 
