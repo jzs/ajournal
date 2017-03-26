@@ -52,6 +52,14 @@ func (s *service) UpdateProfile(ctx context.Context, p *Profile) (*Profile, erro
 	return s.pr.Update(ctx, p)
 }
 
+type SubscriptionArgs struct {
+	CardName string
+	Number   string
+	Month    string
+	Year     string
+	CVC      string
+}
+
 func (s *service) Subscribe(ctx context.Context, sub *Subscription) error {
 	_, err := s.sr.Create(ctx, sub)
 	if err != nil {

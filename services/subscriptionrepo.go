@@ -8,8 +8,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	stripe "github.com/stripe/stripe-go"
 	"github.com/stripe/stripe-go/client"
-	"github.com/stripe/stripe-go/customer"
-	"github.com/stripe/stripe-go/sub"
 )
 
 type subRepo struct {
@@ -21,43 +19,40 @@ func NewStripeSubscriptionRepo(skkey string, db *sqlx.DB) profile.SubscriptionRe
 	repo := &subRepo{db: db}
 	repo.client = &client.API{}
 	repo.client.Init(skkey, nil)
-	return &subRepo{}
+	return repo
 }
 
 func (sr *subRepo) Create(ctx context.Context, s *profile.Subscription) (*profile.Subscription, error) {
 
 	params := &stripe.CustomerParams{
-		Balance: -123,
-		Desc:    "Stripe Developer",
-		Email:   "gostripe@stripe.com",
+		Desc:  s.Profile.Name,
+		Email: s.Profile.Email,
 	}
 	params.SetSource(&stripe.CardParams{
-		Name:   "Go Stripe",
-		Number: "378282246310005",
-		Month:  "06",
-		Year:   "15",
+		Token: s.Token,
 	})
 
 	// Create customer!
-	cust, err := customer.New(params)
+	cust, err := sr.client.Customers.New(params)
 	if err != nil {
 		logger.Error(ctx, err)
 		return nil, err
 	}
 
+	// TODO Consider if plan and trial period should be specified elsewhere or as args to program
 	subparams := &stripe.SubParams{
 		Customer:    cust.ID,
-		Plan:        "basic-monthly",
+		Plan:        "ajournal_basic",
 		TrialPeriod: 14,
 	}
-	subscription, err := sub.New(subparams)
+	subscription, err := sr.client.Subs.New(subparams)
 	if err != nil {
 		logger.Error(ctx, err)
 		return nil, err
 	}
 
 	// Store subscription info in db.
-	_, err = sr.db.Exec("INSERT INTO Subscription(userid, subscriptionid) VALUES($1, $2)", s.Profile.ID, subscription.ID)
+	_, err = sr.db.Exec("INSERT INTO Subscription(userid, stripecustomerid, stripesubscriptionid) VALUES($1, $2, $3)", s.Profile.ID, cust.ID, subscription.ID)
 	if err != nil {
 		logger.Error(ctx, err)
 		return nil, err

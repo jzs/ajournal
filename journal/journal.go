@@ -36,6 +36,7 @@ type Entry struct {
 	Date        time.Time
 	Title       string    // The title of the entry in the journal
 	Content     string    // Content in markdown format
+	HtmlContent string    // A rendered html version of the markdown content
 	Tags        []string  // Tags of entry
 	Created     time.Time // The creation time of the entry
 	Published   time.Time // The publish time of the entry

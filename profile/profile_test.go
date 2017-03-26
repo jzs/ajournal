@@ -10,7 +10,8 @@ import (
 
 func TestService(t *testing.T) {
 	pr := NewInmemRepo()
-	ps := profile.NewService(pr)
+	sr := NewInmemSubRepo()
+	ps := profile.NewService(pr, sr)
 
 	u := &user.User{
 		ID:       201,
@@ -88,4 +89,17 @@ func (pr *profileRepo) FindByID(ctx context.Context, id int64) (*profile.Profile
 		}
 	}
 	return nil, profile.ErrProfileNotExist
+}
+
+type subRepo struct {
+	subs map[string]*profile.Subscription
+}
+
+func NewInmemSubRepo() profile.SubscriptionRepository {
+	return &subRepo{subs: map[string]*profile.Subscription{}}
+}
+
+func (sr *subRepo) Create(ctx context.Context, s *profile.Subscription) (*profile.Subscription, error) {
+	sr.subs[s.Token] = s
+	return s, nil
 }

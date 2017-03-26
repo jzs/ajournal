@@ -8,7 +8,14 @@ CREATE TABLE Profile(
 	Email text NOT NULL
 );
 
+CREATE TABLE Subscription(
+	UserID bigint references _User(id) NOT NULL UNIQUE,
+	StripeCustomerID text NOT NULL,
+	StripeSubscriptionID text
+);
+
 -- +goose Down
 -- SQL section 'Down' is executed when this migration is rolled back
 
 DROP TABLE Profile;
+DROP TABLE Subscription;

@@ -75,6 +75,7 @@ func TestService(t *testing.T) {
 	}
 	entry.ID = 0
 	entry.JournalID = 1
+	entry.Content = "#Hello World"
 	ntry, err = js.CreateEntry(ctx, entry)
 	if err != nil {
 		t.Fatalf("Expected sucessful creation of entry , got: %v", err.Error())
@@ -89,6 +90,12 @@ func TestService(t *testing.T) {
 	}
 	if ntry.Title != entry.Title {
 		t.Fatalf("Expected title %v, got: %v", entry.Title, ntry.Title)
+	}
+	if ntry.Content == "" {
+		t.Fatalf("Expected content: %v, got: %v", entry.Content, ntry.Content)
+	}
+	if entry.HtmlContent == "" {
+		t.Fatalf("Expected Html rendered content, got empty string")
 	}
 
 	// Test if we can update the entry

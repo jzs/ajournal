@@ -49,7 +49,7 @@ type Profile struct {
 }
 
 type Subscription struct {
-	Source  map[string]interface{}
+	Token   string
 	Profile *Profile
 	Plan    Plan
 }

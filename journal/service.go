@@ -179,5 +179,8 @@ func (s *service) Entry(ctx context.Context, id int64) (*Entry, error) {
 		return nil, ErrEntryNotExist
 	}
 
+	// Render content
+	// TODO: Render html using blackfriday
+
 	return entry, nil
 }
