@@ -6,6 +6,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/russross/blackfriday"
+
 	"bitbucket.org/sketchground/ajournal/user"
 )
 
@@ -52,7 +54,6 @@ func (s *service) MyJournals(ctx context.Context) ([]*Journal, error) {
 		return nil, errors.New("Cannot fetch journals without a user context")
 	}
 
-	// TODO: Use userid when looking up journals!
 	journals, err := s.repo.FindAll(ctx, usr.ID)
 	if err != nil {
 		return nil, err
@@ -70,16 +71,17 @@ func (s *service) Journal(ctx context.Context, id int64) (*Journal, error) {
 	if err != nil {
 		return nil, err
 	}
-	entries, err := s.repo.FindAllEntries(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	journal.Entries = entries
 
 	// If it's another users journal and it is not public, then do not return it.
 	if journal.UserID != usr.ID && journal.Public == false {
 		return nil, ErrJournalNotExist
 	}
+
+	entries, err := s.repo.FindAllEntries(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	journal.Entries = entries
 
 	return journal, nil
 }
@@ -180,7 +182,7 @@ func (s *service) Entry(ctx context.Context, id int64) (*Entry, error) {
 	}
 
 	// Render content
-	// TODO: Render html using blackfriday
+	entry.HtmlContent = string(blackfriday.MarkdownCommon([]byte(entry.Content)))
 
 	return entry, nil
 }

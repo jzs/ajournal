@@ -672,7 +672,7 @@ self.onentry = function(e) {
 
 });
 
-riot.tag2('page-viewjournalentry', '<div class="section"> <div class="container"> <div class="columns"> <div class="column"> <h1 class="title">{entry.Title}</h1> <h2 class="subtitle">{entry.Date}</h2> <hr> <div class="content"> {entry.HtmlContent} </div> </div> </div> </div> </div>', '', '', function(opts) {
+riot.tag2('page-viewjournalentry', '<div class="section"> <div class="container"> <div class="columns"> <div class="column"> <h1 class="title">{entry.Title}</h1> <h2 class="subtitle">{entry.Date}</h2> <hr> <div class="content"> <raw class="markdown" content="{entry.HtmlContent}"></raw> </div> </div> </div> </div> </div>', '', '', function(opts) {
 var self = this;
 self.entry = {};
 

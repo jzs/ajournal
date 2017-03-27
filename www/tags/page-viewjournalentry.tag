@@ -7,7 +7,7 @@
 					<h2 class="subtitle">{entry.Date}</h2>
 					<hr />
 					<div class="content">
-					{entry.HtmlContent}
+						<raw class="markdown" content={entry.HtmlContent}></raw>
 					</div>
 				</div>
 			</div>
