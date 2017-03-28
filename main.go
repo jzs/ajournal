@@ -91,6 +91,7 @@ func main() {
 	baserouter.PathPrefix("/").Handler(http.FileServer(http.Dir("www")))
 
 	base := negroni.New(negroni.NewRecovery(), logger.NewLogger())
+
 	// Setup middleware that injects currently logged in user into the stack.
 	base.Use(negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		nr := user.ApplyUserToRequest(r, us)
@@ -98,7 +99,6 @@ func main() {
 	}))
 
 	base.UseHandler(baserouter)
-	// TODO Hook up base with a middleware that sets current user in context.
 
 	err = http.ListenAndServe(":8080", base)
 	if err != nil {

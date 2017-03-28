@@ -49,19 +49,15 @@ func SetupHandler(r *mux.Router, us Service) {
 
 	// Create user
 	r.Path("/users").Methods("POST").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Parse User from request!
 		u := &User{}
 		dec := json.NewDecoder(r.Body)
 		err := dec.Decode(u)
 		if err != nil {
-			// bad args...
-			panic("bad args")
+			utils.JSONResp(w, nil, utils.NewErrBadArgs())
+			return
 		}
 		err = us.Register(r.Context(), u)
-		err = utils.JSONResp(w, nil, err)
-		if err != nil {
-			// TODO Log this error or panic
-		}
+		utils.JSONResp(w, nil, err)
 	})
 
 	// Log in
@@ -86,10 +82,7 @@ func SetupHandler(r *mux.Router, us Service) {
 		}
 		http.SetCookie(w, cookie)
 
-		err = utils.JSONResp(w, token, err)
-		if err != nil {
-			// TODO: Handle Error.
-		}
+		utils.JSONResp(w, token, err)
 	})
 
 	// Log out
@@ -97,7 +90,7 @@ func SetupHandler(r *mux.Router, us Service) {
 		cookie, err := r.Cookie(cookieName)
 		if err != nil {
 			//TODO: Try to get the cookie from elsewhere
-			err = utils.JSONResp(w, nil, nil) // nil, nil since we ignore the error and just "log out" the user.
+			utils.JSONResp(w, nil, nil) // nil, nil since we ignore the error and just "log out" the user.
 			return
 		}
 		us.Logout(r.Context(), cookie.Value)
@@ -109,5 +102,4 @@ func SetupHandler(r *mux.Router, us Service) {
 		http.SetCookie(w, cookie)
 		utils.JSONResp(w, nil, nil)
 	})
-
 }

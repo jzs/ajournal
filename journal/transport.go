@@ -22,18 +22,12 @@ func SetupHandler(router *mux.Router, js Service) {
 			return
 		}
 		journals, err := js.Journals(r.Context(), id)
-		err = utils.JSONResp(w, journals, err)
-		if err != nil {
-			// TODO Handle error...
-		}
+		utils.JSONResp(w, journals, err)
 	})
 
 	router.Path("/journals").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		journals, err := js.MyJournals(r.Context())
-		err = utils.JSONResp(w, journals, err)
-		if err != nil {
-			// TODO Log this error or panic
-		}
+		utils.JSONResp(w, journals, err)
 	})
 
 	router.Path("/journals/{id}").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -120,9 +114,6 @@ func SetupHandler(router *mux.Router, js Service) {
 		// Call service method for data.
 		journal, err = js.Create(r.Context(), journal)
 		// Output response in proper format.
-		err = utils.JSONResp(w, journal, err)
-		if err != nil {
-			// TODO Log this error or panic
-		}
+		utils.JSONResp(w, journal, err)
 	})
 }

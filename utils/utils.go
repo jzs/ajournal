@@ -5,8 +5,16 @@ import (
 	"net/http"
 )
 
+type ErrBadArgs struct {
+	error
+}
+
+func NewErrBadArgs() error {
+	return &ErrBadArgs{}
+}
+
 // JSONResp formats responses in json
-func JSONResp(w http.ResponseWriter, data interface{}, err error) error {
+func JSONResp(w http.ResponseWriter, data interface{}, err error) {
 	w.Header().Set("content-type", "application/json")
 	enc := json.NewEncoder(w)
 	if err != nil {
@@ -17,10 +25,9 @@ func JSONResp(w http.ResponseWriter, data interface{}, err error) error {
 		}
 		err = enc.Encode(resp)
 		if err != nil {
-			// Log this error or panic!
-			return err
+			panic(err)
 		}
-		return nil
+		return
 	}
 
 	resp := jsonresp{
@@ -29,9 +36,9 @@ func JSONResp(w http.ResponseWriter, data interface{}, err error) error {
 	}
 	err = enc.Encode(resp)
 	if err != nil {
-		return err
+		panic(err)
 	}
-	return nil
+	return
 }
 
 type jsonresp struct {

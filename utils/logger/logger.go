@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"runtime/debug"
 	"time"
 
 	uuid "github.com/satori/go.uuid"
@@ -18,16 +19,16 @@ const (
 )
 
 func Error(ctx context.Context, err error) {
-	// TODO: Log stack trace.
 	uid := ctx.Value(loggercontext).(string)
 	log.Printf("[ERROR] \t | %v | %v", uid, err.Error())
+	debug.PrintStack()
 }
 
 func Errorf(ctx context.Context, format string, args ...interface{}) {
-	// TODO: Log stack trace.
 	uid := ctx.Value(loggercontext).(string)
 	str := fmt.Sprintf(format, args...)
 	log.Printf("[ERROR] \t | %v | %v", uid, str)
+	debug.PrintStack()
 }
 
 func Printf(ctx context.Context, format string, args ...interface{}) {
