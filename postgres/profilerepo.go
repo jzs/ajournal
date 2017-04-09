@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-type DBProfile struct {
+type dbProfile struct {
 	UserID int64
 	Name   string
 	Email  string
@@ -20,6 +20,7 @@ type profileRepo struct {
 	logger logger.Logger
 }
 
+// NewProfileRepo returns a new profile repository
 func NewProfileRepo(db *sqlx.DB, logger logger.Logger) profile.Repository {
 	return &profileRepo{db: db, logger: logger}
 }
@@ -43,7 +44,7 @@ func (pr *profileRepo) Update(ctx context.Context, p *profile.Profile) (*profile
 }
 
 func (pr *profileRepo) FindByID(ctx context.Context, id int64) (*profile.Profile, error) {
-	prof := &DBProfile{}
+	prof := &dbProfile{}
 	err := pr.db.Get(prof, "SELECT * FROM Profile WHERE UserID=$1", id)
 	if err != nil {
 		pr.logger.Error(ctx, err)
@@ -52,7 +53,7 @@ func (pr *profileRepo) FindByID(ctx context.Context, id int64) (*profile.Profile
 	return toProfile(prof), nil
 }
 
-func toProfile(p *DBProfile) *profile.Profile {
+func toProfile(p *dbProfile) *profile.Profile {
 	return &profile.Profile{
 		ID:    p.UserID,
 		Name:  p.Name,

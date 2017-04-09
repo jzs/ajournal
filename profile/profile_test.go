@@ -50,7 +50,7 @@ func TestService(t *testing.T) {
 	np.ID = 1
 	_, err = ps.UpdateProfile(ctx, np)
 	if err == nil {
-		t.Fatal("Expected an error updating other persons profile, got %v", np)
+		t.Fatalf("Expected an error updating other persons profile, got %v", np)
 	}
 
 	// Test Create subscription!

@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-type DBEntry struct {
+type dbEntry struct {
 	ID          int64
 	JournalID   int64
 	Date        time.Time
@@ -87,7 +87,7 @@ func (jr *journalRepo) UpdateEntry(ctx context.Context, entry *journal.Entry) er
 }
 
 func (jr *journalRepo) FindEntryByID(ctx context.Context, id int64) (*journal.Entry, error) {
-	e := &DBEntry{}
+	e := &dbEntry{}
 	err := jr.db.Get(e, "SELECT * FROM Entry WHERE ID=$1", id)
 	if err != nil {
 		jr.logger.Error(ctx, err)
@@ -100,7 +100,7 @@ func (jr *journalRepo) FindEntryByID(ctx context.Context, id int64) (*journal.En
 }
 
 func (jr *journalRepo) FindAllEntries(ctx context.Context, journalID int64) ([]*journal.Entry, error) {
-	entries := []*DBEntry{}
+	entries := []*dbEntry{}
 	err := jr.db.Select(&entries, "SELECT * FROM Entry WHERE journalid=$1 ORDER BY Created DESC", journalID)
 	if err != nil {
 		return nil, errors.Wrap(err, "JournalRepo:FindAllEntries failed")
@@ -112,7 +112,7 @@ func (jr *journalRepo) FindAllEntries(ctx context.Context, journalID int64) ([]*
 	return result, nil
 }
 
-func mapToEntry(e *DBEntry) *journal.Entry {
+func mapToEntry(e *dbEntry) *journal.Entry {
 	var date time.Time
 	if e.Published.Valid {
 		date = e.Published.Time

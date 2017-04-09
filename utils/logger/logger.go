@@ -19,6 +19,7 @@ const (
 	loggercontext = iota
 )
 
+// Logger interface describes functions available on a logger
 type Logger interface {
 	Error(ctx context.Context, err error)
 	Errorf(ctx context.Context, format string, args ...interface{})

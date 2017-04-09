@@ -102,7 +102,7 @@ func TestService(t *testing.T) {
 	if ntry.Content == "" {
 		t.Fatalf("Expected content: %v, got: %v", entry.Content, ntry.Content)
 	}
-	if entry.HtmlContent == "" {
+	if entry.HTMLContent == "" {
 		t.Fatalf("Expected Html rendered content, got empty string")
 	}
 
@@ -112,7 +112,7 @@ func TestService(t *testing.T) {
 		t.Fatalf("Could not update the entry, got: %v", err.Error())
 	}
 	if ntry.Title != entry.Title {
-		t.Fatal("Expected title: %v, got %v", entry.Title, ntry.Title)
+		t.Fatalf("Expected title: %v, got %v", entry.Title, ntry.Title)
 	}
 
 	// Test if we now return 1 journal

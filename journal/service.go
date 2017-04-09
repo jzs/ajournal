@@ -182,7 +182,7 @@ func (s *service) Entry(ctx context.Context, id int64) (*Entry, error) {
 	}
 
 	// Render content
-	entry.HtmlContent = string(blackfriday.MarkdownCommon([]byte(entry.Content)))
+	entry.HTMLContent = string(blackfriday.MarkdownCommon([]byte(entry.Content)))
 
 	return entry, nil
 }

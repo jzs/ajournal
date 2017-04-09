@@ -28,10 +28,8 @@ func (p Plan) String() string {
 	switch p {
 	case PlanFree:
 		return "Free"
-		break
 	case PlanPaid:
 		return "Paid"
-		break
 	}
 	panic("Plan set to an invalid value!")
 }
