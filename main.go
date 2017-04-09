@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"time"
 
 	"bitbucket.org/sketchground/ajournal/journal"
 	"bitbucket.org/sketchground/ajournal/postgres"
@@ -20,13 +22,20 @@ import (
 	"github.com/urfave/negroni"
 )
 
-var (
-	BuildVersionDevel   = "DEVEL"
+const (
+	// BuildVersionDevel for devel setups
+	BuildVersionDevel = "DEVEL"
+	// BuildVersionStaging for staging setups
 	BuildVersionStaging = "STAGING"
-	BuildVersionProd    = "PROD"
+	// BuildVersionProd for prod setups
+	BuildVersionProd = "PROD"
+)
+
+var (
 	// BuildVersion is overwritten from build script when deploying
 	BuildVersion = "next"
-	BuildType    = BuildVersionDevel
+	// BuildType which kind of build we're at
+	BuildType = BuildVersionDevel
 	// BuildTime is overwritten from build script when deploying
 	BuildTime = "2015-08-19"
 )
@@ -116,8 +125,25 @@ func main() {
 	base.UseHandler(baserouter)
 
 	alogger.Printf(context.Background(), "Listening on: %v", port)
-	err = http.ListenAndServe(port, base)
-	if err != nil {
-		panic(err)
-	}
+	server := &http.Server{Addr: port, Handler: base}
+
+	// subscribe to SIGINT signals
+	sigchan := make(chan os.Signal)
+	signal.Notify(sigchan, os.Interrupt)
+
+	go func() {
+		err = server.ListenAndServe()
+		if err != nil {
+			alogger.Error(context.Background(), err)
+		}
+	}()
+
+	<-sigchan // wait for SIGINT
+	log.Println("Shutting down server...")
+
+	// shut down gracefully, but wait no longer than 5 seconds before halting
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	server.Shutdown(ctx)
+
+	log.Println("Server gracefully stopped")
 }

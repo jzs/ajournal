@@ -43,7 +43,10 @@ func New(isDevel bool, dsn string) Logger {
 }
 
 func (l *logger) Error(ctx context.Context, err error) {
-	uid := ctx.Value(loggercontext).(string)
+	uid, ok := ctx.Value(loggercontext).(string)
+	if !ok {
+		uid = ""
+	}
 	log.Printf("[ERROR] | %v | %v", uid, err.Error())
 	debug.PrintStack()
 	if !l.isDevel {
