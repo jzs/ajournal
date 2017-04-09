@@ -4,6 +4,15 @@
 	"GodepVersion": "v79",
 	"Deps": [
 		{
+			"ImportPath": "github.com/certifi/gocertifi",
+			"Comment": "2017.01.23",
+			"Rev": "03be5e6bb9874570ea7fb0961225d193cbc374c5"
+		},
+		{
+			"ImportPath": "github.com/getsentry/raven-go",
+			"Rev": "b68337dbf03e7fbb53d9fd9b63fd09b28e8f13f7"
+		},
+		{
 			"ImportPath": "github.com/gorilla/mux",
 			"Comment": "v1.3.0-5-g599cba5",
 			"Rev": "599cba5e7b6137d46ddf58fb1765f5d928e69604"
@@ -27,6 +36,11 @@
 			"ImportPath": "github.com/lib/pq/oid",
 			"Comment": "go1.0-cutoff-151-gba5d4f7",
 			"Rev": "ba5d4f7a35561e22fbdf7a39aa0070f4d460cfc0"
+		},
+		{
+			"ImportPath": "github.com/pkg/errors",
+			"Comment": "v0.8.0-4-gff09b13",
+			"Rev": "ff09b135c25aae272398c51a07235b90a75aa4f0"
 		},
 		{
 			"ImportPath": "github.com/russross/blackfriday",
