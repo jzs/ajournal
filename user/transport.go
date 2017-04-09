@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"bitbucket.org/sketchground/ajournal/utils"
+	"bitbucket.org/sketchground/ajournal/utils/logger"
 
 	"github.com/gorilla/mux"
 )
@@ -45,7 +46,7 @@ func FromContext(ctx context.Context) *User {
 }
 
 // SetupHandler sets up the handler routes for the user service
-func SetupHandler(r *mux.Router, us Service) {
+func SetupHandler(r *mux.Router, us Service, l logger.Logger) {
 
 	// Create user
 	r.Path("/users").Methods("POST").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -53,11 +54,11 @@ func SetupHandler(r *mux.Router, us Service) {
 		dec := json.NewDecoder(r.Body)
 		err := dec.Decode(u)
 		if err != nil {
-			utils.JSONResp(w, nil, utils.NewErrBadArgs())
+			utils.JSONResp(r.Context(), l, w, nil, utils.NewErrBadArgs())
 			return
 		}
 		err = us.Register(r.Context(), u)
-		utils.JSONResp(w, nil, err)
+		utils.JSONResp(r.Context(), l, w, nil, err)
 	})
 
 	// Log in
@@ -68,7 +69,7 @@ func SetupHandler(r *mux.Router, us Service) {
 
 		token, err := us.Login(r.Context(), u.Username, u.Password)
 		if err != nil {
-			utils.JSONResp(w, token, err)
+			utils.JSONResp(r.Context(), l, w, token, err)
 			return
 		}
 
@@ -82,7 +83,7 @@ func SetupHandler(r *mux.Router, us Service) {
 		}
 		http.SetCookie(w, cookie)
 
-		utils.JSONResp(w, token, err)
+		utils.JSONResp(r.Context(), l, w, token, err)
 	})
 
 	// Log out
@@ -90,7 +91,7 @@ func SetupHandler(r *mux.Router, us Service) {
 		cookie, err := r.Cookie(cookieName)
 		if err != nil {
 			//TODO: Try to get the cookie from elsewhere
-			utils.JSONResp(w, nil, nil) // nil, nil since we ignore the error and just "log out" the user.
+			utils.JSONResp(r.Context(), l, w, nil, nil) // nil, nil since we ignore the error and just "log out" the user.
 			return
 		}
 		us.Logout(r.Context(), cookie.Value)
@@ -100,6 +101,6 @@ func SetupHandler(r *mux.Router, us Service) {
 		cookie.Name = cookieName
 		cookie.HttpOnly = true
 		http.SetCookie(w, cookie)
-		utils.JSONResp(w, nil, nil)
+		utils.JSONResp(r.Context(), l, w, nil, nil)
 	})
 }

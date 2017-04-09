@@ -2,6 +2,7 @@ package journal_test
 
 import (
 	"context"
+	"net/http"
 	"testing"
 
 	"bitbucket.org/sketchground/ajournal/journal"
@@ -10,11 +11,18 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type logger struct{}
+
+func (l *logger) Error(ctx context.Context, err error)                                    {}
+func (l *logger) Errorf(ctx context.Context, format string, args ...interface{})          {}
+func (l *logger) Printf(ctx context.Context, format string, args ...interface{})          {}
+func (l *logger) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) { next(w, r) }
+
 func TestTransport(t *testing.T) {
 	m := mux.NewRouter()
 	jr := NewInmemRepo()
 	js := journal.NewService(jr)
-	journal.SetupHandler(m, js)
+	journal.SetupHandler(m, js, &logger{})
 	// TODO: Test actual calls to routes...
 }
 

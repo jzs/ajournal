@@ -7,27 +7,28 @@ import (
 	"strconv"
 
 	"bitbucket.org/sketchground/ajournal/utils"
+	"bitbucket.org/sketchground/ajournal/utils/logger"
 
 	"github.com/gorilla/mux"
 )
 
 // SetupHandler sets up routes for the journal service
-func SetupHandler(router *mux.Router, js Service) {
+func SetupHandler(router *mux.Router, js Service, l logger.Logger) {
 	router.Path("/users/{id}/journals").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		idstr := vars["id"]
 		id, err := strconv.ParseInt(idstr, 10, 64)
 		if err != nil {
-			utils.JSONResp(w, nil, err)
+			utils.JSONResp(r.Context(), l, w, nil, err)
 			return
 		}
 		journals, err := js.Journals(r.Context(), id)
-		utils.JSONResp(w, journals, err)
+		utils.JSONResp(r.Context(), l, w, journals, err)
 	})
 
 	router.Path("/journals").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		journals, err := js.MyJournals(r.Context())
-		utils.JSONResp(w, journals, err)
+		utils.JSONResp(r.Context(), l, w, journals, err)
 	})
 
 	router.Path("/journals/{id}").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -35,11 +36,11 @@ func SetupHandler(router *mux.Router, js Service) {
 		idstr := vars["id"]
 		id, err := strconv.ParseInt(idstr, 10, 64)
 		if err != nil {
-			utils.JSONResp(w, nil, err)
+			utils.JSONResp(r.Context(), l, w, nil, err)
 			return
 		}
 		journal, err := js.Journal(r.Context(), id)
-		utils.JSONResp(w, journal, err)
+		utils.JSONResp(r.Context(), l, w, journal, err)
 	})
 
 	router.Path("/journals/{id}/entries").Methods("POST").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -47,46 +48,46 @@ func SetupHandler(router *mux.Router, js Service) {
 		idstr := vars["id"]
 		id, err := strconv.ParseInt(idstr, 10, 64)
 		if err != nil {
-			utils.JSONResp(w, nil, err)
+			utils.JSONResp(r.Context(), l, w, nil, err)
 			return
 		}
 		ntry := &Entry{}
 		dec := json.NewDecoder(r.Body)
 		err = dec.Decode(&ntry)
 		if err != nil {
-			utils.JSONResp(w, nil, err)
+			utils.JSONResp(r.Context(), l, w, nil, err)
 			return
 		}
 		if ntry.JournalID != id {
-			utils.JSONResp(w, nil, errors.New("Mismatch between journal id's"))
+			utils.JSONResp(r.Context(), l, w, nil, errors.New("Mismatch between journal id's"))
 			return
 		}
 
 		ntry, err = js.CreateEntry(r.Context(), ntry)
-		utils.JSONResp(w, ntry, err)
+		utils.JSONResp(r.Context(), l, w, ntry, err)
 	})
 	router.Path("/journals/{jid}/entries/{id}").Methods("POST").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		idstr := vars["id"]
 		id, err := strconv.ParseInt(idstr, 10, 64)
 		if err != nil {
-			utils.JSONResp(w, nil, err)
+			utils.JSONResp(r.Context(), l, w, nil, err)
 			return
 		}
 		ntry := &Entry{}
 		dec := json.NewDecoder(r.Body)
 		err = dec.Decode(&ntry)
 		if err != nil {
-			utils.JSONResp(w, nil, err)
+			utils.JSONResp(r.Context(), l, w, nil, err)
 			return
 		}
 		if ntry.ID != id {
-			utils.JSONResp(w, nil, errors.New("Mismatch between id's"))
+			utils.JSONResp(r.Context(), l, w, nil, errors.New("Mismatch between id's"))
 			return
 		}
 
 		ntry, err = js.UpdateEntry(r.Context(), ntry)
-		utils.JSONResp(w, ntry, err)
+		utils.JSONResp(r.Context(), l, w, ntry, err)
 	})
 
 	router.Path("/journals/{jid}/entries/{id}").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -94,11 +95,11 @@ func SetupHandler(router *mux.Router, js Service) {
 		idstr := vars["id"]
 		id, err := strconv.ParseInt(idstr, 10, 64)
 		if err != nil {
-			utils.JSONResp(w, nil, err)
+			utils.JSONResp(r.Context(), l, w, nil, err)
 			return
 		}
 		ntry, err := js.Entry(r.Context(), id)
-		utils.JSONResp(w, ntry, err)
+		utils.JSONResp(r.Context(), l, w, ntry, err)
 	})
 
 	router.Path("/journals").Methods("POST").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -107,13 +108,13 @@ func SetupHandler(router *mux.Router, js Service) {
 		dec := json.NewDecoder(r.Body)
 		err := dec.Decode(&journal)
 		if err != nil {
-			utils.JSONResp(w, nil, err)
+			utils.JSONResp(r.Context(), l, w, nil, err)
 			return
 		}
 
 		// Call service method for data.
 		journal, err = js.Create(r.Context(), journal)
 		// Output response in proper format.
-		utils.JSONResp(w, journal, err)
+		utils.JSONResp(r.Context(), l, w, journal, err)
 	})
 }

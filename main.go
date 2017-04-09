@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -47,6 +48,18 @@ func main() {
 		dbname = "journal"
 	}
 
+	port := os.Getenv("AJ_PORT")
+	if port == "" {
+		port = ":8080"
+	}
+
+	// Set up sentry.io to log crashes!
+	dsn := os.Getenv("AJ_SENTRY_DSN")
+	if dsn == "" && BuildType != BuildVersionDevel {
+		log.Println("Environment variable AJ_SENTRY_DSN not set!\nRemember to set you sentry dsn")
+		return
+	}
+
 	db, err := sqlx.Connect("postgres", fmt.Sprintf("user=%v dbname=%v sslmode=disable", dbuser, dbname))
 	if err != nil {
 		log.Println("Could not connect to database!")
@@ -56,18 +69,20 @@ func main() {
 	baserouter := mux.NewRouter()
 	apirouter := baserouter.PathPrefix("/api").Subrouter().StrictSlash(true)
 
-	jr := postgres.NewJournalRepo(db)
+	alogger := logger.New(BuildType == BuildVersionDevel, dsn)
+
+	jr := postgres.NewJournalRepo(db, alogger)
 	js := journal.NewService(jr)
-	journal.SetupHandler(apirouter, js)
+	journal.SetupHandler(apirouter, js, alogger)
 
 	ur := postgres.NewUserRepo(db)
 	us := user.NewService(ur)
-	user.SetupHandler(apirouter, us)
+	user.SetupHandler(apirouter, us, alogger)
 
-	pr := postgres.NewProfileRepo(db)
+	pr := postgres.NewProfileRepo(db, alogger)
 	sr := services.NewStripeSubscriptionRepo(stripeKey, db)
 	ps := profile.NewService(pr, sr)
-	profile.SetupHandler(apirouter, ps)
+	profile.SetupHandler(apirouter, ps, alogger)
 
 	// Setup api router
 	baserouter.PathPrefix("/api").Handler(negroni.New(negroni.Wrap(apirouter)))
@@ -90,7 +105,7 @@ func main() {
 	// Setup static file handler
 	baserouter.PathPrefix("/").Handler(http.FileServer(http.Dir("www")))
 
-	base := negroni.New(negroni.NewRecovery(), logger.NewLogger())
+	base := negroni.New(negroni.NewRecovery(), alogger)
 
 	// Setup middleware that injects currently logged in user into the stack.
 	base.Use(negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
@@ -100,7 +115,8 @@ func main() {
 
 	base.UseHandler(baserouter)
 
-	err = http.ListenAndServe(":8080", base)
+	alogger.Printf(context.Background(), "Listening on: %v", port)
+	err = http.ListenAndServe(port, base)
 	if err != nil {
 		panic(err)
 	}

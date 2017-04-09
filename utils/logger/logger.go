@@ -8,6 +8,7 @@ import (
 	"runtime/debug"
 	"time"
 
+	raven "github.com/getsentry/raven-go"
 	uuid "github.com/satori/go.uuid"
 	"github.com/urfave/negroni"
 )
@@ -18,41 +19,71 @@ const (
 	loggercontext = iota
 )
 
-func Error(ctx context.Context, err error) {
+type Logger interface {
+	Error(ctx context.Context, err error)
+	Errorf(ctx context.Context, format string, args ...interface{})
+	Printf(ctx context.Context, format string, args ...interface{})
+	ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc)
+}
+
+type logger struct {
+	isDevel bool
+}
+
+// New creates a new logger
+// isDevel determines whether errors should be logged to sentry.io or not
+func New(isDevel bool, dsn string) Logger {
+	if !isDevel {
+		raven.SetDSN(dsn) // Set DSN up for sentry.io (To log crashes!)
+	}
+
+	return &logger{
+		isDevel: isDevel,
+	}
+}
+
+func (l *logger) Error(ctx context.Context, err error) {
 	uid := ctx.Value(loggercontext).(string)
-	log.Printf("[ERROR] \t | %v | %v", uid, err.Error())
+	log.Printf("[ERROR] | %v | %v", uid, err.Error())
+	debug.PrintStack()
+	if !l.isDevel {
+		raven.CaptureError(err, nil)
+	}
+}
+
+func (l *logger) Errorf(ctx context.Context, format string, args ...interface{}) {
+	uid, ok := ctx.Value(loggercontext).(string)
+	if !ok {
+		uid = ""
+	}
+	str := fmt.Sprintf(format, args...)
+	log.Printf("[ajournal] | [ERROR] | %v | %v", uid, str)
 	debug.PrintStack()
 }
 
-func Errorf(ctx context.Context, format string, args ...interface{}) {
-	uid := ctx.Value(loggercontext).(string)
+func (l *logger) Printf(ctx context.Context, format string, args ...interface{}) {
+	uid, ok := ctx.Value(loggercontext).(string)
+	if !ok {
+		uid = ""
+	}
 	str := fmt.Sprintf(format, args...)
-	log.Printf("[ERROR] \t | %v | %v", uid, str)
-	debug.PrintStack()
+	log.Printf("[ajournal] | [INFO] | %v | %v", uid, str)
 }
 
-func Printf(ctx context.Context, format string, args ...interface{}) {
-	uid := ctx.Value(loggercontext).(string)
-	str := fmt.Sprintf(format, args...)
-	log.Printf("[INFO] \t | %v | %v", uid, str)
-}
+// ServeHTTP Method for supporting injection into Negroni
+func (l *logger) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	start := time.Now()
 
-func NewLogger() negroni.Handler {
-	return negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		start := time.Now()
+	// TODO Consider logging other things like the users ip.
+	uid := uuid.NewV4()
 
-		// TODO Consider logging other things like the users ip.
-		uid := uuid.NewV4()
+	log.Printf("[ajournal] | [INFO] | %v | %v | %v %v \n", uid.String(), r.Host, r.Method, r.URL.Path)
 
-		log.Printf("[ajournal] | %v | %v | %v %v \n", uid.String(), r.Host, r.Method, r.URL.Path)
+	ctx := context.WithValue(r.Context(), loggercontext, uid.String())
+	nr := r.WithContext(ctx)
+	next(w, nr)
 
-		ctx := context.WithValue(r.Context(), loggercontext, uid.String())
-		nr := r.WithContext(ctx)
-		next(w, nr)
+	res := w.(negroni.ResponseWriter)
 
-		res := w.(negroni.ResponseWriter)
-
-		log.Printf("[ajournal] | %v | %v | %v \t | %v | %v %v \n", uid.String(), res.Status(), time.Since(start), r.Host, r.Method, r.URL.Path)
-
-	})
+	log.Printf("[ajournal] | [INFO] | %v | %v | %v \t | %v | %v %v \n", uid.String(), res.Status(), time.Since(start), r.Host, r.Method, r.URL.Path)
 }

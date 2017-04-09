@@ -9,6 +9,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
+	"github.com/pkg/errors"
 )
 
 type DBEntry struct {
@@ -24,20 +25,20 @@ type DBEntry struct {
 }
 
 type journalRepo struct {
-	db *sqlx.DB
+	db     *sqlx.DB
+	logger logger.Logger
 }
 
 // NewJournalRepo returns a new implementation of the Journal postgres Repository interface
-func NewJournalRepo(db *sqlx.DB) journal.Repository {
-	return &journalRepo{db: db}
+func NewJournalRepo(db *sqlx.DB, logger logger.Logger) journal.Repository {
+	return &journalRepo{db: db, logger: logger}
 }
 
 func (jr *journalRepo) Create(ctx context.Context, journal *journal.Journal) (*journal.Journal, error) {
 	var id int64
 	err := jr.db.Get(&id, "INSERT INTO journal(UserID, Public, Title, Description, Created) VALUES($1, $2, $3, $4, $5) RETURNING id", journal.UserID, journal.Public, journal.Title, journal.Description, journal.Created)
 	if err != nil {
-		logger.Error(ctx, err)
-		return nil, err
+		return nil, errors.Wrap(err, "JournalRepo failed Create")
 	}
 	journal.ID = id
 	return journal, nil
@@ -47,7 +48,7 @@ func (jr *journalRepo) FindByID(ctx context.Context, id int64) (*journal.Journal
 	j := &journal.Journal{}
 	err := jr.db.Get(j, "SELECT * FROM Journal WHERE id=$1", id)
 	if err != nil {
-		logger.Error(ctx, err)
+		jr.logger.Error(ctx, err)
 		return nil, journal.ErrJournalNotExist
 	}
 	return j, nil
@@ -57,8 +58,7 @@ func (jr *journalRepo) FindAll(ctx context.Context, userid int64) ([]*journal.Jo
 	journals := []*journal.Journal{}
 	err := jr.db.Select(&journals, "SELECT * FROM journal WHERE userid=$1", userid)
 	if err != nil {
-		logger.Error(ctx, err)
-		return nil, err
+		return nil, errors.Wrap(err, "JournalRepo:FindAll failed")
 	}
 	return journals, nil
 }
@@ -67,8 +67,7 @@ func (jr *journalRepo) AddEntry(ctx context.Context, entry *journal.Entry) (*jou
 	var id int64
 	err := jr.db.Get(&id, "INSERT INTO Entry(JournalID, Date, Title, Content, Created, IsPublished) VALUES($1, $2, $3, $4, $5, $6) RETURNING id", entry.JournalID, entry.Date, entry.Title, entry.Content, entry.Created, entry.IsPublished)
 	if err != nil {
-		logger.Error(ctx, err)
-		return nil, err
+		return nil, errors.Wrap(err, "JournalRepo:AddEntry failed")
 	}
 	entry.ID = id
 	return entry, nil
@@ -82,8 +81,7 @@ func (jr *journalRepo) UpdateEntry(ctx context.Context, entry *journal.Entry) er
 	}
 	_, err := jr.db.Exec("UPDATE Entry SET Date=$1, Title=$2, Content=$3, Published=$4, IsPublished=$5 WHERE id=$6", entry.Date, entry.Title, entry.Content, published, entry.IsPublished, entry.ID)
 	if err != nil {
-		logger.Error(ctx, err)
-		return err
+		return errors.Wrap(err, "JournalRepo:UpdateEntry failed")
 	}
 	return nil
 }
@@ -92,7 +90,7 @@ func (jr *journalRepo) FindEntryByID(ctx context.Context, id int64) (*journal.En
 	e := &DBEntry{}
 	err := jr.db.Get(e, "SELECT * FROM Entry WHERE ID=$1", id)
 	if err != nil {
-		logger.Error(ctx, err)
+		jr.logger.Error(ctx, err)
 		return nil, journal.ErrEntryNotExist
 	}
 
@@ -105,7 +103,7 @@ func (jr *journalRepo) FindAllEntries(ctx context.Context, journalID int64) ([]*
 	entries := []*DBEntry{}
 	err := jr.db.Select(&entries, "SELECT * FROM Entry WHERE journalid=$1 ORDER BY Created DESC", journalID)
 	if err != nil {
-		logger.Error(ctx, err)
+		return nil, errors.Wrap(err, "JournalRepo:FindAllEntries failed")
 	}
 	result := []*journal.Entry{}
 	for _, e := range entries {

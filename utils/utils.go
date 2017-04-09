@@ -1,8 +1,11 @@
 package utils
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
+
+	"bitbucket.org/sketchground/ajournal/utils/logger"
 )
 
 type ErrBadArgs struct {
@@ -14,10 +17,12 @@ func NewErrBadArgs() error {
 }
 
 // JSONResp formats responses in json
-func JSONResp(w http.ResponseWriter, data interface{}, err error) {
+func JSONResp(ctx context.Context, l logger.Logger, w http.ResponseWriter, data interface{}, err error) {
 	w.Header().Set("content-type", "application/json")
 	enc := json.NewEncoder(w)
 	if err != nil {
+		// TODO: Build out this to check for error kinds.
+		l.Error(ctx, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		resp := jsonresp{
 			Status: http.StatusInternalServerError,

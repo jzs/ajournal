@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"bitbucket.org/sketchground/ajournal/profile"
-	"bitbucket.org/sketchground/ajournal/utils/logger"
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 	stripe "github.com/stripe/stripe-go"
 	"github.com/stripe/stripe-go/client"
 )
@@ -35,8 +35,7 @@ func (sr *subRepo) Create(ctx context.Context, s *profile.Subscription) (*profil
 	// Create customer!
 	cust, err := sr.client.Customers.New(params)
 	if err != nil {
-		logger.Error(ctx, err)
-		return nil, err
+		return nil, errors.Wrap(err, "SubscriptionRepo:Create failed")
 	}
 
 	// TODO Consider if plan and trial period should be specified elsewhere or as args to program
@@ -47,15 +46,13 @@ func (sr *subRepo) Create(ctx context.Context, s *profile.Subscription) (*profil
 	}
 	subscription, err := sr.client.Subs.New(subparams)
 	if err != nil {
-		logger.Error(ctx, err)
-		return nil, err
+		return nil, errors.Wrap(err, "SubscriptionRepo:Create failed")
 	}
 
 	// Store subscription info in db.
 	_, err = sr.db.Exec("INSERT INTO Subscription(userid, stripecustomerid, stripesubscriptionid) VALUES($1, $2, $3)", s.Profile.ID, cust.ID, subscription.ID)
 	if err != nil {
-		logger.Error(ctx, err)
-		return nil, err
+		return nil, errors.Wrap(err, "SubscriptionRepo:Create failed")
 	}
 
 	return s, nil

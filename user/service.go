@@ -19,7 +19,7 @@ type Service interface {
 	// Login creates a new token for a given user
 	Login(ctx context.Context, username string, password string) (*Token, error)
 	// Logout invalidates a user token
-	Logout(ctx context.Context, token string)
+	Logout(ctx context.Context, token string) error
 	// User fetches a user with the given username
 	User(ctx context.Context, username string) (*User, error)
 	// UserWithToken fetches a user from a valid token
@@ -91,14 +91,16 @@ func (s *service) Login(ctx context.Context, username string, password string) (
 	return token, nil
 }
 
-func (s *service) Logout(ctx context.Context, token string) {
+func (s *service) Logout(ctx context.Context, token string) error {
 	err := s.repo.DeleteToken(ctx, token)
 	if err != nil {
-		// TODO: Log this error somewhere important!
+		return err
 	}
+	return nil
 }
 
 func (s *service) User(ctx context.Context, username string) (*User, error) {
+	// TODO: Make auth check to see how much of the user info we should return!
 	u, err := s.repo.FindByUsername(ctx, username)
 	if err != nil {
 		return nil, err
