@@ -56,6 +56,7 @@ func main() {
 	if dbname == "" {
 		dbname = "journal"
 	}
+	dbpass := os.Getenv("AJ_DB_PASS")
 
 	port := os.Getenv("AJ_PORT")
 	if port == "" {
@@ -75,7 +76,12 @@ func main() {
 	}
 	log.Printf("AJ_WWW_DIR is set to %v\n", wwwdir)
 
-	db, err := sqlx.Connect("postgres", fmt.Sprintf("user=%v dbname=%v sslmode=disable", dbuser, dbname))
+	passwordstr := ""
+	if dbpass != "" {
+		passwordstr = fmt.Sprintf("password=%v", dbpass)
+	}
+
+	db, err := sqlx.Connect("postgres", fmt.Sprintf("user=%v dbname=%v %v sslmode=disable", dbuser, dbname, passwordstr))
 	if err != nil {
 		log.Fatalf("Could not connect to database! %v", err)
 		return
