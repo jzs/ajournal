@@ -69,6 +69,12 @@ func main() {
 		return
 	}
 
+	wwwdir := os.Getenv("AJ_WWW_DIR")
+	if wwwdir == "" {
+		wwwdir = "/var/www/ajournal"
+	}
+	log.Printf("AJ_WWW_DIR is set to %v\n", wwwdir)
+
 	db, err := sqlx.Connect("postgres", fmt.Sprintf("user=%v dbname=%v sslmode=disable", dbuser, dbname))
 	if err != nil {
 		log.Fatalf("Could not connect to database! %v", err)
@@ -112,7 +118,7 @@ func main() {
 	})
 
 	// Setup static file handler
-	baserouter.PathPrefix("/").Handler(http.FileServer(http.Dir("www")))
+	baserouter.PathPrefix("/").Handler(http.FileServer(http.Dir(wwwdir)))
 
 	base := negroni.New(negroni.NewRecovery(), alogger)
 
