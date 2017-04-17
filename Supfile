@@ -26,7 +26,16 @@ commands:
     desc: Build a version that can be distributed
     local: ./scripts/dist.sh 
 
+  setup:
+    desc: Deploy service to server
+    run: ./scripts/deploy.sh
+
 targets:
   rebuild:
     - clean
     - dist
+
+  deploy:
+    - clean
+    - dist
+    - setup
