@@ -44,7 +44,7 @@ func main() {
 
 	stripeKey := os.Getenv("AJ_STRIPE_SK")
 	if stripeKey == "" {
-		fmt.Println("Environment variable AJ_STRIPE_SK not set!\nRemember to set your stripe private key")
+		log.Fatalf("Environment variable AJ_STRIPE_SK not set!\nRemember to set your stripe private key")
 		return
 	}
 
@@ -65,14 +65,14 @@ func main() {
 	// Set up sentry.io to log crashes!
 	dsn := os.Getenv("AJ_SENTRY_DSN")
 	if dsn == "" && BuildType != BuildVersionDevel {
-		log.Println("Environment variable AJ_SENTRY_DSN not set!\nRemember to set you sentry dsn")
+		log.Fatalf("Environment variable AJ_SENTRY_DSN not set!\nRemember to set you sentry dsn")
 		return
 	}
 
 	db, err := sqlx.Connect("postgres", fmt.Sprintf("user=%v dbname=%v sslmode=disable", dbuser, dbname))
 	if err != nil {
-		log.Println("Could not connect to database!")
-		log.Fatalln(err)
+		log.Fatalf("Could not connect to database! %v", err)
+		return
 	}
 
 	baserouter := mux.NewRouter()

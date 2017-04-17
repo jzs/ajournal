@@ -1,0 +1,17 @@
+[Unit]
+Description=ajournal app service
+
+[Service]
+User=www-data
+Group=www-data
+
+WorkingDirectory=/usr/local/bin
+
+Restart=on-failure
+
+EnvironmentFile=/etc/ajournal.conf
+
+ExecStart=/usr/local/bin/ajournal
+
+[Install]
+WantedBy=multi-user.target
