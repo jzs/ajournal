@@ -23,9 +23,8 @@ func JSONResp(ctx context.Context, l logger.Logger, w http.ResponseWriter, data 
 				Status: apierr.Status,
 				Error:  apierr.Desc,
 			}
-			// Log the error...
 			l.Printf(ctx, err.Error())
-			// TODO: Consider logging the underlying error, if any?
+			l.Print(ctx, apierr.Cause())
 			break
 		default:
 			w.WriteHeader(http.StatusInternalServerError)

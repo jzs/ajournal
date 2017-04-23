@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"bitbucket.org/sketchground/ajournal/journal"
@@ -47,10 +48,13 @@ func (jr *journalRepo) Create(ctx context.Context, journal *journal.Journal) (*j
 func (jr *journalRepo) FindByID(ctx context.Context, id int64) (*journal.Journal, error) {
 	j := &journal.Journal{}
 	err := jr.db.Get(j, "SELECT * FROM Journal WHERE id=$1", id)
-	if err != nil {
-		jr.logger.Error(ctx, err)
+	switch {
+	case err == sql.ErrNoRows:
 		return nil, journal.ErrJournalNotExist
+	case err != nil:
+		return nil, errors.Wrap(err, "JournalRepo:FindByID")
 	}
+
 	return j, nil
 }
 
@@ -89,9 +93,11 @@ func (jr *journalRepo) UpdateEntry(ctx context.Context, entry *journal.Entry) er
 func (jr *journalRepo) FindEntryByID(ctx context.Context, id int64) (*journal.Entry, error) {
 	e := &dbEntry{}
 	err := jr.db.Get(e, "SELECT * FROM Entry WHERE ID=$1", id)
-	if err != nil {
-		jr.logger.Error(ctx, err)
+	switch {
+	case err == sql.ErrNoRows:
 		return nil, journal.ErrEntryNotExist
+	case err != nil:
+		return nil, errors.Wrap(err, "JournalRepo:FindEntryByID")
 	}
 
 	result := mapToEntry(e)

@@ -15,6 +15,7 @@ type logger struct{}
 
 func (l *logger) Error(ctx context.Context, err error)                                    {}
 func (l *logger) Errorf(ctx context.Context, format string, args ...interface{})          {}
+func (l *logger) Print(ctx context.Context, err error)                                    {}
 func (l *logger) Printf(ctx context.Context, format string, args ...interface{})          {}
 func (l *logger) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) { next(w, r) }
 
@@ -186,6 +187,33 @@ func TestService(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected to get result, got %v", err.Error())
 	}
+
+	// Test create with no context
+	_, err = js.Create(context.Background(), &journal.Journal{Title: title})
+	if err == nil {
+		t.Fatalf("Expected no err, got %v", err.Error())
+	}
+	_, err = js.MyJournals(context.Background())
+	if err == nil {
+		t.Fatalf("Expected no err, got %v", err.Error())
+	}
+	_, err = js.Journal(context.Background(), 1)
+	if err == nil {
+		t.Fatalf("Expected no err, got %v", err.Error())
+	}
+	_, err = js.CreateEntry(context.Background(), &journal.Entry{ID: 1, JournalID: 1})
+	if err == nil {
+		t.Fatalf("Expected no err, got %v", err.Error())
+	}
+	_, err = js.UpdateEntry(context.Background(), &journal.Entry{ID: 1})
+	if err == nil {
+		t.Fatalf("Expected no err, got %v", err.Error())
+	}
+	_, err = js.Entry(context.Background(), 1)
+	if err == nil {
+		t.Fatalf("Expected no err, got %v", err.Error())
+	}
+
 }
 
 // In memory repository of journal

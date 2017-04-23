@@ -44,8 +44,11 @@ func (s *service) Create(ctx context.Context, journal *Journal) (*Journal, error
 	}
 	journal.UserID = usr.ID
 	jrnl, err := s.repo.Create(ctx, journal)
+	if err != nil {
+		return nil, errors.Wrap(err, "JournalService:Create")
+	}
 	jrnl.Entries = []*Entry{}
-	return jrnl, err
+	return jrnl, nil
 }
 
 func (s *service) MyJournals(ctx context.Context) ([]*Journal, error) {
@@ -56,7 +59,7 @@ func (s *service) MyJournals(ctx context.Context) ([]*Journal, error) {
 
 	journals, err := s.repo.FindAll(ctx, usr.ID)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "MyJournals")
 	}
 	return journals, nil
 }
@@ -68,7 +71,10 @@ func (s *service) Journal(ctx context.Context, id int64) (*Journal, error) {
 	}
 
 	journal, err := s.repo.FindByID(ctx, id)
-	if err != nil {
+	switch {
+	case err == ErrJournalNotExist:
+		return nil, utils.NewAPIError(err, http.StatusNotFound, "Journal does not exist")
+	case err != nil:
 		return nil, err
 	}
 
@@ -79,7 +85,7 @@ func (s *service) Journal(ctx context.Context, id int64) (*Journal, error) {
 
 	entries, err := s.repo.FindAllEntries(ctx, id)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Journal:FindAllEntries")
 	}
 	journal.Entries = entries
 
@@ -89,7 +95,7 @@ func (s *service) Journal(ctx context.Context, id int64) (*Journal, error) {
 func (s *service) Journals(ctx context.Context, userid int64) ([]*Journal, error) {
 	journals, err := s.repo.FindAll(ctx, userid)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Journals")
 	}
 
 	result := []*Journal{}
@@ -129,7 +135,7 @@ func (s *service) CreateEntry(ctx context.Context, entry *Entry) (*Entry, error)
 
 func (s *service) UpdateEntry(ctx context.Context, entry *Entry) (*Entry, error) {
 	if entry.ID == 0 {
-		return nil, ErrEntryNotExist
+		return nil, utils.NewAPIError(nil, http.StatusBadRequest, ErrEntryNotExist.Error())
 	}
 
 	usr := user.FromContext(ctx)

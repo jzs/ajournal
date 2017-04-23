@@ -24,6 +24,7 @@ func init() {
 type Logger interface {
 	Error(ctx context.Context, err error)
 	Errorf(ctx context.Context, format string, args ...interface{})
+	Print(ctx context.Context, err error)
 	Printf(ctx context.Context, format string, args ...interface{})
 	ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc)
 }
@@ -61,7 +62,15 @@ func (l *logger) Errorf(ctx context.Context, format string, args ...interface{})
 		uid = ""
 	}
 	str := fmt.Sprintf(format, args...)
-	log.Printf("[ajournal] | [ERROR] | %v | %+v", uid, str)
+	log.Printf("[ERROR] | %v | %+v", uid, str)
+}
+
+func (l *logger) Print(ctx context.Context, err error) {
+	uid, ok := ctx.Value(loggercontext).(string)
+	if !ok {
+		uid = ""
+	}
+	log.Printf("[INFO] | %v | %+v", uid, err)
 }
 
 func (l *logger) Printf(ctx context.Context, format string, args ...interface{}) {
@@ -70,7 +79,7 @@ func (l *logger) Printf(ctx context.Context, format string, args ...interface{})
 		uid = ""
 	}
 	str := fmt.Sprintf(format, args...)
-	log.Printf("[ajournal] | [INFO] | %v | %v", uid, str)
+	log.Printf("[INFO] | %v | %v", uid, str)
 }
 
 // ServeHTTP Method for supporting injection into Negroni
@@ -80,7 +89,7 @@ func (l *logger) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Han
 	// TODO Consider logging other things like the users ip.
 	uid := uuid.NewV4()
 
-	log.Printf("[ajournal] | [INFO] | %v | %v | %v %v \n", uid.String(), r.Host, r.Method, r.URL.Path)
+	log.Printf("[INFO] | %v | %v | %v %v \n", uid.String(), r.Host, r.Method, r.URL.Path)
 
 	ctx := context.WithValue(r.Context(), loggercontext, uid.String())
 	nr := r.WithContext(ctx)
@@ -88,5 +97,5 @@ func (l *logger) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Han
 
 	res := w.(negroni.ResponseWriter)
 
-	log.Printf("[ajournal] | [INFO] | %v | %v | %v | %v \t | %v | %v %v \n", uid.String(), r.Host, res.Status(), time.Since(start), r.Host, r.Method, r.URL.Path)
+	log.Printf("[INFO] | %v | %v | %v | %v \t | %v | %v %v \n", uid.String(), r.Host, res.Status(), time.Since(start), r.Host, r.Method, r.URL.Path)
 }

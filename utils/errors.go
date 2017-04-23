@@ -13,6 +13,11 @@ type APIError struct {
 	Desc   string
 }
 
+// Cause returns the original error behing the api error
+func (e APIError) Cause() error {
+	return e.err
+}
+
 func (e APIError) Error() string {
 	return e.Desc
 }
