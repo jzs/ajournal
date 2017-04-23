@@ -1,6 +1,10 @@
 development:
     driver: postgres
-    open: user=jzs password=jzs dbname=journal sslmode=disable
+    open: user=jzs dbname=journal sslmode=disable
+
+release:
+    driver: postgres
+    open: user=ajournal dbname=ajournal password=$AJ_DB_PASS sslmode=disable
 
 testing:
     driver: postgres
