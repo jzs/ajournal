@@ -1,8 +1,9 @@
+#! /bin/bash
 echo 'Running linter'
 golint $(go list ./... | grep -v vendor)
 echo 'Running go vet'
 go vet $(go list ./... | grep -v vendor)
-echo 'Running unit tests'
-go test $(go list ./... | grep -v vendor)
-# echo 'Running integration tests'
-# go test -tags=integration $(go list ./... | grep -v vendor)
+# echo 'Running unit tests'
+# go test -cover=true $(go list ./... | grep -v vendor)
+echo 'Running unit and integration tests'
+go test -cover=true -tags=integration $(go list ./... | grep -v vendor)
