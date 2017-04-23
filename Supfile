@@ -38,7 +38,7 @@ commands:
 
   copy-www:
     desc: Copy www-data
-    run: cp -r /tmp/dist/www/ /var/www/ajournal/
+    run: cp -r /tmp/dist/www/* /var/www/ajournal/
 
   restart-service:
     desc: Restart systemd service
