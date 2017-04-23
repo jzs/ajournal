@@ -36,7 +36,7 @@ func (pr *profileRepo) Create(ctx context.Context, p *profile.Profile) (*profile
 }
 
 func (pr *profileRepo) Update(ctx context.Context, p *profile.Profile) (*profile.Profile, error) {
-	_, err := pr.db.Exec("UPDATE Profile SET Name = $1, Email = $2", p.Name, p.Email)
+	_, err := pr.db.Exec("UPDATE Profile SET Name = $1, Email = $2 WHERE UserID=$3", p.Name, p.Email, p.ID)
 	if err != nil {
 		return nil, errors.Wrap(err, "ProfileRepo:Update failed")
 	}
