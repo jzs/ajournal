@@ -7,6 +7,7 @@
 	<page-viewjournalentry if={viewjournalentry} journalid={journalid} entryid={entryid}></page-viewjournalentry>
 	<page-viewjournal if={viewjournal} journalid={journalid}></page-viewjournal>
 	<page-viewjournals if={viewjournals} userid={userid}></page-viewjournals>
+	<page-viewuser if={viewuser} username={username}></page-viewuser>
 	<page-profile if={profile} userid={userid}></page-profile>
 	<script>
 var self = this;
@@ -18,6 +19,7 @@ self.entry = false
 self.viewjournals = false;
 self.viewjournal = false;
 self.viewjournalentry = false;
+self.viewuser = false;
 self.profile = false;
 
 RiotControl.on('logout', function() {
@@ -42,6 +44,7 @@ self.clear = function() {
 	self.viewjournal = false;
 	self.viewjournalentry = false;
 	self.profile = false;
+	self.viewuser = false;
 }
 
 route(function(collection, id, method, mid) {
@@ -59,6 +62,10 @@ route(function(collection, id, method, mid) {
 			// 
 			self.viewjournal = true;
 			self.journalid = id;
+			break;
+		case 'viewuser':
+			self.viewuser = true;
+			self.username = id;
 			break;
 		case 'journals':
 			if(id == 'create') {

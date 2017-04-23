@@ -4,3 +4,7 @@
 	line-height: 1.5;
 	height: 2.285em;
 }
+
+.pagecontent {
+	border-top: 1px solid #aaa;
+}

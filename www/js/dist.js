@@ -1,4 +1,4 @@
-riot.tag2('content', '<page-dash if="{loggedin && dash}"></page-dash> <page-login if="{loggedout}"></page-login> <page-journal-create if="{loggedin && journalcreate}"></page-journal-create> <page-journal if="{loggedin && journal}" journalid="{journalid}"></page-journal> <page-entryeditor if="{loggedin && entry}" journalid="{journalid}" entryid="{entryid}"></page-entryeditor> <page-viewjournalentry if="{viewjournalentry}" journalid="{journalid}" entryid="{entryid}"></page-viewjournalentry> <page-viewjournal if="{viewjournal}" journalid="{journalid}"></page-viewjournal> <page-viewjournals if="{viewjournals}" userid="{userid}"></page-viewjournals> <page-profile if="{profile}" userid="{userid}"></page-profile>', '', '', function(opts) {
+riot.tag2('content', '<page-dash if="{loggedin && dash}"></page-dash> <page-login if="{loggedout}"></page-login> <page-journal-create if="{loggedin && journalcreate}"></page-journal-create> <page-journal if="{loggedin && journal}" journalid="{journalid}"></page-journal> <page-entryeditor if="{loggedin && entry}" journalid="{journalid}" entryid="{entryid}"></page-entryeditor> <page-viewjournalentry if="{viewjournalentry}" journalid="{journalid}" entryid="{entryid}"></page-viewjournalentry> <page-viewjournal if="{viewjournal}" journalid="{journalid}"></page-viewjournal> <page-viewjournals if="{viewjournals}" userid="{userid}"></page-viewjournals> <page-viewuser if="{viewuser}" username="{username}"></page-viewuser> <page-profile if="{profile}" userid="{userid}"></page-profile>', '', '', function(opts) {
 var self = this;
 self.loggedin = false;
 self.loggedout = !self.loggedin;
@@ -8,6 +8,7 @@ self.entry = false
 self.viewjournals = false;
 self.viewjournal = false;
 self.viewjournalentry = false;
+self.viewuser = false;
 self.profile = false;
 
 RiotControl.on('logout', function() {
@@ -32,6 +33,7 @@ self.clear = function() {
 	self.viewjournal = false;
 	self.viewjournalentry = false;
 	self.profile = false;
+	self.viewuser = false;
 }
 
 route(function(collection, id, method, mid) {
@@ -46,6 +48,10 @@ route(function(collection, id, method, mid) {
 
 			self.viewjournal = true;
 			self.journalid = id;
+			break;
+		case 'viewuser':
+			self.viewuser = true;
+			self.username = id;
 			break;
 		case 'journals':
 			if(id == 'create') {
@@ -228,9 +234,15 @@ self.date = function() {
 };
 });
 
-riot.tag2('navbar', '<nav class="nav"> <div class="nav-left"> </div> <div class="nav-center"> <a class="nav-item" href="#/">a-Journal</a> </div> <div class="nav-right"> <a class="nav-item" href="#/profile">{user.Username}</a> <a class="nav-item" href="#" onclick="{logout}" if="{user.Username}">Log out</a> </div> </nav>', '', '', function(opts) {
+riot.tag2('navbar', '<nav class="nav"> <div class="nav-left"> <a class="nav-item" href="#/">a-Journal</a> </div> <div class="nav-center"> <a class="nav-item" href="#/profile">{user.Username}</a> </div> <span id="nav-toggle" class="nav-toggle {is-active: isActive}" onclick="{toggle}"> <span></span> <span></span> <span></span> </span> <div id="nav-menu" class="nav-right nav-menu {is-active: isActive}"> <a class="nav-item" href="#" onclick="{logout}" if="{user.Username}">Log out</a> </div> </nav>', '', '', function(opts) {
 var self = this;
 self.user = {};
+
+self.isActive = false;
+self.toggle = function(e) {
+	self.isActive = !self.isActive;
+	self.update();
+}
 
 self.logout = function(e) {
 	e.preventDefault();
