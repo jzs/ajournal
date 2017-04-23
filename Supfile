@@ -15,7 +15,7 @@ networks: #Groups of hosts
       GOOS: linux
       GOARCH: amd64
     hosts:
-      - localhost # TODO Replace with release host!
+      - jzs@ajournal.dk:999
 
 commands:
   clean:
@@ -28,7 +28,43 @@ commands:
 
   setup:
     desc: Deploy service to server
-    run: ./scripts/deploy.sh
+    stdin: true
+    script: ./scripts/deploy.sh
+
+  upload:
+    desc: Upload
+    upload:
+      - src: ./dist
+        dst: /tmp/
+
+  copy-bin:
+    desc: Copy binary
+    run: cp /tmp/dist/ajournal /usr/local/bin/ajournal
+
+  copy-www:
+    desc: Copy www-data
+    run: cp -r /tmp/dist/www/ /var/www/ajournal/
+
+  restart-service:
+    desc: Restart systemd service
+    run: sudo systemctl restart ajournal.service
+
+  start-service:
+    desc: Start systemd service
+    run: sudo systemctl start ajournal.service
+
+  stop-service:
+    desc: Stop systemd service
+    run: sudo systemctl stop ajournal.service
+
+  migrate-up:
+    desc: Run database migration tool up
+    run: goose -env release -path /tmp/dist/db up
+
+  bash:
+    desc: Interactive bash script
+    stdin: true
+    run: bash
 
 targets:
   rebuild:
@@ -38,4 +74,8 @@ targets:
   deploy:
     - clean
     - dist
-    - setup
+    - upload
+    - copy-www
+    - stop-service
+    - copy-bin
+    - start-service
