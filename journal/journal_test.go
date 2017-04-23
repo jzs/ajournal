@@ -3,6 +3,7 @@ package journal_test
 import (
 	"context"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"bitbucket.org/sketchground/ajournal/journal"
@@ -24,7 +25,20 @@ func TestTransport(t *testing.T) {
 	jr := NewInmemRepo()
 	js := journal.NewService(jr)
 	journal.SetupHandler(m, js, &logger{})
-	// TODO: Test actual calls to routes...
+
+	testTransport(t, m, "/users/1/journals", http.StatusOK)
+	testTransport(t, m, "/journals", http.StatusForbidden)
+	testTransport(t, m, "/journals/1", http.StatusForbidden)
+	testTransport(t, m, "/journals/1/entries/1", http.StatusNotFound)
+}
+
+func testTransport(t *testing.T, m *mux.Router, url string, response int) {
+	req, _ := http.NewRequest("GET", url, nil)
+	rw := httptest.NewRecorder()
+	m.ServeHTTP(rw, req)
+	if rw.Code != response {
+		t.Errorf("Expected %v on url %v, got %v", response, url, rw.Code)
+	}
 }
 
 func TestIntegration(t *testing.T) {
