@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"runtime/debug"
 	"time"
 
 	raven "github.com/getsentry/raven-go"
@@ -48,8 +47,7 @@ func (l *logger) Error(ctx context.Context, err error) {
 	if !ok {
 		uid = ""
 	}
-	log.Printf("[ERROR] | %v | %v", uid, err.Error())
-	debug.PrintStack()
+	log.Printf("[ERROR] | %v | %+v", uid, err)
 	if !l.isDevel {
 		raven.CaptureError(err, nil)
 	}
@@ -61,8 +59,7 @@ func (l *logger) Errorf(ctx context.Context, format string, args ...interface{})
 		uid = ""
 	}
 	str := fmt.Sprintf(format, args...)
-	log.Printf("[ajournal] | [ERROR] | %v | %v", uid, str)
-	debug.PrintStack()
+	log.Printf("[ajournal] | [ERROR] | %v | %+v", uid, str)
 }
 
 func (l *logger) Printf(ctx context.Context, format string, args ...interface{}) {
@@ -89,5 +86,5 @@ func (l *logger) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Han
 
 	res := w.(negroni.ResponseWriter)
 
-	log.Printf("[ajournal] | [INFO] | %v | %v | %v \t | %v | %v %v \n", uid.String(), res.Status(), time.Since(start), r.Host, r.Method, r.URL.Path)
+	log.Printf("[ajournal] | [INFO] | %v | %v | %v | %v \t | %v | %v %v \n", uid.String(), r.Host, res.Status(), time.Since(start), r.Host, r.Method, r.URL.Path)
 }

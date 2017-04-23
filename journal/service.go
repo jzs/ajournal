@@ -2,13 +2,13 @@ package journal
 
 import (
 	"context"
-	"errors"
-	"log"
+	"net/http"
 	"time"
 
-	"github.com/russross/blackfriday"
-
 	"bitbucket.org/sketchground/ajournal/user"
+	"bitbucket.org/sketchground/ajournal/utils"
+	"github.com/pkg/errors"
+	"github.com/russross/blackfriday"
 )
 
 // Service interface for journals
@@ -36,11 +36,11 @@ func NewService(repo Repository) Service {
 func (s *service) Create(ctx context.Context, journal *Journal) (*Journal, error) {
 	usr := user.FromContext(ctx)
 	if usr == nil {
-		return nil, errors.New("Cannot create a journal without a user context")
+		return nil, utils.NewAPIError(nil, http.StatusForbidden, "Cannot create a journal without a user context")
 	}
 
 	if journal.ID != 0 {
-		return nil, errors.New("Cannot create a journal with an already existing id set")
+		return nil, utils.NewAPIError(nil, http.StatusBadRequest, "Cannot create a journal with an already existing id set")
 	}
 	journal.UserID = usr.ID
 	jrnl, err := s.repo.Create(ctx, journal)
@@ -51,7 +51,7 @@ func (s *service) Create(ctx context.Context, journal *Journal) (*Journal, error
 func (s *service) MyJournals(ctx context.Context) ([]*Journal, error) {
 	usr := user.FromContext(ctx)
 	if usr == nil {
-		return nil, errors.New("Cannot fetch journals without a user context")
+		return nil, utils.NewAPIError(nil, http.StatusForbidden, "Cannot fetch journals without a user context")
 	}
 
 	journals, err := s.repo.FindAll(ctx, usr.ID)
@@ -64,7 +64,7 @@ func (s *service) MyJournals(ctx context.Context) ([]*Journal, error) {
 func (s *service) Journal(ctx context.Context, id int64) (*Journal, error) {
 	usr := user.FromContext(ctx)
 	if usr == nil {
-		return nil, errors.New("Cannot fetch journals without a user context")
+		return nil, utils.NewAPIError(nil, http.StatusForbidden, "Cannot fetch journals without a user context")
 	}
 
 	journal, err := s.repo.FindByID(ctx, id)
@@ -74,7 +74,7 @@ func (s *service) Journal(ctx context.Context, id int64) (*Journal, error) {
 
 	// If it's another users journal and it is not public, then do not return it.
 	if journal.UserID != usr.ID && journal.Public == false {
-		return nil, ErrJournalNotExist
+		return nil, utils.NewAPIError(errors.New("User trying to access another users private journal"), http.StatusNotFound, ErrJournalNotExist.Error())
 	}
 
 	entries, err := s.repo.FindAllEntries(ctx, id)
@@ -103,10 +103,10 @@ func (s *service) Journals(ctx context.Context, userid int64) ([]*Journal, error
 
 func (s *service) CreateEntry(ctx context.Context, entry *Entry) (*Entry, error) {
 	if entry.ID != 0 {
-		return nil, errors.New("ID must not be set when creating a new entry")
+		return nil, utils.NewAPIError(nil, http.StatusBadRequest, "ID must not be set when creating a new entry")
 	}
 	if entry.JournalID == 0 {
-		return nil, errors.New("JournalID must be set when creating a new entry")
+		return nil, utils.NewAPIError(nil, http.StatusBadRequest, "JournalID must be set when creating a new entry")
 	}
 
 	usr := user.FromContext(ctx)
@@ -119,7 +119,7 @@ func (s *service) CreateEntry(ctx context.Context, entry *Entry) (*Entry, error)
 		return nil, err
 	}
 	if journal.UserID != usr.ID {
-		return nil, ErrJournalNotExist
+		return nil, utils.NewAPIError(errors.New("Trying to create enty on another users journal"), http.StatusNotFound, ErrJournalNotExist.Error())
 	}
 
 	entry.Created = time.Now()
@@ -163,22 +163,20 @@ func (s *service) Entry(ctx context.Context, id int64) (*Entry, error) {
 
 	entry, err := s.repo.FindEntryByID(ctx, id)
 	if err != nil {
-		log.Println(err.Error())
-		return nil, errors.New("Cannot fetch entry")
+		return nil, utils.NewAPIError(err, http.StatusNotFound, ErrEntryNotExist.Error())
 	}
 
 	j, err := s.repo.FindByID(ctx, entry.JournalID)
 	if err != nil {
-		log.Println(err.Error())
-		return nil, ErrEntryNotExist
+		return nil, utils.NewAPIError(nil, http.StatusNotFound, ErrEntryNotExist.Error())
 	}
 	// If it is private and you are not logged in
 	if !j.Public && usr == nil {
-		return nil, ErrEntryNotExist
+		return nil, utils.NewAPIError(errors.New("Journal belongs to another user"), http.StatusNotFound, ErrEntryNotExist.Error())
 	}
 	// If it is private and you are logged in as different user
 	if !j.Public && (usr != nil && usr.ID != j.UserID) {
-		return nil, ErrEntryNotExist
+		return nil, utils.NewAPIError(errors.New("Journal belongs to another user"), http.StatusNotFound, ErrEntryNotExist.Error())
 	}
 
 	// Render content

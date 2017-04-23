@@ -21,13 +21,31 @@ func JSONResp(ctx context.Context, l logger.Logger, w http.ResponseWriter, data 
 	w.Header().Set("content-type", "application/json")
 	enc := json.NewEncoder(w)
 	if err != nil {
-		// TODO: Build out this to check for error kinds.
-		l.Error(ctx, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		resp := jsonresp{
-			Status: http.StatusInternalServerError,
-			Error:  err.Error(),
+		var resp jsonresp
+
+		switch err.(type) {
+		case APIError:
+			apierr := err.(APIError)
+			w.WriteHeader(apierr.Status)
+			resp = jsonresp{
+				Status: apierr.Status,
+				Error:  apierr.Desc,
+			}
+			// Log the error...
+			l.Printf(ctx, err.Error())
+			// TODO: Consider logging the underlying error, if any?
+			break
+		default:
+			w.WriteHeader(http.StatusInternalServerError)
+			resp = jsonresp{
+				Status: http.StatusInternalServerError,
+				Error:  "Internal server error",
+			}
+			// Log the error...
+			l.Error(ctx, err)
+			break
 		}
+
 		err = enc.Encode(resp)
 		if err != nil {
 			panic(err)
@@ -48,6 +66,6 @@ func JSONResp(ctx context.Context, l logger.Logger, w http.ResponseWriter, data 
 
 type jsonresp struct {
 	Data   interface{}
-	Status int64
+	Status int
 	Error  string
 }
