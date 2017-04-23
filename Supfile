@@ -56,6 +56,10 @@ commands:
     desc: Run database migration tool up
     run: goose -env release -path /tmp/dist/db up
 
+  migrate-down:
+    desc: Run database migration tool down
+    run: goose -env release -path /tmp/dist/db down
+
   bash:
     desc: Interactive bash script
     stdin: true
