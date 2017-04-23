@@ -12,8 +12,15 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type userCtx string
+
 const cookieName = "a"
-const userContext = "usercontext"
+
+var userContext userCtx
+
+func init() {
+	userContext = userCtx("usercontext")
+}
 
 // TestContextWithUser sets up a test context with a given user in for testing.
 func TestContextWithUser(u *User) context.Context {
@@ -54,7 +61,7 @@ func SetupHandler(r *mux.Router, us Service, l logger.Logger) {
 		dec := json.NewDecoder(r.Body)
 		err := dec.Decode(u)
 		if err != nil {
-			utils.JSONResp(r.Context(), l, w, nil, utils.NewErrBadArgs())
+			utils.JSONResp(r.Context(), l, w, nil, utils.NewAPIError(err, http.StatusBadRequest, "Not valid json"))
 			return
 		}
 		err = us.Register(r.Context(), u)

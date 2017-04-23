@@ -12,16 +12,19 @@ func init() {
 	ErrProfileNotExist = errors.New("Profile does not exist")
 }
 
+// Repository describes the methods on the Profile repository
 type Repository interface {
 	Create(ctx context.Context, p *Profile) (*Profile, error)
 	Update(ctx context.Context, p *Profile) (*Profile, error)
 	FindByID(ctx context.Context, id int64) (*Profile, error)
 }
 
+// SubscriptionRepository describes the methods on the subscription repository
 type SubscriptionRepository interface {
 	Create(ctx context.Context, s *Subscription) (*Subscription, error)
 }
 
+// Plan Subscription plan
 type Plan int64
 
 func (p Plan) String() string {
@@ -35,10 +38,13 @@ func (p Plan) String() string {
 }
 
 const (
+	// PlanFree free plan constant
 	PlanFree = iota + 1
+	// PlanPaid paid plan constant
 	PlanPaid
 )
 
+// Profile is a user profile
 type Profile struct {
 	ID    int64
 	Name  string
@@ -46,6 +52,7 @@ type Profile struct {
 	Plan  Plan
 }
 
+// Subscription is a user subscription
 type Subscription struct {
 	Token   string
 	Profile *Profile

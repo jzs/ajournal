@@ -7,12 +7,14 @@ import (
 	"bitbucket.org/sketchground/ajournal/user"
 )
 
+// Service describes the methods on a profile service
 type Service interface {
 	Profile(ctx context.Context) (*Profile, error)
 	UpdateProfile(ctx context.Context, p *Profile) (*Profile, error)
 	Subscribe(ctx context.Context, sub *Subscription) error
 }
 
+// NewService returns a new implementation of the Service interface
 func NewService(pr Repository, sr SubscriptionRepository) Service {
 	return &service{pr: pr, sr: sr}
 }
@@ -52,6 +54,7 @@ func (s *service) UpdateProfile(ctx context.Context, p *Profile) (*Profile, erro
 	return s.pr.Update(ctx, p)
 }
 
+// SubscriptionArgs args for signing up for a subscription
 type SubscriptionArgs struct {
 	CardName string
 	Number   string

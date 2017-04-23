@@ -12,11 +12,13 @@ import (
 	"github.com/urfave/negroni"
 )
 
-type loggertype int
+type loggertype string
 
-const (
-	loggercontext = iota
-)
+var loggercontext loggertype
+
+func init() {
+	loggercontext = "loggertype"
+}
 
 // Logger interface describes functions available on a logger
 type Logger interface {

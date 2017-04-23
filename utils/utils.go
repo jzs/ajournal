@@ -8,14 +8,6 @@ import (
 	"bitbucket.org/sketchground/ajournal/utils/logger"
 )
 
-type ErrBadArgs struct {
-	error
-}
-
-func NewErrBadArgs() error {
-	return &ErrBadArgs{}
-}
-
 // JSONResp formats responses in json
 func JSONResp(ctx context.Context, l logger.Logger, w http.ResponseWriter, data interface{}, err error) {
 	w.Header().Set("content-type", "application/json")

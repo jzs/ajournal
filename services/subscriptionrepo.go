@@ -15,6 +15,7 @@ type subRepo struct {
 	client *client.API
 }
 
+// NewStripeSubscriptionRepo returns a new subscription repo that integrates with stripe
 func NewStripeSubscriptionRepo(skkey string, db *sqlx.DB) profile.SubscriptionRepository {
 	repo := &subRepo{db: db}
 	repo.client = &client.API{}
