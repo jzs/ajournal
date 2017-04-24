@@ -2,7 +2,6 @@ package journal
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -10,6 +9,7 @@ import (
 	"bitbucket.org/sketchground/ajournal/utils/logger"
 
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 )
 
 // SetupHandler sets up routes for the journal service
@@ -48,18 +48,18 @@ func SetupHandler(router *mux.Router, js Service, l logger.Logger) {
 		idstr := vars["id"]
 		id, err := strconv.ParseInt(idstr, 10, 64)
 		if err != nil {
-			utils.JSONResp(r.Context(), l, w, nil, err)
+			utils.JSONResp(r.Context(), l, w, nil, errors.Wrap(err, "Router"))
 			return
 		}
 		ntry := &Entry{}
 		dec := json.NewDecoder(r.Body)
 		err = dec.Decode(&ntry)
 		if err != nil {
-			utils.JSONResp(r.Context(), l, w, nil, err)
+			utils.JSONResp(r.Context(), l, w, nil, errors.Wrap(err, "Router: err decoding json"))
 			return
 		}
 		if ntry.JournalID != id {
-			utils.JSONResp(r.Context(), l, w, nil, errors.New("Mismatch between journal id's"))
+			utils.JSONResp(r.Context(), l, w, nil, utils.NewAPIError(nil, http.StatusBadRequest, "Mismatch between journal id's"))
 			return
 		}
 
@@ -82,7 +82,7 @@ func SetupHandler(router *mux.Router, js Service, l logger.Logger) {
 			return
 		}
 		if ntry.ID != id {
-			utils.JSONResp(r.Context(), l, w, nil, errors.New("Mismatch between id's"))
+			utils.JSONResp(r.Context(), l, w, nil, utils.NewAPIError(nil, http.StatusBadRequest, "Mismatch between id's"))
 			return
 		}
 

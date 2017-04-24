@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"bitbucket.org/sketchground/ajournal/journal"
@@ -26,18 +27,70 @@ func TestTransport(t *testing.T) {
 	js := journal.NewService(jr)
 	journal.SetupHandler(m, js, &logger{})
 
-	testTransport(t, m, "/users/1/journals", http.StatusOK)
-	testTransport(t, m, "/journals", http.StatusForbidden)
-	testTransport(t, m, "/journals/1", http.StatusForbidden)
-	testTransport(t, m, "/journals/1/entries/1", http.StatusNotFound)
-}
+	posts := []struct {
+		URL      string
+		Code     int
+		Type     string
+		PostBody string
+	}{
+		{
+			URL:  "/users/1/journals",
+			Code: http.StatusOK,
+			Type: "GET",
+		},
+		{
+			URL:  "/journals",
+			Code: http.StatusForbidden,
+			Type: "GET",
+		},
+		{
+			URL:  "/journals/1",
+			Code: http.StatusForbidden,
+			Type: "GET",
+		},
+		{
+			URL:  "/journals/1/entries/1",
+			Code: http.StatusNotFound,
+			Type: "GET",
+		},
+		{
+			URL:      "/journals/1/entries",
+			Code:     http.StatusBadRequest,
+			Type:     "POST",
+			PostBody: "{}",
+		},
+		{
+			URL:      "/journals/1/entries/1",
+			Code:     http.StatusBadRequest,
+			Type:     "POST",
+			PostBody: "{}",
+		},
+		{
+			URL:      "/journals",
+			Code:     http.StatusForbidden,
+			Type:     "POST",
+			PostBody: "{}",
+		},
+	}
+	for _, p := range posts {
+		var req *http.Request
+		switch p.Type {
+		case "GET":
+			req, _ = http.NewRequest(p.Type, p.URL, nil)
+			break
+		case "POST":
+			req, _ = http.NewRequest(p.Type, p.URL, strings.NewReader(p.PostBody))
+			break
+		default:
+			req, _ = http.NewRequest(p.Type, p.URL, nil)
+			break
+		}
 
-func testTransport(t *testing.T, m *mux.Router, url string, response int) {
-	req, _ := http.NewRequest("GET", url, nil)
-	rw := httptest.NewRecorder()
-	m.ServeHTTP(rw, req)
-	if rw.Code != response {
-		t.Errorf("Expected %v on url %v, got %v", response, url, rw.Code)
+		rw := httptest.NewRecorder()
+		m.ServeHTTP(rw, req)
+		if rw.Code != p.Code {
+			t.Errorf("Expected %v on url %v, got %v", p.Code, p.URL, rw.Code)
+		}
 	}
 }
 
