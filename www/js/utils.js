@@ -1,7 +1,8 @@
 _aj = new function() {
-	this.get = function(url, callback) {
+
+	var send = function(url, type, data, callback) {
 		var http = new XMLHttpRequest();
-		http.open("GET", url, true);
+		http.open(type, url, true);
 		http.addEventListener("load", function(e) {
 			// Completed...
 			var data = JSON.parse(http.response);
@@ -17,81 +18,28 @@ _aj = new function() {
 		http.addEventListener("abort", function(e) {
 			callback(null, "Call aborted");
 		});
-		http.send();
+
+		if(typeof(data) != 'undefined' && data != null) {
+			http.send(JSON.stringify(data));
+		} else {
+			http.send(null);
+		}
+	};
+
+	this.get = function(url, callback) {
+		send(url, "GET", null, callback);
 	};
 
 	this.post = function(url, data, callback) {
-		var http = new XMLHttpRequest();
-		http.open("POST", url, true);
-		http.addEventListener("load", function(e) {
-			// Completed...
-			var data = JSON.parse(http.response);
-			if (data.Status != 200) {
-				callback(data.Data, data.Error);
-			} else {
-				callback(data.Data, null);
-			}
-		});
-		http.addEventListener("error", function(e) {
-			callback(null, "Call aborted");
-		});
-		http.addEventListener("abort", function(e) {
-			callback(null, "Call aborted");
-		});
-
-		if(typeof(data) != 'undefined' && data != null) {
-			http.send(JSON.stringify(data));
-		} else {
-			http.send(null);
-		}
+		send(url, "POST", data, callback);
 	};
 
 	this.put = function(url, data, callback) {
-		var http = new XMLHttpRequest();
-		http.open("PUT", url, true);
-		http.addEventListener("load", function(e) {
-			// Completed...
-			var data = JSON.parse(http.response);
-			if (data.Status != 200) {
-				callback(data.Data, data.Error);
-			} else {
-				callback(data.Data, null);
-			}
-		});
-		http.addEventListener("error", function(e) {
-			callback(null, "Call aborted");
-		});
-		http.addEventListener("abort", function(e) {
-			callback(null, "Call aborted");
-		});
-
-		if(typeof(data) != 'undefined' && data != null) {
-			http.send(JSON.stringify(data));
-		} else {
-			http.send(null);
-		}
+		send(url, "PUT", data, callback);
 	};
 
-
 	this.delete = function(url, callback) {
-		var http = new XMLHttpRequest();
-		http.open("DELETE", url, true);
-		http.addEventListener("load", function(e) {
-			// Completed...
-			var data = JSON.parse(http.response);
-			if (data.Status != 200) {
-				callback(data.Data, data.Error);
-			} else {
-				callback(data.Data, null);
-			}
-		});
-		http.addEventListener("error", function(e) {
-			callback(null, "Call aborted");
-		});
-		http.addEventListener("abort", function(e) {
-			callback(null, "Call aborted");
-		});
-		http.send();
+		send(url, "DELETE", null, callback);
 	};
 };
 
