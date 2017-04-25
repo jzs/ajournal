@@ -1,7 +1,6 @@
-riot.tag2('content', '<page-dash if="{loggedin && dash}"></page-dash> <page-login if="{loggedout}"></page-login> <page-journal-create if="{loggedin && journalcreate}"></page-journal-create> <page-journal if="{loggedin && journal}" journalid="{journalid}"></page-journal> <page-entryeditor if="{loggedin && entry}" journalid="{journalid}" entryid="{entryid}"></page-entryeditor> <page-viewjournalentry if="{viewjournalentry}" journalid="{journalid}" entryid="{entryid}"></page-viewjournalentry> <page-viewjournal if="{viewjournal}" journalid="{journalid}"></page-viewjournal> <page-viewjournals if="{viewjournals}" userid="{userid}"></page-viewjournals> <page-viewuser if="{viewuser}" username="{username}"></page-viewuser> <page-profile if="{profile}" userid="{userid}"></page-profile>', '', '', function(opts) {
+riot.tag2('content', '<page-dash if="{loggedin && dash}"></page-dash> <page-login if="{login}"></page-login> <page-register if="{register}"></page-register> <page-journal-create if="{loggedin && journalcreate}"></page-journal-create> <page-journal if="{loggedin && journal}" journalid="{journalid}"></page-journal> <page-entryeditor if="{loggedin && entry}" journalid="{journalid}" entryid="{entryid}"></page-entryeditor> <page-viewjournalentry if="{viewjournalentry}" journalid="{journalid}" entryid="{entryid}"></page-viewjournalentry> <page-viewjournal if="{viewjournal}" journalid="{journalid}"></page-viewjournal> <page-viewjournals if="{viewjournals}" userid="{userid}"></page-viewjournals> <page-viewuser if="{viewuser}" username="{username}"></page-viewuser> <page-profile if="{profile}" userid="{userid}"></page-profile>', '', '', function(opts) {
 var self = this;
 self.loggedin = false;
-self.loggedout = !self.loggedin;
 self.journalcreate = false;
 self.dash = false;
 self.entry = false
@@ -10,17 +9,20 @@ self.viewjournal = false;
 self.viewjournalentry = false;
 self.viewuser = false;
 self.profile = false;
+self.register = false;
+self.login = false;
 
 RiotControl.on('logout', function() {
 	self.loggedin = false;
-	self.loggedout = !self.loggedin;
-
+	self.clear();
+	self.login = true;
 	self.update();
 });
 RiotControl.on('login', function(user) {
 	self.user = user;
 	self.loggedin = true;
-	self.loggedout = !self.loggedin;
+	self.clear();
+	self.dash = true;
 	self.update();
 });
 
@@ -34,6 +36,8 @@ self.clear = function() {
 	self.viewjournalentry = false;
 	self.profile = false;
 	self.viewuser = false;
+	self.register = false;
+	self.login = false;
 }
 
 route(function(collection, id, method, mid) {
@@ -72,13 +76,25 @@ route(function(collection, id, method, mid) {
 			}
 			break;
 		case 'profile':
+			if(!self.loggedin) {
+				route("/");
+				return;
+			}
 			self.userid = self.user.ID;
 			self.profile = true;
 			break;
+		case 'login':
+			self.login = true;
+			break;
+		case 'register':
+			self.register = true;
+			break;
 		default:
-			self.clear()
-			self.dash = true;
-			self.update();
+			if(self.loggedin) {
+				self.dash = true;
+			} else {
+				self.login = true;
+			}
 			break;
 	}
 	self.update();
@@ -246,6 +262,7 @@ self.toggle = function(e) {
 
 self.logout = function(e) {
 	e.preventDefault();
+	self.isActive = false;
 	RiotControl.trigger('perform-logout', null);
 };
 
@@ -489,8 +506,10 @@ self.onentry = function(e) {
 };
 });
 
-riot.tag2('page-login', '<section class="hero is-fullheight is-primary"> <div class="hero-head"></div> <div class="hero-body"> <div class="container"> <div class="columns"> <div class="column is-half is-offset-one-quarter has-text-left"> <h3 class="title">Journal</h3> <div class="card"> <div class="card-content is-clearfix"> <label class="label">Username</label> <p class="control has-icon has-icon-right"> <input class="input" type="text" placeholder="Username" onkeyup="{onusername}" value=""> <span class="icon is-small hidden"> <i class="fa fa-check"></i> </span> <span class="hidden help is-success">This username is available</span> </p> <label class="label">Password</label> <p class="control has-icon has-icon-right"> <input class="input" type="password" placeholder="Password" value="" onkeyup="{onpassword}"> <span class="icon is-small hidden"> <i class="fa fa-warning"></i> </span> <span if="{loginerr}" class="help is-danger">{errmsg}</span> </p> <div class="control is-grouped is-pulled-right"> <p class control> <button class="button is-link {is-disabled : loggingin}" onclick="{register}">Register</button> </p> <p class="control"> <button class="button is-success {is-loading : loggingin}" onclick="{login}">Login</button> </p> </div> </div> </div> </div> </div> </div> </div> <div class="hero-foot"></div> </section>', '', '', function(opts) {
+riot.tag2('page-login', '<section class="hero is-fullheight is-primary"> <div class="hero-head"></div> <div class="hero-body"> <div class="container"> <div class="columns"> <div class="column is-half is-offset-one-quarter has-text-left"> <h3 class="title">Login</h3> <div class="card"> <div class="card-content is-clearfix"> <label class="label">Username</label> <p class="control has-icon has-icon-right"> <input class="input" type="text" placeholder="Username" onkeyup="{onusername}" value=""> <span class="icon is-small hidden"> <i class="fa fa-check"></i> </span> <span class="hidden help is-success">This username is available</span> </p> <label class="label">Password</label> <p class="control has-icon has-icon-right"> <input class="input" type="password" placeholder="Password" value="" onkeyup="{onpassword}"> <span class="icon is-small hidden"> <i class="fa fa-warning"></i> </span> <span if="{loginerr}" class="help is-danger">{errmsg}</span> </p> <div class="control is-grouped is-pulled-right"> <p class control> <a class="button is-link {is-disabled : loggingin}" href="#/register">Register</a> </p> <p class="control"> <button disabled="{isdisabled}" class="button is-success {is-loading : loggingin}" onclick="{login}">Login</button> </p> </div> </div> </div> </div> </div> </div> </div> <div class="hero-foot"></div> </section>', '', '', function(opts) {
 var self = this;
+
+self.isdisabled = true;
 
 self.loggingin = false;
 self.loginerr = false;
@@ -499,11 +518,22 @@ self.errmsg = "";
 self.username = "";
 self.onusername = function(e) {
 	self.username = e.target.value;
+	self.verifylogin();
 };
 
 self.password = "";
 self.onpassword = function(e) {
 	self.password = e.target.value;
+	self.verifylogin();
+};
+
+self.verifylogin = function() {
+	if(self.password != "" && self.username != "") {
+		self.isdisabled = false;
+	} else {
+		self.isdisabled = true;
+	}
+	self.update();
 };
 
 RiotControl.on('logout', function() {
@@ -523,14 +553,14 @@ self.login = function() {
 	};
 
 	_aj.post("/api/users/login", user, function(data, err) {
+		self.loggingin = false;
+		self.update();
 		if( err != null ) {
-			self.errmsg = data.Error;
+			self.errmsg = err;
 			self.loginerr = true;
 			self.update();
 			return;
 		}
-		self.loggingin = false;
-		self.update();
 		data.Username = user.Username;
 		RiotControl.trigger('perform-login', data);
 		route("/");
@@ -545,7 +575,7 @@ self.register = function(e) {
 	_aj.post("/api/users", user, function(data, err) {
 		if( err != null ) {
 
-			self.errmsg = data.Error;
+			self.errmsg = err;
 			self.loginerr = true;
 			self.update();
 			return;
@@ -656,6 +686,98 @@ self.performUpgrade = function(e) {
 		}
 	});
 }
+
+});
+
+riot.tag2('page-register', '<section class="hero is-fullheight is-primary"> <div class="hero-head"></div> <div class="hero-body"> <div class="container"> <div class="columns"> <div class="column is-half is-offset-one-quarter has-text-left"> <h3 class="title">Register</h3> <div class="card"> <div class="card-content is-clearfix"> <label class="label">Username*</label> <p class="control has-icon has-icon-right"> <input class="input" type="text" placeholder="Username" onkeyup="{onusername}" value=""> <span class="icon is-small hidden"> <i class="fa fa-check"></i> </span> <span class="hidden help is-success">This username is available</span> </p> <label class="label">Password*</label> <p class="control has-icon has-icon-right"> <input class="input" type="password" placeholder="Password" value="" onkeyup="{onpassword}"> <span class="icon is-small hidden"> <i class="fa fa-warning"></i> </span> <span if="{loginerr}" class="help is-danger">{errmsg}</span> </p> <label class="label">Full Name</label> <p class="control has-icon has-icon-right"> <input class="input" type="text" placeholder="Full Name" value="" onkeyup="{onname}"> </p> <label class="label">E-mail</label> <p class="control has-icon has-icon-right"> <input class="input" type="text" placeholder="E-mail" value="" onkeyup="{onemail}"> </p> <p class="control"> <label class="checkbox"> <input type="checkbox" checked="{user.Public}" onchange="{onlicense}"> Accept terms* </label> </p> <div class="control is-grouped is-pulled-right"> <p class control> <button disabled="{formdisabled}" class="button is-success {is-disabled : loggingin}" onclick="{register}">Register</button> </p> </div> </div> </div> </div> </div> </div> </div> <div class="hero-foot"></div> </section>', '', '', function(opts) {
+var self = this;
+
+self.user = {
+	Username: "",
+	Password: "",
+	Email: "",
+	License: false
+};
+
+self.formdisabled = true;
+self.submitting = false;
+
+self.loggingin = false;
+self.loginerr = false;
+self.errmsg = "";
+
+self.onusername = function(e) {
+	self.user.Username = e.target.value;
+	self.validateform();
+};
+
+self.onpassword = function(e) {
+	self.user.Password = e.target.value;
+	self.validateform();
+};
+self.onemail = function(e) {
+	self.user.Email = e.target.value;
+	self.validateform();
+};
+self.onlicense = function(e) {
+	self.user.License = e.target.checked;
+	self.validateform();
+};
+self.onname = function(e) {
+	self.user.Name = e.target.value;
+	self.validateform();
+};
+
+self.validateform = function() {
+	if(self.user.Username != "" && self.user.Password != "" && self.user.License != "") {
+		self.formdisabled = false;
+		self.update();
+		return
+	}
+	self.formdisabled = true;
+	self.update();
+};
+
+self.login = function() {
+	self.loggingin = true;
+	self.update();
+
+	_aj.post("/api/users/login", self.user, function(data, err) {
+		self.loggingin = false;
+		self.update();
+		if( err != null ) {
+			self.errmsg = err;
+			self.loginerr = true;
+			self.update();
+			return;
+		}
+
+		if(self.user.Name != "" || self.user.Email != "") {
+			self.user.ID = data.UserID;
+			_aj.put("/api/profile", self.user, function(data, err) {});
+		}
+
+		data.Username = self.user.Username;
+		RiotControl.trigger('perform-login', data);
+		self.user = {};
+		route("/");
+	});
+};
+
+self.register = function(e) {
+	_aj.post("/api/users", self.user, function(data, err) {
+		if( err != null ) {
+
+			self.errmsg = err;
+			self.loginerr = true;
+			self.update();
+			return;
+		}
+
+		self.login();
+		self.update();
+	});
+};
 
 });
 

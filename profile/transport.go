@@ -18,6 +18,19 @@ func SetupHandler(r *mux.Router, ps Service, l logger.Logger) {
 		utils.JSONResp(r.Context(), l, w, profile, err)
 	})
 
+	r.Path("/profile").Methods("PUT").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		prof := &Profile{}
+		dec := json.NewDecoder(r.Body)
+		err := dec.Decode(&prof)
+		if err != nil {
+			utils.JSONResp(r.Context(), l, w, nil, err)
+			return
+		}
+
+		profile, err := ps.Create(r.Context(), prof)
+		utils.JSONResp(r.Context(), l, w, profile, err)
+	})
+
 	r.Path("/profile").Methods("POST").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		prof := &Profile{}
 		dec := json.NewDecoder(r.Body)
@@ -37,7 +50,7 @@ func SetupHandler(r *mux.Router, ps Service, l logger.Logger) {
 		dec := json.NewDecoder(r.Body)
 		err := dec.Decode(&sub)
 		if err != nil {
-			utils.JSONResp(r.Context(), l, w, nil, err)
+			utils.JSONResp(r.Context(), l, w, nil, utils.NewAPIError(nil, http.StatusBadRequest, "Invalid json"))
 			return
 		}
 

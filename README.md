@@ -38,3 +38,9 @@ The riot compiler can be installed from npm `npm install riot -g`. Omit -g if yo
 
 ## Architecture
 TODO Here will be a description of how the code is organized and the methodology behind.
+
+
+
+## Deployment
+
+To deploy, one can use Sup. The binary will be copied to `/usr/local/bin/ajournal`, the web data will be copied to `/var/www/ajournal`. During first deployment, remember to copy ajournal.service to `/usr/lib/systemd/system/ajournal.service`. Environment variables must ten be set up in `/etc/ajournal.conf`

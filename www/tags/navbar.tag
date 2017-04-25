@@ -27,6 +27,7 @@ self.toggle = function(e) {
 
 self.logout = function(e) {
 	e.preventDefault();
+	self.isActive = false;
 	RiotControl.trigger('perform-logout', null);
 };
 

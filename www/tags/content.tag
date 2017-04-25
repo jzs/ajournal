@@ -1,6 +1,7 @@
 <content>
 	<page-dash if={loggedin && dash}></page-dash>
-	<page-login if={loggedout}></page-login>
+	<page-login if={login}></page-login>
+	<page-register if={register}></page-register>
 	<page-journal-create if={loggedin && journalcreate}></page-journal-create>
 	<page-journal if={loggedin && journal} journalid={journalid}></page-journal>
 	<page-entryeditor if={loggedin && entry} journalid={journalid} entryid={entryid}></page-entryeditor>
@@ -12,7 +13,6 @@
 	<script>
 var self = this;
 self.loggedin = false;
-self.loggedout = !self.loggedin;
 self.journalcreate = false;
 self.dash = false;
 self.entry = false
@@ -21,17 +21,20 @@ self.viewjournal = false;
 self.viewjournalentry = false;
 self.viewuser = false;
 self.profile = false;
+self.register = false;
+self.login = false;
 
 RiotControl.on('logout', function() {
 	self.loggedin = false;
-	self.loggedout = !self.loggedin;
-
+	self.clear();
+	self.login = true;
 	self.update();
 });
 RiotControl.on('login', function(user) {
 	self.user = user;
 	self.loggedin = true;
-	self.loggedout = !self.loggedin;
+	self.clear();
+	self.dash = true;
 	self.update();
 });
 
@@ -45,6 +48,8 @@ self.clear = function() {
 	self.viewjournalentry = false;
 	self.profile = false;
 	self.viewuser = false;
+	self.register = false;
+	self.login = false;
 }
 
 route(function(collection, id, method, mid) {
@@ -86,13 +91,25 @@ route(function(collection, id, method, mid) {
 			}
 			break;
 		case 'profile':
+			if(!self.loggedin) {
+				route("/");
+				return;
+			}
 			self.userid = self.user.ID;
 			self.profile = true;
 			break;
+		case 'login':
+			self.login = true;
+			break;
+		case 'register':
+			self.register = true;
+			break;
 		default:
-			self.clear()
-			self.dash = true;
-			self.update();
+			if(self.loggedin) {
+				self.dash = true;
+			} else {
+				self.login = true;
+			}
 			break;
 	}
 	self.update();

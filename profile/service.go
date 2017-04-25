@@ -2,13 +2,17 @@ package profile
 
 import (
 	"context"
-	"errors"
+	"net/http"
+
+	"github.com/pkg/errors"
 
 	"bitbucket.org/sketchground/ajournal/user"
+	"bitbucket.org/sketchground/ajournal/utils"
 )
 
 // Service describes the methods on a profile service
 type Service interface {
+	Create(ctx context.Context, p *Profile) (*Profile, error)
 	Profile(ctx context.Context) (*Profile, error)
 	UpdateProfile(ctx context.Context, p *Profile) (*Profile, error)
 	Subscribe(ctx context.Context, sub *Subscription) error
@@ -24,10 +28,31 @@ type service struct {
 	sr SubscriptionRepository
 }
 
+func (s *service) Create(ctx context.Context, p *Profile) (*Profile, error) {
+	usr := user.FromContext(ctx)
+	if usr == nil {
+		return nil, utils.NewAPIError(nil, http.StatusForbidden, "Cannot create profile without a user context")
+	}
+	if usr.ID != p.ID {
+		return nil, utils.NewAPIError(nil, http.StatusBadRequest, "Cannot create profile for another user")
+	}
+
+	if p.Plan == 0 {
+		p.Plan = PlanFree
+	}
+
+	prof, err := s.pr.Create(ctx, p)
+	if err != nil {
+		return nil, errors.Wrap(err, "CreateProfile")
+	}
+	return prof, nil
+
+}
+
 func (s *service) Profile(ctx context.Context) (*Profile, error) {
 	usr := user.FromContext(ctx)
 	if usr == nil {
-		return nil, errors.New("Cannot create a journal without a user context")
+		return nil, utils.NewAPIError(nil, http.StatusForbidden, "Cannot create a journal without a user context")
 	}
 
 	pro, err := s.pr.FindByID(ctx, usr.ID)
@@ -35,7 +60,7 @@ func (s *service) Profile(ctx context.Context) (*Profile, error) {
 		// Create profile and return that.
 		pro, err = s.pr.Create(ctx, &Profile{ID: usr.ID, Plan: PlanFree})
 		if err != nil {
-			return nil, errors.New("Could not create profile for user")
+			return nil, errors.Wrap(err, "Could not create profile for user")
 		}
 		return pro, nil
 	}
@@ -45,13 +70,17 @@ func (s *service) Profile(ctx context.Context) (*Profile, error) {
 func (s *service) UpdateProfile(ctx context.Context, p *Profile) (*Profile, error) {
 	usr := user.FromContext(ctx)
 	if usr == nil {
-		return nil, errors.New("Cannot create a journal without a user context")
+		return nil, utils.NewAPIError(nil, http.StatusForbidden, "Cannot create a journal without a user context")
 	}
 	if usr.ID != p.ID {
-		return nil, errors.New("Cannot update another users profile")
+		return nil, utils.NewAPIError(nil, http.StatusBadRequest, "Cannot update another users profile")
 	}
 
-	return s.pr.Update(ctx, p)
+	prof, err := s.pr.Update(ctx, p)
+	if err != nil {
+		return nil, errors.Wrap(err, "UpdateProfile")
+	}
+	return prof, nil
 }
 
 // SubscriptionArgs args for signing up for a subscription

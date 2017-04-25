@@ -2,9 +2,12 @@ package user
 
 import (
 	"context"
-	"errors"
+	"net/http"
 	"time"
 
+	"bitbucket.org/sketchground/ajournal/utils"
+
+	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
 	"golang.org/x/crypto/bcrypt"
@@ -68,13 +71,19 @@ func (s *service) Register(ctx context.Context, u *User) error {
 
 func (s *service) Login(ctx context.Context, username string, password string) (*Token, error) {
 	u, err := s.repo.FindByUsername(ctx, username)
-	if err != nil {
-		return nil, err
+	switch {
+	case err == ErrUserNotExist:
+		return nil, utils.NewAPIError(err, http.StatusNotFound, "Username and/or password incorrect")
+	case err != nil:
+		return nil, errors.Wrap(err, "Login")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
-	if err != nil {
-		return nil, err
+	switch {
+	case err == bcrypt.ErrMismatchedHashAndPassword:
+		return nil, utils.NewAPIError(err, http.StatusNotFound, "Username and/or password incorrect")
+	case err != nil:
+		return nil, errors.Wrap(err, "Login")
 	}
 
 	u1 := uuid.NewV4()
@@ -86,7 +95,7 @@ func (s *service) Login(ctx context.Context, username string, password string) (
 
 	err = s.repo.CreateToken(ctx, token)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Login")
 	}
 	return token, nil
 }

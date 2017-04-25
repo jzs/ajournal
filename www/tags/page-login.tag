@@ -5,7 +5,7 @@
 			<div class="container">
 				<div class="columns">
 					<div class="column is-half is-offset-one-quarter has-text-left">
-						<h3 class="title">Journal</h3>
+						<h3 class="title">Login</h3>
 						<div class="card">
 							<div class="card-content is-clearfix">
 								<label class="label">Username</label>
@@ -28,10 +28,10 @@
 
 								<div class="control is-grouped is-pulled-right">
 									<p class"control">
-									<button class="button is-link {is-disabled : loggingin}" onclick={register}>Register</button>
+									<a class="button is-link {is-disabled : loggingin}" href="#/register">Register</a>
 									</p>
 									<p class="control">
-									<button class="button is-success {is-loading : loggingin}" onclick={login}>Login</button>
+									<button disabled={isdisabled} class="button is-success {is-loading : loggingin}" onclick={login}>Login</button>
 									</p>
 								</div>
 							</div>
@@ -45,7 +45,7 @@
 	<script>
 var self = this;
 
-
+self.isdisabled = true; // login button disabled
 
 self.loggingin = false;
 self.loginerr = false;
@@ -54,11 +54,22 @@ self.errmsg = "";
 self.username = "";
 self.onusername = function(e) {
 	self.username = e.target.value;
+	self.verifylogin();
 };
 
 self.password = "";
 self.onpassword = function(e) {
 	self.password = e.target.value;
+	self.verifylogin();
+};
+
+self.verifylogin = function() {
+	if(self.password != "" && self.username != "") {
+		self.isdisabled = false;
+	} else {
+		self.isdisabled = true;
+	}
+	self.update();
 };
 
 RiotControl.on('logout', function() {
@@ -80,14 +91,14 @@ self.login = function() {
 
 	// Perform login
 	_aj.post("/api/users/login", user, function(data, err) {
+		self.loggingin = false;
+		self.update();
 		if( err != null ) {
-			self.errmsg = data.Error;
+			self.errmsg = err;
 			self.loginerr = true;
 			self.update();
 			return;
 		}
-		self.loggingin = false;
-		self.update();
 		data.Username = user.Username;
 		RiotControl.trigger('perform-login', data);
 		route("/");
@@ -102,7 +113,7 @@ self.register = function(e) {
 	_aj.post("/api/users", user, function(data, err) {
 		if( err != null ) {
 			// Do shit!
-			self.errmsg = data.Error;
+			self.errmsg = err;
 			self.loginerr = true;
 			self.update();
 			return;
