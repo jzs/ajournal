@@ -3,11 +3,7 @@ package profile_test
 import (
 	"context"
 	"net/http"
-	"net/http/httptest"
-	"strings"
 	"testing"
-
-	"github.com/gorilla/mux"
 
 	"bitbucket.org/sketchground/ajournal/profile"
 	"bitbucket.org/sketchground/ajournal/user"
@@ -20,54 +16,6 @@ func (l *logger) Errorf(ctx context.Context, format string, args ...interface{})
 func (l *logger) Print(ctx context.Context, err error)                                    {}
 func (l *logger) Printf(ctx context.Context, format string, args ...interface{})          {}
 func (l *logger) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) { next(w, r) }
-
-func TestTransport(t *testing.T) {
-	m := mux.NewRouter()
-	pr := NewInmemRepo()
-	sr := NewInmemSubRepo()
-	ps := profile.NewService(pr, sr)
-	profile.SetupHandler(m, ps, &logger{})
-
-	posts := []struct {
-		URL      string
-		Code     int
-		Type     string
-		PostBody string
-	}{
-		{
-			URL:  "/profile",
-			Code: http.StatusForbidden,
-			Type: "GET",
-		},
-		{
-			URL:      "/profile",
-			Code:     http.StatusForbidden,
-			Type:     "POST",
-			PostBody: "{}",
-		},
-	}
-
-	for _, p := range posts {
-		var req *http.Request
-		switch p.Type {
-		case "GET":
-			req, _ = http.NewRequest(p.Type, p.URL, nil)
-			break
-		case "POST":
-			req, _ = http.NewRequest(p.Type, p.URL, strings.NewReader(p.PostBody))
-			break
-		default:
-			req, _ = http.NewRequest(p.Type, p.URL, nil)
-			break
-		}
-
-		rw := httptest.NewRecorder()
-		m.ServeHTTP(rw, req)
-		if rw.Code != p.Code {
-			t.Errorf("Expected %v on url %v, got %v", p.Code, p.URL, rw.Code)
-		}
-	}
-}
 
 func TestService(t *testing.T) {
 	pr := NewInmemRepo()
@@ -123,7 +71,34 @@ func TestService(t *testing.T) {
 		t.Fatalf("Expected an error updating other persons profile, got %v", np)
 	}
 
+	// Test Profile GET when it doesn't already exist
+	u = &user.User{
+		ID:       202,
+		Username: "ok",
+	}
+	ctx = user.TestContextWithUser(u)
+
+	p, err = ps.Profile(ctx)
+	if err != nil {
+		t.Fatalf("Expected fetching profile, got: %v", err.Error())
+	}
+	if p.Name != "" {
+		t.Fatalf("Expected profile name to be empty, got: %v", p.Name)
+	}
+	if p.Plan != profile.PlanFree {
+		t.Fatalf("Expected to have the plan set to free, got: %v", p.Plan)
+	}
+	if p.ID != u.ID {
+		t.Fatalf("Profile ID %v, got %v", u.ID, p.ID)
+	}
+
 	// Test Create subscription!
+	sub := &profile.Subscription{}
+	err = ps.Subscribe(ctx, sub)
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err.Error())
+	}
+
 }
 
 type profileRepo struct {
