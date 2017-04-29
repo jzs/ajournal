@@ -63,10 +63,7 @@ func (s *service) Register(ctx context.Context, u *User) error {
 	u.Password = string(enc)
 
 	_, err = s.repo.Create(ctx, u)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (s *service) Login(ctx context.Context, username string, password string) (*Token, error) {
@@ -102,10 +99,7 @@ func (s *service) Login(ctx context.Context, username string, password string) (
 
 func (s *service) Logout(ctx context.Context, token string) error {
 	err := s.repo.DeleteToken(ctx, token)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (s *service) User(ctx context.Context, username string) (*User, error) {

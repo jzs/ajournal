@@ -47,16 +47,10 @@ func (ur *repo) Create(ctx context.Context, u *user.User) (*user.User, error) {
 
 func (ur *repo) CreateToken(ctx context.Context, t *user.Token) error {
 	_, err := ur.db.Exec("INSERT INTO UserToken(Token, UserID, Expires) VALUES($1,$2,$3)", t.Token, t.UserID, t.Expires)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (ur *repo) DeleteToken(ctx context.Context, token string) error {
 	_, err := ur.db.Exec("DELETE FROM UserToken WHERE Token=$1", token)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }

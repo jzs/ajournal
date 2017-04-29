@@ -79,7 +79,7 @@ func (s *service) Journal(ctx context.Context, id int64) (*Journal, error) {
 	}
 
 	// If it's another users journal and it is not public, then do not return it.
-	if journal.UserID != usr.ID && journal.Public == false {
+	if journal.UserID != usr.ID && !journal.Public {
 		return nil, utils.NewAPIError(errors.New("User trying to access another users private journal"), http.StatusNotFound, ErrJournalNotExist.Error())
 	}
 

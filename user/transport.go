@@ -72,7 +72,10 @@ func SetupHandler(r *mux.Router, us Service, l logger.Logger) {
 	r.Path("/users/login").Methods("POST").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		u := &User{}
 		dec := json.NewDecoder(r.Body)
-		dec.Decode(u)
+		err := dec.Decode(u)
+		if err != nil {
+			utils.JSONResp(r.Context(), l, w, nil, utils.NewAPIError(err, http.StatusBadRequest, "Not valid json"))
+		}
 
 		token, err := us.Login(r.Context(), u.Username, u.Password)
 		if err != nil {
@@ -102,6 +105,7 @@ func SetupHandler(r *mux.Router, us Service, l logger.Logger) {
 			return
 		}
 		us.Logout(r.Context(), cookie.Value)
+
 		cookie.Expires = time.Now().Add(-24 * 7 * time.Hour) // Invalidate cookie by set time to zero time
 		cookie.MaxAge = -1
 		cookie.Path = "/"

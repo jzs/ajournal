@@ -77,13 +77,10 @@ func TestTransport(t *testing.T) {
 		switch p.Type {
 		case "GET":
 			req, _ = http.NewRequest(p.Type, p.URL, nil)
-			break
 		case "POST":
 			req, _ = http.NewRequest(p.Type, p.URL, strings.NewReader(p.PostBody))
-			break
 		default:
 			req, _ = http.NewRequest(p.Type, p.URL, nil)
-			break
 		}
 
 		rw := httptest.NewRecorder()
@@ -224,7 +221,7 @@ func TestService(t *testing.T) {
 		t.Fatalf("Expected to fetch 0 journals, got: %v", len(journals))
 	}
 	j, err = js.Journal(ctx, jrnl.ID)
-	if err == nil && j.Public == false {
+	if err == nil && !j.Public {
 		t.Fatalf("Expected to not find journal, but got it anyways")
 	}
 
