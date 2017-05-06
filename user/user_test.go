@@ -63,7 +63,10 @@ func TestService(t *testing.T) {
 		t.Fatalf("Expected token for same user, got other users token")
 	}
 
-	us.Logout(ctx, token.Token)
+	err = us.Logout(ctx, token.Token)
+	if err != nil {
+		t.Fatalf("Expected successful logout, got: %v", err.Error())
+	}
 	user, err := us.UserWithToken(ctx, token.Token)
 	if err == nil {
 		t.Fatalf("Expected user to be logged out. But found user %v", user)

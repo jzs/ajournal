@@ -251,6 +251,10 @@ func TestService(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected to get result, got %v", err.Error())
 	}
+	if len(journals) != 1 {
+		t.Errorf("Expected to get 1 result, got %v", len(journals))
+
+	}
 
 	// Test create with no context
 	_, err = js.Create(context.Background(), &journal.Journal{Title: title})

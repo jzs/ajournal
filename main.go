@@ -14,6 +14,7 @@ import (
 	"bitbucket.org/sketchground/ajournal/profile"
 	"bitbucket.org/sketchground/ajournal/services"
 	"bitbucket.org/sketchground/ajournal/user"
+	"bitbucket.org/sketchground/ajournal/utils"
 	"bitbucket.org/sketchground/ajournal/utils/logger"
 
 	"github.com/gorilla/mux"
@@ -92,6 +93,15 @@ func main() {
 
 	alogger := logger.New(BuildType == BuildVersionDevel, dsn)
 
+	apirouter.Path("/version").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		version := map[string]string{
+			"Version": BuildVersion,
+			"Time":    BuildTime,
+			"Type":    BuildType,
+		}
+		utils.JSONResp(r.Context(), alogger, w, version, nil)
+	})
+
 	jr := postgres.NewJournalRepo(db, alogger)
 	js := journal.NewService(jr)
 	journal.SetupHandler(apirouter, js, alogger)
@@ -141,7 +151,7 @@ func main() {
 	server := &http.Server{Addr: port, Handler: base}
 
 	// subscribe to SIGINT signals
-	sigchan := make(chan os.Signal)
+	sigchan := make(chan os.Signal, 5)
 	signal.Notify(sigchan, os.Interrupt)
 
 	go func() {

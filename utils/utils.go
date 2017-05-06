@@ -25,7 +25,6 @@ func JSONResp(ctx context.Context, l logger.Logger, w http.ResponseWriter, data 
 			}
 			l.Printf(ctx, err.Error())
 			l.Print(ctx, apierr.Cause())
-			break
 		default:
 			w.WriteHeader(http.StatusInternalServerError)
 			resp = jsonresp{
@@ -34,7 +33,6 @@ func JSONResp(ctx context.Context, l logger.Logger, w http.ResponseWriter, data 
 			}
 			// Log the error...
 			l.Error(ctx, err)
-			break
 		}
 
 		err = enc.Encode(resp)

@@ -29,9 +29,12 @@ func (sr *subRepo) Create(ctx context.Context, s *profile.Subscription) (*profil
 		Desc:  s.Profile.Name,
 		Email: s.Profile.Email,
 	}
-	params.SetSource(&stripe.CardParams{
+	err := params.SetSource(&stripe.CardParams{
 		Token: s.Token,
 	})
+	if err != nil {
+		return nil, errors.Wrap(err, "SubscriptionRepo: Failed setting stripe params")
+	}
 
 	// Create customer!
 	cust, err := sr.client.Customers.New(params)

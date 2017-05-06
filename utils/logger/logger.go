@@ -8,7 +8,6 @@ import (
 	"os"
 	"time"
 
-	raven "github.com/getsentry/raven-go"
 	uuid "github.com/satori/go.uuid"
 	"github.com/urfave/negroni"
 )
@@ -38,10 +37,6 @@ type logger struct {
 // New creates a new logger
 // isDevel determines whether errors should be logged to sentry.io or not
 func New(isDevel bool, dsn string) Logger {
-	if !isDevel {
-		raven.SetDSN(dsn) // Set DSN up for sentry.io (To log crashes!)
-	}
-
 	stdlogger := log.New(os.Stderr, "", 0)
 
 	return &logger{
@@ -56,9 +51,6 @@ func (l *logger) Error(ctx context.Context, err error) {
 		uid = ""
 	}
 	l.log.Printf("[ERROR] | %v | %+v", uid, err)
-	if !l.isDevel {
-		raven.CaptureError(err, nil)
-	}
 }
 
 func (l *logger) Errorf(ctx context.Context, format string, args ...interface{}) {

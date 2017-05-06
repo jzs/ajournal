@@ -94,8 +94,5 @@ type SubscriptionArgs struct {
 
 func (s *service) Subscribe(ctx context.Context, sub *Subscription) error {
 	_, err := s.sr.Create(ctx, sub)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }

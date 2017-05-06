@@ -104,7 +104,9 @@ func SetupHandler(r *mux.Router, us Service, l logger.Logger) {
 			utils.JSONResp(r.Context(), l, w, nil, nil) // nil, nil since we ignore the error and just "log out" the user.
 			return
 		}
-		us.Logout(r.Context(), cookie.Value)
+		if err := us.Logout(r.Context(), cookie.Value); err != nil {
+			l.Errorf(r.Context(), "Failed to log out, %+v", err.Error())
+		}
 
 		cookie.Expires = time.Now().Add(-24 * 7 * time.Hour) // Invalidate cookie by set time to zero time
 		cookie.MaxAge = -1
