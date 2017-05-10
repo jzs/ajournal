@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -42,10 +41,12 @@ var (
 )
 
 func main() {
+	ctx := context.Background()
+	log := logger.New(BuildType == BuildVersionDevel)
 
 	stripeKey := os.Getenv("AJ_STRIPE_SK")
 	if stripeKey == "" {
-		log.Fatalf("Environment variable AJ_STRIPE_SK not set!\nRemember to set your stripe private key")
+		log.Fatalf(ctx, "Environment variable AJ_STRIPE_SK not set!\nRemember to set your stripe private key")
 		return
 	}
 
@@ -64,18 +65,11 @@ func main() {
 		port = ":8080"
 	}
 
-	// Set up sentry.io to log crashes!
-	dsn := os.Getenv("AJ_SENTRY_DSN")
-	if dsn == "" && BuildType != BuildVersionDevel {
-		log.Fatalf("Environment variable AJ_SENTRY_DSN not set!\nRemember to set you sentry dsn")
-		return
-	}
-
 	wwwdir := os.Getenv("AJ_WWW_DIR")
 	if wwwdir == "" {
 		wwwdir = "/var/www/ajournal"
 	}
-	log.Printf("AJ_WWW_DIR is set to %v\n", wwwdir)
+	log.Printf(ctx, "AJ_WWW_DIR is set to %v", wwwdir)
 
 	passwordstr := ""
 	if dbpass != "" {
@@ -84,14 +78,12 @@ func main() {
 
 	db, err := sqlx.Connect("postgres", fmt.Sprintf("user=%v dbname=%v %v sslmode=disable", dbuser, dbname, passwordstr))
 	if err != nil {
-		log.Fatalf("Could not connect to database! %v", err)
+		log.Fatalf(ctx, "Could not connect to database! %v", err)
 		return
 	}
 
 	baserouter := mux.NewRouter()
 	apirouter := baserouter.PathPrefix("/api").Subrouter().StrictSlash(true)
-
-	alogger := logger.New(BuildType == BuildVersionDevel, dsn)
 
 	apirouter.Path("/version").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		version := map[string]string{
@@ -99,21 +91,21 @@ func main() {
 			"Time":    BuildTime,
 			"Type":    BuildType,
 		}
-		utils.JSONResp(r.Context(), alogger, w, version, nil)
+		utils.JSONResp(r.Context(), log, w, version, nil)
 	})
 
-	jr := postgres.NewJournalRepo(db, alogger)
+	jr := postgres.NewJournalRepo(db, log)
 	js := journal.NewService(jr)
-	journal.SetupHandler(apirouter, js, alogger)
+	journal.SetupHandler(apirouter, js, log)
 
 	ur := postgres.NewUserRepo(db)
 	us := user.NewService(ur)
-	user.SetupHandler(apirouter, us, alogger)
+	user.SetupHandler(apirouter, us, log)
 
-	pr := postgres.NewProfileRepo(db, alogger)
+	pr := postgres.NewProfileRepo(db, log)
 	sr := services.NewStripeSubscriptionRepo(stripeKey, db)
 	ps := profile.NewService(pr, sr)
-	profile.SetupHandler(apirouter, ps, alogger)
+	profile.SetupHandler(apirouter, ps, log)
 
 	// Setup api router
 	baserouter.PathPrefix("/api").Handler(negroni.New(negroni.Wrap(apirouter)))
@@ -136,7 +128,7 @@ func main() {
 	// Setup static file handler
 	baserouter.PathPrefix("/").Handler(http.FileServer(http.Dir(wwwdir)))
 
-	base := negroni.New(negroni.NewRecovery(), alogger)
+	base := negroni.New(negroni.NewRecovery(), log)
 
 	// Setup middleware that injects currently logged in user into the stack.
 	base.Use(negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
@@ -146,8 +138,8 @@ func main() {
 
 	base.UseHandler(baserouter)
 
-	alogger.Printf(context.Background(), "Starting server: %v.%v \tAt:%v", BuildType, BuildVersion, BuildTime)
-	alogger.Printf(context.Background(), "Listening on: %v", port)
+	log.Printf(context.Background(), "Starting server: %v.%v \tAt:%v", BuildType, BuildVersion, BuildTime)
+	log.Printf(context.Background(), "Listening on: %v", port)
 	server := &http.Server{Addr: port, Handler: base}
 
 	// subscribe to SIGINT signals
@@ -157,21 +149,21 @@ func main() {
 	go func() {
 		err = server.ListenAndServe()
 		if err != nil {
-			alogger.Error(context.Background(), err)
+			log.Error(context.Background(), err)
 		}
 	}()
 
 	<-sigchan // wait for SIGINT
-	log.Println("Shutting down server...")
+	log.Printf(ctx, "Shutting down server...")
 
 	// shut down gracefully, but wait no longer than 5 seconds before halting
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	tctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	err = server.Shutdown(ctx)
+	err = server.Shutdown(tctx)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf(ctx, "Failed shutting down server %v", err)
 	}
 
-	log.Println("Server gracefully stopped")
+	log.Printf(ctx, "Server gracefully stopped")
 }
