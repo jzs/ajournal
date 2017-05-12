@@ -1,4 +1,4 @@
-go build -ldflags "-X main.BuildVersion=`hg id -i` -X main.BuildTime=`date -u '+%Y-%m-%d_%I:%M:%S%p'` -X main.BuildType=`echo $AJBUILD`" -o dist/ajournal .
+go build -ldflags "-X main.BuildVersion=`git log --pretty=format:"%H" -n 1` -X main.BuildTime=`date -u '+%Y-%m-%d_%I:%M:%S%p'` -X main.BuildType=`echo $AJBUILD`" -o dist/ajournal .
 mkdir -p dist/www
 cp -r www/css dist/www/css
 cp -r www/fonts dist/www/fonts
