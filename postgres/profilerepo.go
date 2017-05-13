@@ -10,9 +10,10 @@ import (
 )
 
 type dbProfile struct {
-	UserID int64
-	Name   string
-	Email  string
+	UserID      int64
+	Name        string
+	Email       string
+	Description string
 }
 
 type profileRepo struct {
@@ -62,8 +63,9 @@ func (pr *profileRepo) FindByID(ctx context.Context, id int64) (*profile.Profile
 
 func toProfile(p *dbProfile) *profile.Profile {
 	return &profile.Profile{
-		ID:    p.UserID,
-		Name:  p.Name,
-		Email: p.Email,
+		ID:          p.UserID,
+		Name:        p.Name,
+		Email:       p.Email,
+		Description: p.Description,
 	}
 }
