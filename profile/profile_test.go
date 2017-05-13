@@ -53,9 +53,13 @@ func TestService(t *testing.T) {
 	}
 
 	// Test update profile
-	_, err = ps.UpdateProfile(ctx, p)
+	p.Description = "Hello World"
+	pupdated, err := ps.UpdateProfile(ctx, p)
 	if err != nil {
 		t.Fatalf("Expected update success, got: %v", err.Error())
+	}
+	if pupdated.Description != p.Description {
+		t.Fatalf("Expected update description: %v, got: %v", p.Description, pupdated.Description)
 	}
 
 	np, err := ps.Profile(ctx)

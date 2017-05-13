@@ -7,6 +7,24 @@ import (
 	"bitbucket.org/sketchground/ajournal/user"
 )
 
+func TestGetUserUnauthorized(t *testing.T) {
+	ur := NewInmemRepo()
+	us := user.NewService(ur)
+	ctx := context.Background()
+	u := &user.User{Username: "bob@cat.de", Password: "ewifj"}
+	err := us.Register(ctx, u)
+	if err != nil {
+		t.Fatalf("Expected create user success, got: %v", err)
+	}
+	guser, err := us.User(ctx, u.Username)
+	if err != nil {
+		t.Fatalf("Expected user, found none")
+	}
+	if guser.Password != "" {
+		t.Fatalf("Expected password not to be set, got: %v", guser.Password)
+	}
+}
+
 func TestService(t *testing.T) {
 	ur := NewInmemRepo()
 	us := user.NewService(ur)

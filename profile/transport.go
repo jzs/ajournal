@@ -3,6 +3,7 @@ package profile
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"bitbucket.org/sketchground/ajournal/utils"
 	"bitbucket.org/sketchground/ajournal/utils/logger"
@@ -13,6 +14,18 @@ import (
 // SetupHandler sets up the handler routes for the user service
 func SetupHandler(r *mux.Router, ps Service, l logger.Logger) {
 	// Handler for presenting a users profile
+	r.Path("/users/{userid}/profile").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		idstr := vars["userid"]
+		id, err := strconv.ParseInt(idstr, 10, 64)
+		if err != nil {
+			utils.JSONResp(r.Context(), l, w, nil, err)
+			return
+		}
+		profile, err := ps.UserProfile(r.Context(), id)
+		utils.JSONResp(r.Context(), l, w, profile, err)
+	})
+
 	r.Path("/profile").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		profile, err := ps.Profile(r.Context())
 		utils.JSONResp(r.Context(), l, w, profile, err)

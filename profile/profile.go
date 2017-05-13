@@ -46,10 +46,11 @@ const (
 
 // Profile is a user profile
 type Profile struct {
-	ID    int64
-	Name  string
-	Email string
-	Plan  Plan
+	ID          int64
+	Name        string
+	Email       string
+	Plan        Plan
+	Description string
 }
 
 // Subscription is a user subscription

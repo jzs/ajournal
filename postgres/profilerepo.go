@@ -27,7 +27,7 @@ func NewProfileRepo(db *sqlx.DB, logger logger.Logger) profile.Repository {
 
 func (pr *profileRepo) Create(ctx context.Context, p *profile.Profile) (*profile.Profile, error) {
 	var id int64
-	err := pr.db.Get(&id, "INSERT INTO Profile(UserID, Name, Email) VALUES($1, $2, $3) RETURNING UserID", p.ID, p.Name, p.Email)
+	err := pr.db.Get(&id, "INSERT INTO Profile(UserID, Name, Email, Description) VALUES($1, $2, $3, $4) RETURNING UserID", p.ID, p.Name, p.Email, p.Description)
 	if err != nil {
 		return nil, errors.Wrap(err, "ProfileRepo:Create failed")
 	}
@@ -36,7 +36,7 @@ func (pr *profileRepo) Create(ctx context.Context, p *profile.Profile) (*profile
 }
 
 func (pr *profileRepo) Update(ctx context.Context, p *profile.Profile) (*profile.Profile, error) {
-	res, err := pr.db.Exec("UPDATE Profile SET Name = $1, Email = $2 WHERE UserID=$3", p.Name, p.Email, p.ID)
+	res, err := pr.db.Exec("UPDATE Profile SET Name = $1, Email = $2, Description = $3 WHERE UserID=$4", p.Name, p.Email, p.Description, p.ID)
 	if err != nil {
 		return nil, errors.Wrap(err, "ProfileRepo:Update failed")
 	}
