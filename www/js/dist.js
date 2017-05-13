@@ -836,6 +836,44 @@ self.on('mount', function() {
 riot.tag2('page-viewjournals', '', '', '', function(opts) {
 });
 
+riot.tag2('page-viewuser', '<section class="section"> <div class="container"> <section class="section"> <p> {user.Username} {profile.Description} </p> <h3 class="title">Journals</h3> <div class="box" each="{journal in journals}"> <article class="media"> <div class="media-content"> <div class="content" onclick="{tojournal}" style="cursor:pointer;"> <p> <strong>{journal.Title}</strong> <br> {journal.Description} </p> </div> </div> </article> </div> </section> </div> </section>', '', '', function(opts) {
+var self = this;
+self.journals = [];
+self.user = {Username: opts.username};
+self.profile = {};
+
+self.on('mount', function() {
+
+	_aj.get("/api/users/" + opts.username, function(data, err) {
+		if(err != null) {
+			self.err = err;
+			self.update();
+			return;
+		}
+		self.user = data;
+		self.update();
+
+		_aj.get("/api/users/" + data.ID + "/profile", function(data, err) {
+			if(err != null) {
+				return;
+			}
+			self.profile = data;
+			self.update();
+		});
+
+		_aj.get("/api/users/" + data.ID + "/journals", function(data, err) {
+			if(err != null) {
+				self.err = err;
+				self.update();
+				return;
+			}
+			self.journals = data;
+			self.update();
+		});
+	});
+});
+});
+
 riot.tag2('raw', '<span></span>', '', '', function(opts) {
 this.root.innerHTML = opts.content
 
