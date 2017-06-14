@@ -59,7 +59,7 @@ func SetupHandler(r *mux.Router, us Service, l logger.Logger) {
 		vars := mux.Vars(r)
 		username := vars["username"]
 		user, err := us.User(r.Context(), username)
-		utils.JSONResp(r.Context(), l, w, user, err)
+		utils.JSONResp(r.Context(), l, r, w, user, err)
 	})
 
 	// Create user
@@ -68,11 +68,11 @@ func SetupHandler(r *mux.Router, us Service, l logger.Logger) {
 		dec := json.NewDecoder(r.Body)
 		err := dec.Decode(u)
 		if err != nil {
-			utils.JSONResp(r.Context(), l, w, nil, utils.NewAPIError(err, http.StatusBadRequest, "Not valid json"))
+			utils.JSONResp(r.Context(), l, r, w, nil, utils.NewAPIError(err, http.StatusBadRequest, "Not valid json"))
 			return
 		}
 		err = us.Register(r.Context(), u)
-		utils.JSONResp(r.Context(), l, w, nil, err)
+		utils.JSONResp(r.Context(), l, r, w, nil, err)
 	})
 
 	// Log in
@@ -81,12 +81,12 @@ func SetupHandler(r *mux.Router, us Service, l logger.Logger) {
 		dec := json.NewDecoder(r.Body)
 		err := dec.Decode(u)
 		if err != nil {
-			utils.JSONResp(r.Context(), l, w, nil, utils.NewAPIError(err, http.StatusBadRequest, "Not valid json"))
+			utils.JSONResp(r.Context(), l, r, w, nil, utils.NewAPIError(err, http.StatusBadRequest, "Not valid json"))
 		}
 
 		token, err := us.Login(r.Context(), u.Username, u.Password)
 		if err != nil {
-			utils.JSONResp(r.Context(), l, w, token, err)
+			utils.JSONResp(r.Context(), l, r, w, token, err)
 			return
 		}
 
@@ -100,7 +100,7 @@ func SetupHandler(r *mux.Router, us Service, l logger.Logger) {
 		}
 		http.SetCookie(w, cookie)
 
-		utils.JSONResp(r.Context(), l, w, token, err)
+		utils.JSONResp(r.Context(), l, r, w, token, err)
 	})
 
 	// Log out
@@ -108,7 +108,7 @@ func SetupHandler(r *mux.Router, us Service, l logger.Logger) {
 		cookie, err := r.Cookie(cookieName)
 		if err != nil {
 			//TODO: Try to get the cookie from elsewhere
-			utils.JSONResp(r.Context(), l, w, nil, nil) // nil, nil since we ignore the error and just "log out" the user.
+			utils.JSONResp(r.Context(), l, r, w, nil, nil) // nil, nil since we ignore the error and just "log out" the user.
 			return
 		}
 		if err := us.Logout(r.Context(), cookie.Value); err != nil {
@@ -121,6 +121,6 @@ func SetupHandler(r *mux.Router, us Service, l logger.Logger) {
 		cookie.Name = cookieName
 		cookie.HttpOnly = true
 		http.SetCookie(w, cookie)
-		utils.JSONResp(r.Context(), l, w, nil, nil)
+		utils.JSONResp(r.Context(), l, r, w, nil, nil)
 	})
 }

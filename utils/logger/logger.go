@@ -27,6 +27,7 @@ type Logger interface {
 	Print(ctx context.Context, err error)
 	Printf(ctx context.Context, format string, args ...interface{})
 	ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc)
+	Flush()
 }
 
 type logger struct {
@@ -88,12 +89,19 @@ func (l *logger) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Han
 	nr := r.WithContext(ctx)
 	next(w, nr)
 
-	res := w.(negroni.ResponseWriter)
+	status := 500
+	if res, ok := w.(negroni.ResponseWriter); ok {
+		status = res.Status()
+	}
 
 	entry.WithFields(logrus.Fields{
-		"status":   res.Status(),
+		"status":   status,
 		"duration": time.Since(start),
 	}).Info()
+}
+
+// Flush Not doing anything in this implementation. It could be flush to file.
+func (l *logger) Flush() {
 }
 
 func (l *logger) getLogger(ctx context.Context) logrus.FieldLogger {

@@ -9,18 +9,10 @@ import (
 
 	"bitbucket.org/sketchground/ajournal/journal"
 	"bitbucket.org/sketchground/ajournal/user"
+	"bitbucket.org/sketchground/ajournal/utils/logger"
 
 	"github.com/gorilla/mux"
 )
-
-type logger struct{}
-
-func (l *logger) Error(ctx context.Context, err error)                                    {}
-func (l *logger) Errorf(ctx context.Context, format string, args ...interface{})          {}
-func (l *logger) Fatalf(ctx context.Context, format string, args ...interface{})          {}
-func (l *logger) Print(ctx context.Context, err error)                                    {}
-func (l *logger) Printf(ctx context.Context, format string, args ...interface{})          {}
-func (l *logger) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) { next(w, r) }
 
 func setupTest(u *user.User) (context.Context, journal.Service) {
 	jr := NewInmemRepo()
@@ -33,7 +25,7 @@ func TestTransport(t *testing.T) {
 	m := mux.NewRouter()
 	jr := NewInmemRepo()
 	js := journal.NewService(jr)
-	journal.SetupHandler(m, js, &logger{})
+	journal.SetupHandler(m, js, logger.NewTestLogger())
 
 	posts := []struct {
 		URL      string

@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"bitbucket.org/sketchground/ajournal/profile"
+	"bitbucket.org/sketchground/ajournal/utils/logger"
 	"github.com/gorilla/mux"
 )
 
@@ -15,7 +16,7 @@ func TestTransport(t *testing.T) {
 	pr := NewInmemRepo()
 	sr := NewInmemSubRepo()
 	ps := profile.NewService(pr, sr)
-	profile.SetupHandler(m, ps, &logger{})
+	profile.SetupHandler(m, ps, logger.NewTestLogger())
 
 	posts := []struct {
 		URL      string

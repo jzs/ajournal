@@ -19,16 +19,16 @@ func SetupHandler(r *mux.Router, ps Service, l logger.Logger) {
 		idstr := vars["userid"]
 		id, err := strconv.ParseInt(idstr, 10, 64)
 		if err != nil {
-			utils.JSONResp(r.Context(), l, w, nil, err)
+			utils.JSONResp(r.Context(), l, r, w, nil, err)
 			return
 		}
 		profile, err := ps.UserProfile(r.Context(), id)
-		utils.JSONResp(r.Context(), l, w, profile, err)
+		utils.JSONResp(r.Context(), l, r, w, profile, err)
 	})
 
 	r.Path("/profile").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		profile, err := ps.Profile(r.Context())
-		utils.JSONResp(r.Context(), l, w, profile, err)
+		utils.JSONResp(r.Context(), l, r, w, profile, err)
 	})
 
 	r.Path("/profile").Methods("PUT").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -36,12 +36,12 @@ func SetupHandler(r *mux.Router, ps Service, l logger.Logger) {
 		dec := json.NewDecoder(r.Body)
 		err := dec.Decode(&prof)
 		if err != nil {
-			utils.JSONResp(r.Context(), l, w, nil, err)
+			utils.JSONResp(r.Context(), l, r, w, nil, err)
 			return
 		}
 
 		profile, err := ps.Create(r.Context(), prof)
-		utils.JSONResp(r.Context(), l, w, profile, err)
+		utils.JSONResp(r.Context(), l, r, w, profile, err)
 	})
 
 	r.Path("/profile").Methods("POST").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -49,12 +49,12 @@ func SetupHandler(r *mux.Router, ps Service, l logger.Logger) {
 		dec := json.NewDecoder(r.Body)
 		err := dec.Decode(&prof)
 		if err != nil {
-			utils.JSONResp(r.Context(), l, w, nil, err)
+			utils.JSONResp(r.Context(), l, r, w, nil, err)
 			return
 		}
 
 		profile, err := ps.UpdateProfile(r.Context(), prof)
-		utils.JSONResp(r.Context(), l, w, profile, err)
+		utils.JSONResp(r.Context(), l, r, w, profile, err)
 	})
 
 	// Handler for subscribing a plan
@@ -63,12 +63,12 @@ func SetupHandler(r *mux.Router, ps Service, l logger.Logger) {
 		dec := json.NewDecoder(r.Body)
 		err := dec.Decode(&sub)
 		if err != nil {
-			utils.JSONResp(r.Context(), l, w, nil, utils.NewAPIError(nil, http.StatusBadRequest, "Invalid json"))
+			utils.JSONResp(r.Context(), l, r, w, nil, utils.NewAPIError(nil, http.StatusBadRequest, "Invalid json"))
 			return
 		}
 
 		// Handle signup form
 		err = ps.Subscribe(r.Context(), sub)
-		utils.JSONResp(r.Context(), l, w, nil, err)
+		utils.JSONResp(r.Context(), l, r, w, nil, err)
 	})
 }

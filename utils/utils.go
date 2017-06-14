@@ -9,7 +9,7 @@ import (
 )
 
 // JSONResp formats responses in json
-func JSONResp(ctx context.Context, l logger.Logger, w http.ResponseWriter, data interface{}, err error) {
+func JSONResp(ctx context.Context, l logger.Logger, r *http.Request, w http.ResponseWriter, data interface{}, err error) {
 	w.Header().Set("content-type", "application/json")
 	enc := json.NewEncoder(w)
 	if err != nil {
@@ -42,6 +42,18 @@ func JSONResp(ctx context.Context, l logger.Logger, w http.ResponseWriter, data 
 		return
 	}
 
+	var status int
+	switch r.Method {
+	case "GET", "POST":
+		status = (http.StatusOK)
+		break
+	case "PUT":
+		status = (http.StatusCreated)
+		break
+	default:
+		status = http.StatusOK
+	}
+	w.WriteHeader(status)
 	resp := jsonresp{
 		Data:   data,
 		Status: http.StatusOK,

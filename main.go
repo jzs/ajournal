@@ -91,7 +91,7 @@ func main() {
 			"Time":    BuildTime,
 			"Type":    BuildType,
 		}
-		utils.JSONResp(r.Context(), log, w, version, nil)
+		utils.JSONResp(r.Context(), log, r, w, version, nil)
 	})
 
 	jr := postgres.NewJournalRepo(db, log)
