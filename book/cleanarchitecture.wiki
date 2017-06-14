@@ -1,0 +1,3 @@
+== The clean architecture ==
+
+{{file:images/cleanarchitecture.jpg}}

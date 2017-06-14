@@ -1,0 +1,18 @@
+= An oppinionated approach to webapp in go =
+
+This book is about the process from nothing to a basic running saas solution. The focus of this
+book will primarily be on the technical side and not on the business side of running a saas app.
+That being said, the business side of a saas app is most likely much more important than the
+technical side.
+
+* Foreword
+* Introduction
+* The basic structure
+  * [[cleanarchitecture|The clean architecture]]
+  * Depencency injection
+  * Responsibilities
+  * Microservices?
+* The build pipeline
+* Deployment
+* Logging
+* Testing
