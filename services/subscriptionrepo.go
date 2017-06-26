@@ -3,9 +3,9 @@ package services
 import (
 	"context"
 
-	"bitbucket.org/sketchground/ajournal/profile"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
+	"github.com/sketchground/ajournal/profile"
 	stripe "github.com/stripe/stripe-go"
 	"github.com/stripe/stripe-go/client"
 )

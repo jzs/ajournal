@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"bitbucket.org/sketchground/ajournal/utils"
+	"github.com/sketchground/ajournal/utils"
 
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"

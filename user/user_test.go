@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"bitbucket.org/sketchground/ajournal/user"
+	"github.com/sketchground/ajournal/user"
 )
 
 func TestGetUserUnauthorized(t *testing.T) {

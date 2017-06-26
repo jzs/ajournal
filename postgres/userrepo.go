@@ -3,9 +3,8 @@ package postgres
 import (
 	"context"
 
-	"bitbucket.org/sketchground/ajournal/user"
-
 	"github.com/jmoiron/sqlx"
+	"github.com/sketchground/ajournal/user"
 )
 
 type repo struct {

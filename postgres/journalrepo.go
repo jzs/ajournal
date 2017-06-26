@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"time"
 
-	"bitbucket.org/sketchground/ajournal/journal"
-	"bitbucket.org/sketchground/ajournal/utils/logger"
+	"github.com/sketchground/ajournal/journal"
+	"github.com/sketchground/ajournal/utils/logger"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"

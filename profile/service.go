@@ -6,8 +6,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"bitbucket.org/sketchground/ajournal/user"
-	"bitbucket.org/sketchground/ajournal/utils"
+	"github.com/sketchground/ajournal/user"
+	"github.com/sketchground/ajournal/utils"
 )
 
 // Service describes the methods on a profile service

@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"bitbucket.org/sketchground/ajournal/profile"
-	"bitbucket.org/sketchground/ajournal/user"
+	"github.com/sketchground/ajournal/profile"
+	"github.com/sketchground/ajournal/user"
 )
 
 func TestService(t *testing.T) {

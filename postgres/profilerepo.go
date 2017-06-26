@@ -3,10 +3,10 @@ package postgres
 import (
 	"context"
 
-	"bitbucket.org/sketchground/ajournal/profile"
-	"bitbucket.org/sketchground/ajournal/utils/logger"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
+	"github.com/sketchground/ajournal/profile"
+	"github.com/sketchground/ajournal/utils/logger"
 )
 
 type dbProfile struct {

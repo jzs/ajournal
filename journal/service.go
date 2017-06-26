@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"time"
 
-	"bitbucket.org/sketchground/ajournal/user"
-	"bitbucket.org/sketchground/ajournal/utils"
 	"github.com/pkg/errors"
 	"github.com/russross/blackfriday"
+	"github.com/sketchground/ajournal/user"
+	"github.com/sketchground/ajournal/utils"
 )
 
 // Service interface for journals

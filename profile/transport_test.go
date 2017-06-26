@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"bitbucket.org/sketchground/ajournal/profile"
-	"bitbucket.org/sketchground/ajournal/utils/logger"
 	"github.com/gorilla/mux"
+	"github.com/sketchground/ajournal/profile"
+	"github.com/sketchground/ajournal/utils/logger"
 )
 
 func TestTransport(t *testing.T) {

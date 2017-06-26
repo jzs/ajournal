@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"bitbucket.org/sketchground/ajournal/utils"
-	"bitbucket.org/sketchground/ajournal/utils/logger"
+	"github.com/sketchground/ajournal/utils"
+	"github.com/sketchground/ajournal/utils/logger"
 
 	"github.com/gorilla/mux"
 )

@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"bitbucket.org/sketchground/ajournal/journal"
-	"bitbucket.org/sketchground/ajournal/user"
-	"bitbucket.org/sketchground/ajournal/utils/logger"
+	"github.com/sketchground/ajournal/journal"
+	"github.com/sketchground/ajournal/user"
+	"github.com/sketchground/ajournal/utils/logger"
 
 	"github.com/gorilla/mux"
 )

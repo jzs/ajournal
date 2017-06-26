@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"bitbucket.org/sketchground/ajournal/utils"
-	"bitbucket.org/sketchground/ajournal/utils/logger"
+	"github.com/sketchground/ajournal/utils"
+	"github.com/sketchground/ajournal/utils/logger"
 
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
