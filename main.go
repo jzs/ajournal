@@ -44,6 +44,18 @@ func main() {
 	ctx := context.Background()
 	log := logger.New(BuildType == BuildVersionDevel)
 
+	tFolder := os.Getenv("AJ_TRANSLATE_FOLDER")
+	if tFolder == "" {
+		log.Fatalf(ctx, "Environment variable AJ_TRANSLATE_FOLDER not set!\nRemember to set the path to your translate folder")
+		return
+	}
+
+	translator, err := utils.NewTranslator(tFolder, log)
+	if err != nil {
+		log.Fatalf(ctx, "Could not load translator. Reason : %v", err)
+		return
+	}
+
 	stripeKey := os.Getenv("AJ_STRIPE_SK")
 	if stripeKey == "" {
 		log.Fatalf(ctx, "Environment variable AJ_STRIPE_SK not set!\nRemember to set your stripe private key")
@@ -99,7 +111,7 @@ func main() {
 	journal.SetupHandler(apirouter, js, log)
 
 	ur := postgres.NewUserRepo(db)
-	us := user.NewService(ur)
+	us := user.NewService(translator, ur)
 	user.SetupHandler(apirouter, us, log)
 
 	pr := postgres.NewProfileRepo(db, log)
@@ -128,7 +140,7 @@ func main() {
 	// Setup static file handler
 	baserouter.PathPrefix("/").Handler(http.FileServer(http.Dir(wwwdir)))
 
-	base := negroni.New(negroni.NewRecovery(), log)
+	base := negroni.New(negroni.NewRecovery(), log, translator)
 
 	// Setup middleware that injects currently logged in user into the stack.
 	base.Use(negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {

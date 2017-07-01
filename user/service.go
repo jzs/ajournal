@@ -30,12 +30,13 @@ type Service interface {
 }
 
 // NewService returns a service implementation of the user service
-func NewService(repo Repository) Service {
-	return &service{repo: repo}
+func NewService(t *utils.Translator, repo Repository) Service {
+	return &service{repo: repo, t: t}
 }
 
 type service struct {
 	repo Repository
+	t    *utils.Translator
 }
 
 func (s *service) Register(ctx context.Context, u *User) error {
@@ -67,10 +68,11 @@ func (s *service) Register(ctx context.Context, u *User) error {
 }
 
 func (s *service) Login(ctx context.Context, username string, password string) (*Token, error) {
+	tr := s.t.T(ctx)
 	u, err := s.repo.FindByUsername(ctx, username)
 	switch {
 	case err == ErrUserNotExist:
-		return nil, utils.NewAPIError(err, http.StatusNotFound, "Username and/or password incorrect")
+		return nil, utils.NewAPIError(err, http.StatusNotFound, tr("user.userpasswrong").String())
 	case err != nil:
 		return nil, errors.Wrap(err, "Login")
 	}
@@ -78,7 +80,7 @@ func (s *service) Login(ctx context.Context, username string, password string) (
 	err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 	switch {
 	case err == bcrypt.ErrMismatchedHashAndPassword:
-		return nil, utils.NewAPIError(err, http.StatusNotFound, "Username and/or password incorrect")
+		return nil, utils.NewAPIError(err, http.StatusNotFound, tr("user.userpasswrong").String())
 	case err != nil:
 		return nil, errors.Wrap(err, "Login")
 	}

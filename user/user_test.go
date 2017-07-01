@@ -5,11 +5,12 @@ import (
 	"testing"
 
 	"github.com/sketchground/ajournal/user"
+	"github.com/sketchground/ajournal/utils"
 )
 
 func TestGetUserUnauthorized(t *testing.T) {
 	ur := NewInmemRepo()
-	us := user.NewService(ur)
+	us := user.NewService(utils.NewTestTranslator(), ur)
 	ctx := context.Background()
 	u := &user.User{Username: "bob@cat.de", Password: "ewifj"}
 	err := us.Register(ctx, u)
@@ -27,7 +28,7 @@ func TestGetUserUnauthorized(t *testing.T) {
 
 func TestService(t *testing.T) {
 	ur := NewInmemRepo()
-	us := user.NewService(ur)
+	us := user.NewService(utils.NewTestTranslator(), ur)
 
 	ctx := context.Background()
 

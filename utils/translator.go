@@ -1,12 +1,23 @@
 package utils
 
 import (
+	"bytes"
 	"context"
-	"log"
+	"io/ioutil"
 	"net/http"
+	"os"
+	"path"
+	"strings"
 
+	"github.com/jzs/translate-i18-go"
 	"github.com/nicksnyder/go-i18n/i18n/bundle"
+	"github.com/sketchground/ajournal/utils/logger"
+	"golang.org/x/text/language"
 )
+
+func init() {
+	translatorCtx = translatorContext("translatorcontext")
+}
 
 type translatorContext string
 
@@ -14,65 +25,89 @@ var translatorCtx translatorContext
 
 var b bundle.Bundle
 
-// T is a function type for translating a message
-type T func(translationID string, args ...interface{}) string
+// T interface for translator instance
+type T interface {
+	With(args interface{}) T
+	Zero() T
+	Other() T
+	Plural(count, many uint64) T
+	String() string
+}
 
 // Translator is our translator
 type Translator struct {
-	b *bundle.Bundle
+	tr    *translate.Translator
+	langs language.Matcher
 }
 
-// NewTranslator returns a new translator
-func NewTranslator() *Translator {
-	return &Translator{
-		b: bundle.New(),
+// NewTranslator returns a new translator with languages loaded from the given folder
+func NewTranslator(folderpath string, log logger.Logger) (*Translator, error) {
+	files, err := ioutil.ReadDir(folderpath)
+	if err != nil {
+		return nil, err
 	}
-}
 
-// AddTranslationFromFile loads a translation from file and adds it to the translator
-func (t *Translator) AddTranslationFromFile(path string) error {
-	return t.b.LoadTranslationFile(path)
-}
+	tags := []language.Tag{}
 
-// Middleware returns a func for injecting into negroni middleware stack making the translator
-// available in the request context
-func (t *Translator) Middleware() func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		cookieLang, _ := r.Cookie("lang")
-		acceptLang := r.Header.Get("Accept-Language")
-		defaultLang := "en-us" // known valid language
-		cl := acceptLang
-		if cookieLang != nil {
-			cl = cookieLang.Value
-		}
-		T, err := t.b.Tfunc(cl, acceptLang, defaultLang)
+	t := &Translator{}
+	langs := []*translate.Language{}
+	for _, file := range files {
+		lang := strings.TrimSuffix(file.Name(), ".yaml")
+		r, err := os.Open(path.Join(folderpath, file.Name()))
 		if err != nil {
-			log.Println(err)
+			return nil, err
 		}
-
-		ctx := context.WithValue(r.Context(), translatorCtx, T)
-		nr := r.WithContext(ctx)
-		next(w, nr)
+		tag := language.MustParse(lang)
+		l, err := translate.LoadYaml(r, tag.String())
+		if err != nil {
+			return nil, err
+		}
+		langs = append(langs, l)
+		tags = append(tags, tag)
 	}
-}
-
-func init() {
-	translatorCtx = translatorContext("translatorcontext")
-}
-
-// TranslatorFromCtx returns a translator from the given context
-func TranslatorFromCtx(ctx context.Context) func(string, ...interface{}) string {
-	val := ctx.Value(translatorCtx)
-	if t, ok := val.(func(string, ...interface{}) string); ok {
-		return t
-	}
-	return nil
-}
-
-// TestContextWithTranslator returns a context with a translator set
-func TestContextWithTranslator(c context.Context) context.Context {
-	ctx := context.WithValue(c, translatorCtx, func(s string, args ...interface{}) string {
-		return "Mock translator"
+	t.tr = translate.New(langs...)
+	t.tr.SetLog(func(s string, args ...interface{}) {
+		log.Errorf(context.Background(), s, args)
 	})
-	return ctx
+	t.langs = language.NewMatcher(tags)
+
+	return t, nil
+}
+
+// T returns a func for translating a string to the language based on what is set in the context.
+// Defaults to en-us
+func (t *Translator) T(ctx context.Context) func(string) translate.T {
+	val := ctx.Value(translatorCtx)
+	if langs, ok := val.([]string); ok {
+		return t.tr.Tfunc(langs...)
+	}
+	return t.tr.Tfunc("en-us")
+}
+
+// ServeHTTP Method for supporting injection into Negroni
+func (t *Translator) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	acceptLang := r.Header.Get("Accept-Language")
+	preferred, _, err := language.ParseAcceptLanguage(acceptLang)
+	if err != nil {
+		preferred = []language.Tag{language.English}
+	}
+	lang, _, _ := t.langs.Match(preferred...)
+
+	langs := []string{lang.String()}
+	ctx := context.WithValue(r.Context(), translatorCtx, langs)
+	nr := r.WithContext(ctx)
+	next(w, nr)
+}
+
+// NewTestTranslator returns a new translator with languages loaded from the given folder
+func NewTestTranslator() *Translator {
+	t := &Translator{
+		langs: language.NewMatcher([]language.Tag{language.English}),
+	}
+
+	d := bytes.NewReader([]byte(""))
+
+	l, _ := translate.LoadYaml(d, "en-us")
+	t.tr = translate.New(l)
+	return t
 }
