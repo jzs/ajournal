@@ -1,2 +1,6 @@
 user.userpasswrong:
   one: Username and/or password incorrect
+user.missing-username:
+  one: Username not specified
+user.missing-password:
+  one: Password not specified

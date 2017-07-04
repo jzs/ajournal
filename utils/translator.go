@@ -111,3 +111,9 @@ func NewTestTranslator() *Translator {
 	t.tr = translate.New(l)
 	return t
 }
+
+// WrapTestTranslatorContext returns a translator for testing purposes
+func WrapTestTranslatorContext(ctx context.Context) context.Context {
+	langs := []string{language.English.String()}
+	return context.WithValue(ctx, translatorCtx, langs)
+}

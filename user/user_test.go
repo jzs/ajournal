@@ -2,11 +2,32 @@ package user_test
 
 import (
 	"context"
+	"net/http"
 	"testing"
 
+	"github.com/gorilla/mux"
 	"github.com/sketchground/ajournal/user"
 	"github.com/sketchground/ajournal/utils"
+	"github.com/sketchground/ajournal/utils/logger"
+	"github.com/sketchground/ajournal/utils/testhelpers"
 )
+
+func TestTransport(t *testing.T) {
+	m := mux.NewRouter()
+	ur := NewInmemRepo()
+	us := user.NewService(utils.NewTestTranslator(), ur)
+	user.SetupHandler(m, us, logger.NewTestLogger())
+
+	requests := []testhelpers.Request{
+		{
+			URL:      "/users",
+			Code:     http.StatusBadRequest,
+			Type:     "POST",
+			PostBody: "{}",
+		},
+	}
+	testhelpers.PerformRequests(t, m, requests)
+}
 
 func TestGetUserUnauthorized(t *testing.T) {
 	ur := NewInmemRepo()
@@ -23,6 +44,43 @@ func TestGetUserUnauthorized(t *testing.T) {
 	}
 	if guser.Password != "" {
 		t.Fatalf("Expected password not to be set, got: %v", guser.Password)
+	}
+}
+
+func TestLogin(t *testing.T) {
+	ur := NewInmemRepo()
+	us := user.NewService(utils.NewTestTranslator(), ur)
+	ctx := context.Background()
+
+	username := "bob@cat.de"
+	pass := "12345"
+	err := us.Register(ctx, &user.User{Username: username, Password: pass})
+	if err != nil {
+		t.Fatalf("Expected create user, got %v", err.Error())
+	}
+	token, err := us.Login(ctx, username, "wrong_password")
+	if err == nil {
+		t.Fatalf("Expected failed login, got token %v", token)
+	}
+	token, err = us.Login(ctx, "wrong_user", pass)
+	if err == nil {
+		t.Fatalf("Expected failed login, got token %v", token)
+	}
+
+	token, err = us.Login(ctx, username, pass)
+	if err != nil {
+		t.Fatalf("Expected successful login, got %v", err.Error())
+	}
+	if token.Token == "" {
+		t.Fatalf("Expected valid token, got empty string")
+	}
+
+	user, err := us.UserWithToken(ctx, token.Token)
+	if err != nil {
+		t.Fatalf("Expected To find user, got: %v", err)
+	}
+	if user.Password != "" {
+		t.Fatalf("Expected no password to be visible on user, got: %v", user.Password)
 	}
 }
 

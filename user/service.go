@@ -40,12 +40,13 @@ type service struct {
 }
 
 func (s *service) Register(ctx context.Context, u *User) error {
+	tr := s.t.T(ctx)
 	// TODO: Check for password complexity
 	if u.Username == "" {
-		return errors.New("Username not specified")
+		return utils.NewAPIError(nil, http.StatusBadRequest, tr("user.missing-username").String())
 	}
 	if u.Password == "" {
-		return errors.New("Password not specified")
+		return utils.NewAPIError(nil, http.StatusBadRequest, tr("user.missing-password").String())
 	}
 	existing, err := s.repo.FindByUsername(ctx, u.Username)
 	if err != nil && err != ErrUserNotExist {

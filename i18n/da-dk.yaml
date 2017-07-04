@@ -1,2 +1,6 @@
 user.userpasswrong:
   one: Brugernavn og/eller kodeordet er forkert
+user.missing-username:
+  one: Brugernavn er ikke udfyldt
+user.missing-password:
+  one: Kodeord er ikke udfyldt
