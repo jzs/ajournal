@@ -1,0 +1,1 @@
+migrate -source=file://migrations -database='postgres://localhost:5432/journal?sslmode=disable' $1 $2

@@ -1,7 +1,3 @@
-
--- +goose Up
--- SQL in section 'Up' is executed when this migration is applied
-
 CREATE TABLE _User(
 	ID BIGSERIAL primary key NOT NULL,
 	Username text NOT NULL UNIQUE,
@@ -15,9 +11,3 @@ CREATE TABLE UserToken(
 	UserID bigint references _User(ID) NOT NULL,
 	Expires timestamp NOT NULL
 );
-
--- +goose Down
--- SQL section 'Down' is executed when this migration is rolled back
-
-DROP TABLE UserToken;
-DROP TABLE _User;

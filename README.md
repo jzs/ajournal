@@ -27,8 +27,8 @@ The code is go gettable and can be fetched by
 go get -u bitbucket.org/sketchground/ajournal
 ```
 
-For database migrations i use goose [https://bitbucket.org/liamstask/goose](https://bitbucket.org/liamstask/goose/).
-To migrate the database, simply run `goose up` inside the root folder of the project.
+For database migrations i use migrate [https://github.com/mattes/migrate](https://github.com/mattes/migrate).
+To migrate the database, simply run `./migrate up` inside the db folder of the project.
 
 For packaging and deploying i use a tool called Sup [https://github.com/pressly/sup](https://github.com/pressly/sup) which makes it easy to deploy to multiple hosts etc. It is not strictly necessary and one could run the build scripts located in the scripts folder manually. Remember to set the correct environment variables for this.
 

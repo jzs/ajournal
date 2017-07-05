@@ -54,11 +54,11 @@ commands:
 
   migrate-up:
     desc: Run database migration tool up
-    run: goose -env release -path /tmp/dist/db up
+    run: migrate -source=file:///tmp/dist/db -database='postgres://ajournal:$AJ_DB_PASS@localhost:5432/ajournal?sslmode=disable' up
 
   migrate-down:
     desc: Run database migration tool down
-    run: goose -env release -path /tmp/dist/db down
+    run: migrate -source=file:///tmp/dist/db -database='postgres://ajournal:$AJ_DB_PASS@localhost:5432/ajournal?sslmode=disable' down
 
   bash:
     desc: Interactive bash script
