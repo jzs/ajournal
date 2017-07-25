@@ -25,6 +25,8 @@ type Service interface {
 	Logout(ctx context.Context, token string) error
 	// User fetches a user with the given username
 	User(ctx context.Context, username string) (*User, error)
+	// Me fetches your current user that you're logged in with
+	Me(ctx context.Context) (*User, error)
 	// UserWithToken fetches a user from a valid token
 	UserWithToken(ctx context.Context, token string) (*User, error)
 }
@@ -37,6 +39,14 @@ func NewService(t *utils.Translator, repo Repository) Service {
 type service struct {
 	repo Repository
 	t    *utils.Translator
+}
+
+func (s *service) Me(ctx context.Context) (*User, error) {
+	usr := FromContext(ctx)
+	if usr == nil {
+		return nil, utils.NewAPIError(nil, http.StatusForbidden, "Not logged in")
+	}
+	return usr, nil
 }
 
 func (s *service) Register(ctx context.Context, u *User) error {

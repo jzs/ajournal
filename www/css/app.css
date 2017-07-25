@@ -8,3 +8,8 @@
 .pagecontent {
 	border-top: 1px solid #aaa;
 }
+
+.thumb160 {
+	padding: 2px;
+	width: 160px;
+}

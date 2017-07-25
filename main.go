@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/sketchground/ajournal/blob"
 	"github.com/sketchground/ajournal/journal"
 	"github.com/sketchground/ajournal/postgres"
 	"github.com/sketchground/ajournal/profile"
@@ -106,9 +107,15 @@ func main() {
 		utils.JSONResp(r.Context(), log, r, w, version, nil)
 	})
 
+	endpoint := os.Getenv("AJ_S3_ENDPOINT")
+	accessKey := os.Getenv("AJ_S3_ACCESSKEY")
+	secretKey := os.Getenv("AJ_S3_SECRETKEY")
+	br := services.NewS3Repo(endpoint, accessKey, secretKey, "ajournal")
+	bs := blob.NewService(br)
+
 	jr := postgres.NewJournalRepo(db, log)
 	js := journal.NewService(jr)
-	journal.SetupHandler(apirouter, js, log)
+	journal.SetupHandler(apirouter, js, bs, log)
 
 	ur := postgres.NewUserRepo(db)
 	us := user.NewService(translator, ur)

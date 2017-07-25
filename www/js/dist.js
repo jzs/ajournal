@@ -315,7 +315,7 @@ self.createentry = function(e) {
 }
 });
 
-riot.tag2('page-entryeditor', '<div class="section"> <div class="container"> <div class="columns"> <div class="column"> <label class="label">Title</label> <p class="control"> <input class="input" type="text" placeholder="Title" onkeyup="{onTitle}" riot-value="{entry.Title}"> </p> <label class="label">Date</label> <p> <datepicker date="{entry.Date}"></datepicker> </p> <label class="label">Content</label> <p class="control"> <textarea style="min-height: 200px;" class="textarea" placeholder="Textarea" onkeyup="{contentchange}">{entry.Content}</textarea> <span if="{err}" class="help is-danger">{err}</span> </p> <p> <br> <a class="button {is-link : showpreview}" onclick="{togglepreview}">Preview</a> <button class="button is-pulled-right {is-loading : saving}" onclick="{saveEntry}">Save</button> </p> </div> <div class="column" if="{showpreview}"> <label class="label">Preview</label> <raw class="markdown" content="{preview}"></raw> </div> </div> </div> </div>', '', '', function(opts) {
+riot.tag2('page-entryeditor', '<div class="section"> <div class="container"> <div class="columns"> <div class="column"> <label class="label">Title</label> <p class="control"> <input class="input" type="text" placeholder="Title" onkeyup="{onTitle}" riot-value="{entry.Title}"> </p> <label class="label">Date</label> <p> <datepicker date="{entry.Date}"></datepicker> </p> <label class="label">Content</label> <p class="control"> <textarea style="min-height: 200px;" class="textarea" placeholder="Textarea" onkeyup="{contentchange}" ondrop="{drop}">{entry.Content}</textarea> <span if="{err}" class="help is-danger">{err}</span> </p> <p> <p class="control"> <ul> <li each="{blobs}"> <img class="thumb160" riot-src="{Links.Orig}" dragable="true" ondragstart="{drag}"> </li> </ul> </p> <p class="control"> <input id="blob" name="blob" type="file" accept="image/png, image/jpeg" onsubmit="{uploadfile}" onchange="{selectfile}"> <span if="{uploadingfile}">Uploading</span> </p> <br> <a class="button {is-link : showpreview}" onclick="{togglepreview}">Preview</a> <button class="button is-pulled-right {is-loading : saving}" onclick="{saveEntry}">Save</button> </p> </div> <div class="column" if="{showpreview}"> <label class="label">Preview</label> <raw class="markdown" content="{preview}"></raw> </div> </div> </div> </div>', '', '', function(opts) {
 var self = this;
 self.showpreview = false;
 self.preview = "";
@@ -344,6 +344,14 @@ self.on('mount', function() {
 			}
 			self.entry = data;
 			self.editContent = self.entry.Content;
+			self.update();
+		});
+
+		_aj.get("/api/journals/"+self.entry.JournalID+"/blobs", function(data, err) {
+			if(err != null) {
+				return;
+			}
+			self.blobs = data;
 			self.update();
 		});
 	}
@@ -411,6 +419,60 @@ self.togglepreview = function(e) {
 	}
 	self.update();
 }
+
+self.selectfile = function(e) {
+	console.log("hello");
+
+	self.uploadfile(e);
+}
+
+self.uploadfile = function(e) {
+	e.preventDefault();
+
+	var files = e.target.files;
+
+	var formData = new FormData();
+
+	for (var i = 0; i < files.length; i++) {
+		var file = files[i];
+
+		if (!file.type.match('image.*')) {
+			continue;
+		}
+
+		formData.append('blobs', file, file.name);
+	}
+	var xhr = new XMLHttpRequest();
+	xhr.open('POST', '/api/journals/'+ self.entry.JournalID +'/blobs', true);
+	xhr.onload = function () {
+		if (xhr.status === 200) {
+
+			self.uploadingfile = false;
+			var data = JSON.parse(xhr.response);
+			self.blobs.push(data);
+			self.update();
+		} else {
+			alert('An error occurred!');
+		}
+	};
+
+	self.uploadingfile = true;
+	self.update();
+
+	xhr.send(formData);
+};
+
+self.dragItem = null;
+self.drag = function(e) {
+	self.dragItem = e.item;
+};
+self.drop = function(e) {
+	console.log(e);
+	e.preventDefault();
+	console.log(self.dragItem);
+	console.log(e.target.selectionStart);
+	e.toElement.value += "![](" + self.dragItem.Links.Orig + ")"
+};
 
 });
 

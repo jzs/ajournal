@@ -54,6 +54,10 @@ func FromContext(ctx context.Context) *User {
 
 // SetupHandler sets up the handler routes for the user service
 func SetupHandler(r *mux.Router, us Service, l logger.Logger) {
+	r.Path("/users/me").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		usr, err := us.Me(r.Context())
+		utils.JSONResp(r.Context(), l, r, w, usr, err)
+	})
 
 	r.Path("/users/{username}").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)

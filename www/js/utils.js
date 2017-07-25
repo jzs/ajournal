@@ -5,11 +5,16 @@ _aj = new function() {
 		http.open(type, url, true);
 		http.addEventListener("load", function(e) {
 			// Completed...
-			var data = JSON.parse(http.response);
-			if (data.Status != 200) {
-				callback(data.Data, data.Error);
-			} else {
-				callback(data.Data, null);
+			try {
+				var data = JSON.parse(http.response);
+				if (data.Status != 200) {
+					callback(data.Data, data.Error);
+				} else {
+					callback(data.Data, null);
+				}
+				return
+			} catch (e) {
+				callback(null, {"error":"boom"});
 			}
 		});
 		http.addEventListener("error", function(e) {

@@ -4,10 +4,13 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
+	"github.com/sketchground/ajournal/blob"
 	"github.com/sketchground/ajournal/journal"
+	"github.com/sketchground/ajournal/services"
 	"github.com/sketchground/ajournal/user"
 	"github.com/sketchground/ajournal/utils/logger"
 
@@ -25,7 +28,17 @@ func TestTransport(t *testing.T) {
 	m := mux.NewRouter()
 	jr := NewInmemRepo()
 	js := journal.NewService(jr)
-	journal.SetupHandler(m, js, logger.NewTestLogger())
+
+	endpoint := os.Getenv("AJ_S3_ENDPOINT")
+	accessKey := os.Getenv("AJ_S3_ACCESSKEY")
+	secretKey := os.Getenv("AJ_S3_SECRETKEY")
+	if endpoint == "" || accessKey == "" || secretKey == "" {
+		t.Fatalf("S3 Credentials not specified, cannot test s3 integration")
+	}
+	br := services.NewS3Repo(endpoint, accessKey, secretKey, "ajournal-test")
+	bs := blob.NewService(br)
+
+	journal.SetupHandler(m, js, bs, logger.NewTestLogger())
 
 	posts := []struct {
 		URL      string
@@ -73,21 +86,23 @@ func TestTransport(t *testing.T) {
 		},
 	}
 	for _, p := range posts {
-		var req *http.Request
-		switch p.Type {
-		case "GET":
-			req, _ = http.NewRequest(p.Type, p.URL, nil)
-		case "POST":
-			req, _ = http.NewRequest(p.Type, p.URL, strings.NewReader(p.PostBody))
-		default:
-			req, _ = http.NewRequest(p.Type, p.URL, nil)
-		}
+		t.Run(p.URL, func(t *testing.T) {
+			var req *http.Request
+			switch p.Type {
+			case "GET":
+				req, _ = http.NewRequest(p.Type, p.URL, nil)
+			case "POST":
+				req, _ = http.NewRequest(p.Type, p.URL, strings.NewReader(p.PostBody))
+			default:
+				req, _ = http.NewRequest(p.Type, p.URL, nil)
+			}
 
-		rw := httptest.NewRecorder()
-		m.ServeHTTP(rw, req)
-		if rw.Code != p.Code {
-			t.Errorf("Expected %v on url %v, got %v", p.Code, p.URL, rw.Code)
-		}
+			rw := httptest.NewRecorder()
+			m.ServeHTTP(rw, req)
+			if rw.Code != p.Code {
+				t.Errorf("Expected %v, got %v", p.Code, rw.Code)
+			}
+		})
 	}
 }
 

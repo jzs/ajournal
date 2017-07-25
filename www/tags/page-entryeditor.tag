@@ -13,10 +13,21 @@
 					</p>
 					<label class="label">Content</label>
 					<p class="control">
-					<textarea style="min-height: 200px;" class="textarea" placeholder="Textarea" onkeyup={contentchange}>{entry.Content}</textarea>
+					<textarea style="min-height: 200px;" class="textarea" placeholder="Textarea" onkeyup={contentchange} ondrop={drop}>{entry.Content}</textarea>
 					<span if={err} class="help is-danger">{err}</span>
 					</p>
 					<p>
+					<p class="control">
+					<ul>
+						<li each={blobs}>
+						<img class="thumb160" src="{Links.Orig}" dragable="true" ondragstart={drag}/>
+						</li>
+					</ul>
+					</p>
+					<p class="control">
+					<input id="blob" name="blob" type="file" accept="image/png, image/jpeg" onsubmit={uploadfile} onchange={selectfile}/>
+					<span if={uploadingfile}>Uploading</span>
+					</p>
 					<br/>
 					<a class="button {is-link : showpreview}" onclick={togglepreview}>Preview</a>
 					<button class="button is-pulled-right {is-loading : saving}" onclick={saveEntry}>Save</button>
@@ -60,7 +71,16 @@ self.on('mount', function() {
 			self.editContent = self.entry.Content;
 			self.update();
 		});
+
+		_aj.get("/api/journals/"+self.entry.JournalID+"/blobs", function(data, err) {
+			if(err != null) {
+				return;
+			}
+			self.blobs = data;
+			self.update();
+		});
 	}
+
 
 	self.preview = converter.makeHtml(self.entry.Content);
 	self.update();
@@ -126,6 +146,61 @@ self.togglepreview = function(e) {
 	}
 	self.update();
 }
+
+self.selectfile = function(e) {
+	console.log("hello");
+	//Submit form
+	self.uploadfile(e);
+}
+
+self.uploadfile = function(e) {
+	e.preventDefault();
+
+	var files = e.target.files;
+
+	var formData = new FormData();
+	// Loop through each of the selected files.
+	for (var i = 0; i < files.length; i++) {
+		var file = files[i];
+		// Check the file type.
+		if (!file.type.match('image.*')) {
+			continue;
+		}
+		// Add the file to the request.
+		formData.append('blobs', file, file.name);
+	}
+	var xhr = new XMLHttpRequest();
+	xhr.open('POST', '/api/journals/'+ self.entry.JournalID +'/blobs', true);
+	xhr.onload = function () {
+		if (xhr.status === 200) {
+			// File(s) uploaded.
+			self.uploadingfile = false;
+			var data = JSON.parse(xhr.response);
+			self.blobs.push(data);
+			self.update();
+		} else {
+			alert('An error occurred!');
+		}
+	};
+
+	self.uploadingfile = true;
+	self.update();
+
+	xhr.send(formData);
+};
+
+
+self.dragItem = null;
+self.drag = function(e) {
+	self.dragItem = e.item;
+};
+self.drop = function(e) {
+	console.log(e);
+	e.preventDefault();
+	console.log(self.dragItem);
+	console.log(e.target.selectionStart);
+	e.toElement.value += "![](" + self.dragItem.Links.Orig + ")"
+};
 
 	</script>
 </page-entryeditor>
