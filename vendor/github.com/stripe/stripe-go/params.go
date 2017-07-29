@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strconv"
 	"time"
@@ -61,6 +62,20 @@ func (f *RequestValues) Set(key, val string) {
 	f.Add(key, val)
 }
 
+// Get retrieves the list of values for the given key.  If no values exist
+// for the key, nil will be returned.
+//
+// Note that Get is O(n) and may be quite slow for a very large parameter list.
+func (f *RequestValues) Get(key string) []string {
+	var results []string
+	for i, v := range f.values {
+		if v.Key == key {
+			results = append(results, f.values[i].Value)
+		}
+	}
+	return results
+}
+
 // ToValues converts an instance of RequestValues into an instance of
 // url.Values. This can be useful in cases where it's useful to make an
 // unordered comparison of two sets of request values.
@@ -110,6 +125,9 @@ type Params struct {
 	// Account is deprecated form of StripeAccount that will do the same thing.
 	// Please use StripeAccount instead.
 	Account string
+
+	// Headers may be used to provide extra header lines on the HTTP request.
+	Headers http.Header
 }
 
 // ListParams is the structure that contains the common properties
@@ -138,6 +156,44 @@ type ListMeta struct {
 	Count uint32 `json:"total_count"`
 	More  bool   `json:"has_more"`
 	URL   string `json:"url"`
+}
+
+// RangeQueryParams are a set of generic request parameters that are used on
+// list endpoints to filter their results by some timestamp.
+type RangeQueryParams struct {
+	// GreaterThan specifies that values should be a greater than this
+	// timestamp.
+	GreaterThan int64
+
+	// GreaterThanOrEqual specifies that values should be greater than or equal
+	// to this timestamp.
+	GreaterThanOrEqual int64
+
+	// LesserThan specifies that values should be lesser than this timetamp.
+	LesserThan int64
+
+	// LesserThanOrEqual specifies that values should be lesser than or
+	// equalthis timetamp.
+	LesserThanOrEqual int64
+}
+
+// AppendTo adds the range query parametes to a set of request values.
+func (r *RangeQueryParams) AppendTo(values *RequestValues, name string) {
+	if r.GreaterThan > 0 {
+		values.Add(name+"[gt]", strconv.FormatInt(r.GreaterThan, 10))
+	}
+
+	if r.GreaterThanOrEqual > 0 {
+		values.Add(name+"[gte]", strconv.FormatInt(r.GreaterThanOrEqual, 10))
+	}
+
+	if r.LesserThan > 0 {
+		values.Add(name+"[lt]", strconv.FormatInt(r.LesserThan, 10))
+	}
+
+	if r.LesserThanOrEqual > 0 {
+		values.Add(name+"[lte]", strconv.FormatInt(r.LesserThanOrEqual, 10))
+	}
 }
 
 // Filters is a structure that contains a collection of filters for list-related APIs.

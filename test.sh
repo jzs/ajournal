@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 echo 'Running linter'
 golint $(go list ./... | grep -v vendor | grep -v .git)
 echo 'Running go vet'

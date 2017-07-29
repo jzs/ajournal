@@ -15,15 +15,18 @@ import (
 	"github.com/stripe/stripe-go/customer"
 	"github.com/stripe/stripe-go/discount"
 	"github.com/stripe/stripe-go/dispute"
+	"github.com/stripe/stripe-go/ephemeralkey"
 	"github.com/stripe/stripe-go/event"
 	"github.com/stripe/stripe-go/fee"
 	"github.com/stripe/stripe-go/feerefund"
 	"github.com/stripe/stripe-go/fileupload"
 	"github.com/stripe/stripe-go/invoice"
 	"github.com/stripe/stripe-go/invoiceitem"
+	"github.com/stripe/stripe-go/loginlink"
 	"github.com/stripe/stripe-go/order"
 	"github.com/stripe/stripe-go/orderreturn"
 	"github.com/stripe/stripe-go/paymentsource"
+	"github.com/stripe/stripe-go/payout"
 	"github.com/stripe/stripe-go/plan"
 	"github.com/stripe/stripe-go/product"
 	"github.com/stripe/stripe-go/recipient"
@@ -69,12 +72,18 @@ type API struct {
 	// InvoiceItems is the client used to invoke /invoiceitems APIs.
 	// For more details see https://stripe.com/docs/api#invoiceitems.
 	InvoiceItems *invoiceitem.Client
+	// LoginLinks is the client used to invoke /v1/accounts/<account_id>/login_links APIs.
+	// For more details see https://stripe.com/docs/api#login_link_object.
+	LoginLinks *loginlink.Client
 	// Disputes is the client used to invoke dispute-related APIs.
 	// For more details see https://stripe.com/docs/api#disputes.
 	Disputes *dispute.Client
 	// Transfers is the client used to invoke /transfers APIs.
 	// For more details see https://stripe.com/docs/api#transfers.
 	Transfers *transfer.Client
+	// Payouts is the client used to invoke /payouts APIs.
+	// For more details see https://stripe.com/docs/api#payouts.
+	Payouts *payout.Client
 	// Recipients is the client used to invoke /recipients APIs.
 	// For more details see https://stripe.com/docs/api#recipients.
 	Recipients *recipient.Client
@@ -96,6 +105,9 @@ type API struct {
 	// Balance is the client used to invoke /balance and transaction-related APIs.
 	// For more details see https://stripe.com/docs/api#balance.
 	Balance *balance.Client
+	// EphemeralKeys is the client used to invoke /ephemeral_keys APIs.
+	// For more details see https://stripe.com/docs/api#ephemeral_keys.
+	EphemeralKeys *ephemeralkey.Client
 	// Events is the client used to invoke /events APIs.
 	// For more details see https://stripe.com/docs/api#events.
 	Events *event.Client
@@ -152,8 +164,10 @@ func (a *API) Init(key string, backends *Backends) {
 	a.Discounts = &discount.Client{B: backends.API, Key: key}
 	a.Invoices = &invoice.Client{B: backends.API, Key: key}
 	a.InvoiceItems = &invoiceitem.Client{B: backends.API, Key: key}
+	a.LoginLinks = &loginlink.Client{B: backends.API, Key: key}
 	a.Disputes = &dispute.Client{B: backends.API, Key: key}
 	a.Transfers = &transfer.Client{B: backends.API, Key: key}
+	a.Payouts = &payout.Client{B: backends.API, Key: key}
 	a.Recipients = &recipient.Client{B: backends.API, Key: key}
 	a.Refunds = &refund.Client{B: backends.API, Key: key}
 	a.Fees = &fee.Client{B: backends.API, Key: key}
@@ -161,6 +175,7 @@ func (a *API) Init(key string, backends *Backends) {
 	a.Account = &account.Client{B: backends.API, Key: key}
 	a.CountrySpec = &countryspec.Client{B: backends.API, Key: key}
 	a.Balance = &balance.Client{B: backends.API, Key: key}
+	a.EphemeralKeys = &ephemeralkey.Client{B: backends.API, Key: key}
 	a.Events = &event.Client{B: backends.API, Key: key}
 	a.Tokens = &token.Client{B: backends.API, Key: key}
 	a.FileUploads = &fileupload.Client{B: backends.Uploads, Key: key}

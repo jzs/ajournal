@@ -167,6 +167,9 @@ func (c Client) Update(id string, params *stripe.SubParams) (*stripe.Sub, error)
 				} else if item.QuantityZero {
 					body.Add(key+"[quantity]", "0")
 				}
+				if item.Deleted {
+					body.Add(key+"[deleted]", "true")
+				}
 			}
 		}
 
@@ -279,6 +282,14 @@ func (c Client) List(params *stripe.SubListParams) *Iter {
 	if params != nil {
 		body = &stripe.RequestValues{}
 
+		if params.Created > 0 {
+			body.Add("created", strconv.FormatInt(params.Created, 10))
+		}
+
+		if params.CreatedRange != nil {
+			params.CreatedRange.AppendTo(body, "created")
+		}
+
 		if len(params.Customer) > 0 {
 			body.Add("customer", params.Customer)
 		}
@@ -289,6 +300,10 @@ func (c Client) List(params *stripe.SubListParams) *Iter {
 
 		if len(params.Status) > 0 {
 			body.Add("status", string(params.Status))
+		}
+
+		if len(params.Billing) > 0 {
+			body.Add("billing", string(params.Billing))
 		}
 
 		params.AppendTo(body)

@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
-	"sync"
 
 	"github.com/jmoiron/sqlx/reflectx"
 )
@@ -31,14 +30,8 @@ var origMapper = reflect.ValueOf(NameMapper)
 // importers have time to customize the NameMapper.
 var mpr *reflectx.Mapper
 
-// mprMu protects mpr.
-var mprMu sync.Mutex
-
 // mapper returns a valid mapper using the configured NameMapper func.
 func mapper() *reflectx.Mapper {
-	mprMu.Lock()
-	defer mprMu.Unlock()
-
 	if mpr == nil {
 		mpr = reflectx.NewMapperFunc("db", NameMapper)
 	} else if origMapper != reflect.ValueOf(NameMapper) {

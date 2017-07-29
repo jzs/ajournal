@@ -23,7 +23,9 @@ type InvoiceParams struct {
 	SubNoProrate         bool
 	SubProrationDate     int64
 	SubQuantity          uint64
+	SubQuantityZero      bool
 	SubTrialEnd          int64
+	SubItems             []*SubItemsParams
 	TaxPercent           float64
 	TaxPercentZero       bool
 	Billing              InvoiceBilling
@@ -36,9 +38,12 @@ type InvoiceParams struct {
 // For more details see https://stripe.com/docs/api#list_customer_invoices.
 type InvoiceListParams struct {
 	ListParams
-	Date     int64
-	Customer string
-	Sub      string
+	Date      int64
+	DateRange *RangeQueryParams
+	Customer  string
+	Sub       string
+	Billing   InvoiceBilling
+	DueDate   int64
 }
 
 // InvoiceLineListParams is the set of parameters that can be used when listing invoice line items.
@@ -121,6 +126,14 @@ type Period struct {
 type InvoiceLineList struct {
 	ListMeta
 	Values []*InvoiceLine `json:"data"`
+}
+
+// InvoicePayParams is the set of parameters that can be used when
+// paying invoices. For more details, see:
+// https://stripe.com/docs/api#pay_invoice.
+type InvoicePayParams struct {
+	Params
+	Source string
 }
 
 // UnmarshalJSON handles deserialization of an Invoice.

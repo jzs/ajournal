@@ -133,13 +133,13 @@ func (c Client) Del(id string, params *stripe.SubItemParams) (*stripe.SubItem, e
 	return item, err
 }
 
-// List returns a list of subscriptions.
-// For more details see https://stripe.com/docs/api#list_subscriptions.
-func List(params *stripe.SubListParams) *Iter {
+// List returns a list of subscription items.
+// For more details see https://stripe.com/docs/api#list_subscription_items.
+func List(params *stripe.SubItemListParams) *Iter {
 	return getC().List(params)
 }
 
-func (c Client) List(params *stripe.SubListParams) *Iter {
+func (c Client) List(params *stripe.SubItemListParams) *Iter {
 	var body *stripe.RequestValues
 	var lp *stripe.ListParams
 	var p *stripe.Params
@@ -147,12 +147,8 @@ func (c Client) List(params *stripe.SubListParams) *Iter {
 	if params != nil {
 		body = &stripe.RequestValues{}
 
-		if len(params.Customer) > 0 {
-			body.Add("customer", params.Customer)
-		}
-
-		if len(params.Plan) > 0 {
-			body.Add("plan", params.Plan)
+		if len(params.Sub) > 0 {
+			body.Add("subscription", params.Sub)
 		}
 
 		params.AppendTo(body)
@@ -162,7 +158,7 @@ func (c Client) List(params *stripe.SubListParams) *Iter {
 	}
 
 	return &Iter{stripe.GetIter(lp, body, func(b *stripe.RequestValues) ([]interface{}, stripe.ListMeta, error) {
-		list := &stripe.SubList{}
+		list := &stripe.SubItemList{}
 		err := c.B.Call("GET", "/subscription_items", c.Key, b, p, list)
 
 		ret := make([]interface{}, len(list.Values))

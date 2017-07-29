@@ -96,17 +96,22 @@ func (c Client) Get(id string, params *stripe.InvoiceParams) (*stripe.Invoice, e
 
 // Pay pays an invoice.
 // For more details see https://stripe.com/docs/api#pay_invoice.
-func Pay(id string, params *stripe.InvoiceParams) (*stripe.Invoice, error) {
+func Pay(id string, params *stripe.InvoicePayParams) (*stripe.Invoice, error) {
 	return getC().Pay(id, params)
 }
 
-func (c Client) Pay(id string, params *stripe.InvoiceParams) (*stripe.Invoice, error) {
+func (c Client) Pay(id string, params *stripe.InvoicePayParams) (*stripe.Invoice, error) {
 	var body *stripe.RequestValues
 	var commonParams *stripe.Params
 
 	if params != nil {
 		commonParams = &params.Params
 		body = &stripe.RequestValues{}
+
+		if params.Source != "" {
+			body.Add("source", params.Source)
+		}
+
 		params.AppendTo(body)
 	}
 
@@ -186,6 +191,26 @@ func (c Client) GetNext(params *stripe.InvoiceParams) (*stripe.Invoice, error) {
 	body := &stripe.RequestValues{}
 	body.Add("customer", params.Customer)
 
+	if len(params.SubItems) > 0 {
+		for i, item := range params.SubItems {
+			key := fmt.Sprintf("subscription_items[%d]", i)
+			if len(item.ID) > 0 {
+				body.Add(key+"[id]", item.ID)
+			}
+			if len(item.Plan) > 0 {
+				body.Add(key+"[plan]", item.Plan)
+			}
+			if item.Quantity > 0 {
+				body.Add(key+"[quantity]", strconv.FormatUint(item.Quantity, 10))
+			} else if item.QuantityZero {
+				body.Add(key+"[quantity]", "0")
+			}
+			if item.Deleted {
+				body.Add(key+"[deleted]", "true")
+			}
+		}
+	}
+
 	if len(params.Sub) > 0 {
 		body.Add("subscription", params.Sub)
 	}
@@ -204,6 +229,8 @@ func (c Client) GetNext(params *stripe.InvoiceParams) (*stripe.Invoice, error) {
 
 	if params.SubQuantity > 0 {
 		body.Add("subscription_quantity", strconv.FormatUint(params.SubQuantity, 10))
+	} else if params.SubQuantityZero {
+		body.Add("subscription_quantity", "0")
 	}
 
 	if params.SubTrialEnd > 0 {
@@ -242,6 +269,18 @@ func (c Client) List(params *stripe.InvoiceListParams) *Iter {
 
 		if params.Date > 0 {
 			body.Add("date", strconv.FormatInt(params.Date, 10))
+		}
+
+		if params.DateRange != nil {
+			params.DateRange.AppendTo(body, "date")
+		}
+
+		if len(params.Billing) > 0 {
+			body.Add("billing", string(params.Billing))
+		}
+
+		if params.DueDate > 0 {
+			body.Add("due_date", strconv.FormatInt(params.DueDate, 10))
 		}
 
 		params.AppendTo(body)

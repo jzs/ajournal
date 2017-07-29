@@ -67,7 +67,7 @@ You will now have a Go `net/http` webserver running on `localhost:3000`.
 
 ### Packaging
 
-If you are on Debian, you `negroni` is also available as [a
+If you are on Debian, `negroni` is also available as [a
 package](https://packages.debian.org/sid/golang-github-urfave-negroni-dev) that
 you can install via `apt install golang-github-urfave-negroni-dev` (at the time
 of writing, it is in the `sid` repositories).
@@ -190,6 +190,9 @@ func main() {
   n.Run(":8080")
 }
 ```
+If no address is provided, the `PORT` environment variable is used instead.
+If the `PORT`environment variable is not defined, the default address will be used. 
+See [Run](https://godoc.org/github.com/urfave/negroni#Negroni.Run) for a complete description.
 
 In general, you will want to use `net/http` methods and pass `negroni` as a
 `Handler`, as this is more flexible, e.g.:
@@ -452,6 +455,7 @@ linking your middleware if you have built one:
 
 | Middleware | Author | Description |
 | -----------|--------|-------------|
+| [authz](https://github.com/casbin/negroni) | [Yang Luo](https://github.com/hsluoyz) | ACL, RBAC, ABAC Authorization middlware based on [Casbin](https://github.com/casbin/casbin) |
 | [binding](https://github.com/mholt/binding) | [Matt Holt](https://github.com/mholt) | Data binding from HTTP requests into structs |
 | [cloudwatch](https://github.com/cvillecsteele/negroni-cloudwatch) | [Colin Steele](https://github.com/cvillecsteele) | AWS cloudwatch metrics middleware |
 | [cors](https://github.com/rs/cors) | [Olivier Poitrey](https://github.com/rs) | [Cross Origin Resource Sharing](http://www.w3.org/TR/cors/) (CORS) support |
@@ -482,6 +486,8 @@ linking your middleware if you have built one:
 [Alexander Rødseth](https://github.com/xyproto) created
 [mooseware](https://github.com/xyproto/mooseware), a skeleton for writing a
 Negroni middleware handler.
+
+[Prasanga Siripala](https://github.com/pjebs) created an effective skeleton structure for web-based Go/Negroni projects: [Go-Skeleton](https://github.com/pjebs/go-skeleton) 
 
 ## Live code reload?
 

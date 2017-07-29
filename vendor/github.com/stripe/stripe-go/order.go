@@ -17,6 +17,7 @@ const (
 
 type OrderParams struct {
 	Params
+	Coupon   string
 	Currency Currency
 	Customer string
 	Email    string
@@ -108,8 +109,10 @@ type OrderList struct {
 // https://stripe.com/docs/api#list_orders.
 type OrderListParams struct {
 	ListParams
-	IDs    []string
-	Status OrderStatus
+	Created      int64
+	CreatedRange *RangeQueryParams
+	IDs          []string
+	Status       OrderStatus
 }
 
 // StatsuTransitions are the timestamps at which the order status was updated

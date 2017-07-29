@@ -18,8 +18,9 @@ type InvoiceItemParams struct {
 // For more details see https://stripe.com/docs/api#list_invoiceitems.
 type InvoiceItemListParams struct {
 	ListParams
-	Created  int64
-	Customer string
+	Created      int64
+	CreatedRange *RangeQueryParams
+	Customer     string
 }
 
 // InvoiceItem is the resource represneting a Stripe invoice item.
@@ -31,6 +32,8 @@ type InvoiceItem struct {
 	Currency     Currency          `json:"currency"`
 	Customer     *Customer         `json:"customer"`
 	Date         int64             `json:"date"`
+	Period       *Period           `json:"period"`
+	Plan         *Plan             `json:"plan"`
 	Proration    bool              `json:"proration"`
 	Desc         string            `json:"description"`
 	Invoice      *Invoice          `json:"invoice"`
@@ -38,6 +41,7 @@ type InvoiceItem struct {
 	Sub          string            `json:"subscription"`
 	Discountable bool              `json:"discountable"`
 	Deleted      bool              `json:"deleted"`
+	Quantity     int64             `json:"quantity"`
 }
 
 // InvoiceItemList is a list of invoice items as retrieved from a list endpoint.
