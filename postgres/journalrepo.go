@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/sketchground/ajournal/common"
 	"github.com/sketchground/ajournal/journal"
 	"github.com/sketchground/ajournal/utils/logger"
 
@@ -105,9 +106,12 @@ func (jr *journalRepo) FindEntryByID(ctx context.Context, id int64) (*journal.En
 	return result, nil
 }
 
-func (jr *journalRepo) FindAllEntries(ctx context.Context, journalID int64) ([]*journal.Entry, error) {
+func (jr *journalRepo) FindAllEntries(ctx context.Context, journalID int64, args common.PaginationArgs) ([]*journal.Entry, error) {
+	if args.From == "" {
+		args.From = "0"
+	}
 	entries := []*dbEntry{}
-	err := jr.db.Select(&entries, "SELECT * FROM Entry WHERE journalid=$1 ORDER BY Created DESC", journalID)
+	err := jr.db.Select(&entries, "SELECT * FROM Entry WHERE journalid=$1 ORDER BY Created DESC LIMIT $2 OFFSET $3", journalID, args.Limit, args.From)
 	if err != nil {
 		return nil, errors.Wrap(err, "JournalRepo:FindAllEntries failed")
 	}

@@ -2,11 +2,14 @@ package journal
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/russross/blackfriday"
+	"github.com/sketchground/ajournal/common"
 	"github.com/sketchground/ajournal/user"
 	"github.com/sketchground/ajournal/utils"
 )
@@ -22,6 +25,13 @@ type Service interface {
 	CreateEntry(ctx context.Context, entry *Entry) (*Entry, error)
 	UpdateEntry(ctx context.Context, entry *Entry) (*Entry, error)
 	Entry(ctx context.Context, id int64) (*Entry, error)
+	Entries(ctx context.Context, id int64, args common.PaginationArgs) (*Entries, error)
+}
+
+// Entries represent a paginated version of entries
+type Entries struct {
+	common.Pagination
+	Entries []*Entry
 }
 
 type service struct {
@@ -47,7 +57,7 @@ func (s *service) Create(ctx context.Context, journal *Journal) (*Journal, error
 	if err != nil {
 		return nil, errors.Wrap(err, "JournalService:Create")
 	}
-	jrnl.Entries = []*Entry{}
+	jrnl.Entries = 0
 	return jrnl, nil
 }
 
@@ -83,11 +93,11 @@ func (s *service) Journal(ctx context.Context, id int64) (*Journal, error) {
 		return nil, utils.NewAPIError(errors.New("User trying to access another users private journal"), http.StatusNotFound, ErrJournalNotExist.Error())
 	}
 
-	entries, err := s.repo.FindAllEntries(ctx, id)
+	entries, err := s.repo.FindAllEntries(ctx, id, common.PaginationArgs{Limit: 10000})
 	if err != nil {
 		return nil, errors.Wrap(err, "Journal:FindAllEntries")
 	}
-	journal.Entries = entries
+	journal.Entries = uint64(len(entries))
 
 	return journal, nil
 }
@@ -189,4 +199,40 @@ func (s *service) Entry(ctx context.Context, id int64) (*Entry, error) {
 	entry.HTMLContent = string(blackfriday.MarkdownCommon([]byte(entry.Content)))
 
 	return entry, nil
+}
+
+func (s *service) Entries(ctx context.Context, journalID int64, args common.PaginationArgs) (*Entries, error) {
+	usr := user.FromContext(ctx)
+	j, err := s.repo.FindByID(ctx, journalID)
+	if err != nil {
+		return nil, utils.NewAPIError(nil, http.StatusNotFound, ErrEntryNotExist.Error())
+	}
+
+	// If it is private and you are not logged in
+	if !j.Public && usr == nil {
+		return nil, utils.NewAPIError(errors.New("Journal belongs to another user"), http.StatusNotFound, ErrEntryNotExist.Error())
+	}
+	// If it is private and you are logged in as different user
+	if !j.Public && (usr != nil && usr.ID != j.UserID) {
+		return nil, utils.NewAPIError(errors.New("Journal belongs to another user"), http.StatusNotFound, ErrEntryNotExist.Error())
+	}
+
+	// Return all entries based on
+	args.Limit++ // Fetch one more than we need, to support has next...
+	entries, err := s.repo.FindAllEntries(ctx, journalID, args)
+	if err != nil {
+		return nil, errors.Wrap(err, "Journal:FindAllEntries")
+	}
+
+	res := &Entries{Entries: entries}
+	if uint64(len(entries)) > args.Limit-1 {
+		res.HasNext = true
+		res.Entries = res.Entries[:args.Limit-1]
+		from, err := strconv.Atoi(args.From)
+		if err != nil {
+			from = 0
+		}
+		res.Next = fmt.Sprint(uint64(from) + args.Limit - 1)
+	}
+	return res, nil
 }

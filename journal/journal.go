@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/sketchground/ajournal/common"
 )
 
 // ErrJournalNotExist error
@@ -25,7 +27,7 @@ type Journal struct {
 	Title       string     // The title of the journal.
 	Description string     // A description of the journal. It could be the initiary of the trip or the goal
 	Tags        []string   // Tags of journal.
-	Entries     []*Entry   // List of entries in the journal
+	Entries     uint64     // a count of how many entries in the journal
 	From        *time.Time // Starting time of the journal. Especially interesting for a travel journal
 	To          *time.Time // The ending time of the journal.
 	Locations   []string   // Locations that was visited during the journal.
@@ -54,5 +56,5 @@ type Repository interface {
 	AddEntry(ctx context.Context, entry *Entry) (*Entry, error)
 	UpdateEntry(ctx context.Context, entry *Entry) error
 	FindEntryByID(ctx context.Context, id int64) (*Entry, error)
-	FindAllEntries(ctx context.Context, journalID int64) ([]*Entry, error)
+	FindAllEntries(ctx context.Context, journalID int64, args common.PaginationArgs) ([]*Entry, error)
 }

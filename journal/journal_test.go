@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/sketchground/ajournal/blob"
+	"github.com/sketchground/ajournal/common"
 	"github.com/sketchground/ajournal/journal"
 	"github.com/sketchground/ajournal/services"
 	"github.com/sketchground/ajournal/user"
@@ -132,8 +133,8 @@ func TestCreateJournal(t *testing.T) {
 	if jrnl.UserID != u.ID {
 		t.Fatalf("Expected UserID %v , got: %v", u.ID, jrnl.UserID)
 	}
-	if jrnl.Entries == nil {
-		t.Fatalf("Expected empty Entries list. got nil object")
+	if jrnl.Entries != 0 {
+		t.Fatalf("Expected 0 Entries. got %v", jrnl.Entries)
 	}
 	if jrnl.ID != 1 {
 		t.Fatalf("Expected that journal got id 1, got: %v", err.Error())
@@ -227,8 +228,8 @@ func TestCreateEntry(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected to fetch the journal, got: %v", err.Error())
 	}
-	if len(j.Entries) != 1 {
-		t.Fatalf("Expected one entry in journal, got: %v", len(j.Entries))
+	if j.Entries != 1 {
+		t.Fatalf("Expected one entry in journal, got: %v", j.Entries)
 	}
 
 }
@@ -414,7 +415,7 @@ func (jr *journalRepo) FindEntryByID(ctx context.Context, id int64) (*journal.En
 	return nil, journal.ErrEntryNotExist
 }
 
-func (jr *journalRepo) FindAllEntries(ctx context.Context, journalID int64) ([]*journal.Entry, error) {
+func (jr *journalRepo) FindAllEntries(ctx context.Context, journalID int64, args common.PaginationArgs) ([]*journal.Entry, error) {
 	entries := []*journal.Entry{}
 	for _, e := range jr.entries {
 		if e.JournalID == journalID {

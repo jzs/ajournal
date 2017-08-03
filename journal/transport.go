@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	"github.com/sketchground/ajournal/blob"
+	"github.com/sketchground/ajournal/common"
 	"github.com/sketchground/ajournal/user"
 	"github.com/sketchground/ajournal/utils"
 	"github.com/sketchground/ajournal/utils/logger"
@@ -47,6 +48,20 @@ func SetupHandler(router *mux.Router, js Service, bs blob.Service, l logger.Logg
 		}
 		journal, err := js.Journal(r.Context(), id)
 		utils.JSONResp(r.Context(), l, r, w, journal, err)
+	})
+
+	router.Path("/journals/{id}/entries").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		idstr := vars["id"]
+		id, err := strconv.ParseInt(idstr, 10, 64)
+		if err != nil {
+			utils.JSONResp(r.Context(), l, r, w, nil, errors.Wrap(err, "Router"))
+			return
+		}
+		args := common.ParsePagination(r)
+		entries, err := js.Entries(r.Context(), id, args)
+		utils.JSONResp(r.Context(), l, r, w, entries, err)
+
 	})
 
 	router.Path("/journals/{id}/entries").Methods("POST").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
