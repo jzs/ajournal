@@ -5,11 +5,15 @@
 			<div class="container">
 				<label class="label">Full Name</label>
 				<p class="control">
-				<input class="input" type="text" placeholder="Full Name" onkeyup={onFullName} value={profile.Name}>
+				<input class="input" type="text" placeholder="Full Name" onkeyup={onFullName} value={profile.Name} />
 				</p>
 				<label class="label">E-mail</label>
 				<p class="control">
-				<input class="input" type="text" placeholder="E-mail" onkeyup={onEmail} value={profile.Email}>
+				<input class="input" type="text" placeholder="E-mail" onkeyup={onEmail} value={profile.Email} />
+				</p>
+				<label class="label">Public profile description</label>
+				<p class="control">
+				<textarea class="textarea" type="text" placeholder="Description" onkeyup={onDesc} value={profile.Description}> </textarea>
 				</p>
 				<button class="button is-primary is-medium" onclick={save}>Save</button>
 			</div>
@@ -183,6 +187,9 @@ self.onFullName = function(e) {
 };
 self.onEmail = function(e) {
 	self.profile.Email = e.target.value;
+};
+self.onDesc = function(e) {
+	self.profile.Description = e.target.value;
 };
 
 self.upgrade = function(e) {

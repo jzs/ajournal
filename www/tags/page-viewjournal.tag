@@ -14,13 +14,15 @@
 						<div class="media-content">
 							<div class="content">
 								<p>
-								<strong>{entry.Title}</strong> <small>@jzs</small> <small>31m</small>
+								<h3 class="title">{entry.Title}</h3>
+								<small>@{user.Username}</small> <small>{entry.Date}</small>
+								<raw class="markdown" content={entry.preview} />
 								<br>
-								<pre>{entry.Content.substring(0, 200)}...</pre>
-								<br>
+								<p if="{entry.Content.length > 2000}"><span >Read more</span></p>
 								<span each={tag in parent.Tags}>{tag}</span>
 								</p>
 							</div>
+							<!--
 							<nav class="level">
 								<div class="level-left">
 									<a class="level-item">
@@ -34,6 +36,7 @@
 									</a>
 								</div>
 							</nav>
+							-->
 						</div>
 					</article>
 				</div>
@@ -43,11 +46,16 @@
 	</section>
 	<script>
 var self = this;
+
+self.user = {};
 self.entries = {Entries: []};
 self.journal = {
 	Tags: [],
 	Entries: []
 };
+//simpleLineBreaks
+var converter = new showdown.Converter();
+converter.setFlavor('github');
 
 self.on('mount', function() {
 	_aj.get("/api/journals/" + opts.journalid, function(data, err) {
@@ -57,10 +65,21 @@ self.on('mount', function() {
 			return;
 		}
 		self.journal = data;
+
 		self.update();
 
 		// Initial fetch of entries...
 		getEntries(null);
+
+		_aj.get("/api/users/" + opts.username, function(data, err) {
+			if(err != null) {
+				self.err = err;
+				self.update();
+				return;
+			}
+			self.user = data;
+			self.update();
+		});
 	});
 });
 
@@ -83,6 +102,14 @@ var getEntries = function(from) {
 			self.update();
 			return;
 		}
+
+		for(var i = 0; i < data.Entries.length; i++) {
+			var j = data.Entries[i];
+			j.preview = converter.makeHtml(j.Content.substring(0, 2000));
+			//self.journal.Entries[i] = j
+		}
+
+
 		Array.prototype.push.apply(self.entries.Entries, data.Entries);
 		self.entries.HasNext = data.HasNext;
 		self.entries.Next = data.Next;

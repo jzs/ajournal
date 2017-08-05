@@ -137,11 +137,11 @@ func main() {
 		http.Redirect(w, r, fmt.Sprintf("/#/view/%v", id), http.StatusFound)
 	})
 	// Setup helper routes that redirects to public user page with his/her journals
-	baserouter.HandleFunc("/user/{id}", func(w http.ResponseWriter, r *http.Request) {
+	baserouter.HandleFunc("/users/{id}", func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id := vars["id"]
 
-		http.Redirect(w, r, fmt.Sprintf("/#/viewuser/%v", id), http.StatusFound)
+		http.Redirect(w, r, fmt.Sprintf("/#/users/%v", id), http.StatusFound)
 	})
 
 	// Setup static file handler

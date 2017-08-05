@@ -1,4 +1,4 @@
-riot.tag2('content', '<page-dash if="{loggedin && dash}"></page-dash> <page-login if="{login}"></page-login> <page-register if="{register}"></page-register> <page-journal-create if="{loggedin && journalcreate}"></page-journal-create> <page-journal if="{loggedin && journal}" journalid="{journalid}"></page-journal> <page-entryeditor if="{loggedin && entry}" journalid="{journalid}" entryid="{entryid}"></page-entryeditor> <page-viewjournalentry if="{viewjournalentry}" journalid="{journalid}" entryid="{entryid}"></page-viewjournalentry> <page-viewjournal if="{viewjournal}" journalid="{journalid}"></page-viewjournal> <page-viewjournals if="{viewjournals}" userid="{userid}"></page-viewjournals> <page-viewuser if="{viewuser}" username="{username}"></page-viewuser> <page-profile if="{profile}" userid="{userid}"></page-profile>', '', '', function(opts) {
+riot.tag2('content', '<page-dash if="{loggedin && dash}"></page-dash> <page-login if="{login}"></page-login> <page-register if="{register}"></page-register> <page-journal-create if="{loggedin && journalcreate}"></page-journal-create> <page-journal if="{loggedin && journal}" journalid="{journalid}"></page-journal> <page-entryeditor if="{loggedin && entry}" journalid="{journalid}" entryid="{entryid}"></page-entryeditor> <page-viewjournalentry if="{viewjournalentry}" journalid="{journalid}" entryid="{entryid}"></page-viewjournalentry> <page-viewjournal if="{viewjournal}" username="{username}" journalid="{journalid}"></page-viewjournal> <page-viewjournals if="{viewjournals}" userid="{userid}"></page-viewjournals> <page-viewuser if="{viewuser}" username="{username}"></page-viewuser> <page-profile if="{profile}" userid="{userid}"></page-profile>', '', '', function(opts) {
 var self = this;
 self.loggedin = false;
 self.journalcreate = false;
@@ -53,7 +53,13 @@ route(function(collection, id, method, mid) {
 			self.viewjournal = true;
 			self.journalid = id;
 			break;
-		case 'viewuser':
+		case 'users':
+			if(method == 'journals') {
+				self.viewjournal = true;
+				self.journalid = mid;
+				self.username = id;
+				break;
+			}
 			self.viewuser = true;
 			self.username = id;
 			break;
@@ -321,6 +327,7 @@ self.showpreview = false;
 self.preview = "";
 self.saving = false;
 var converter = new showdown.Converter();
+converter.setFlavor('github');
 
 self.entry = {};
 
@@ -524,7 +531,7 @@ self.create = function() {
 };
 });
 
-riot.tag2('page-journal', '<section class="section"> <div class="container"> <section class="section"> <h3 class="title">Journal: {journal.Title}</h3> <p> {journal.Description} </p> <a class="button" href="#/view/{opts.journalid}">View Journal</a> </section> <section class="section"> <button class="button" onclick="{newentry}">New Entry</button> </section> <section class="section"> <div class="box" each="{entry in entries.Entries}" onclick="{onentry}" style="cursor:pointer;"> <article class="media"> <div class="media-content"> <div class="content"> <p> <strong>{entry.Title}</strong> <small>@jzs</small> <small>31m</small> <br> <pre>{entry.Content.substring(0, 200)}...</pre> <br> <span each="{tag in parent.Tags}">{tag}</span> </p> </div> <nav class="level"> <div class="level-left"> <a class="level-item"> <span class="icon is-small"><i class="fa fa-reply"></i></span> </a> <a class="level-item"> <span class="icon is-small"><i class="fa fa-retweet"></i></span> </a> <a class="level-item"> <span class="icon is-small"><i class="fa fa-heart"></i></span> </a> </div> </nav> </div> </article> </div> <button class="button is-primary" if="{entries.HasNext}" onclick="{loadMore}">Load more</button> </section> </div> </section>', '', '', function(opts) {
+riot.tag2('page-journal', '<section class="section"> <div class="container"> <section class="section"> <h3 class="title">Journal: {journal.Title}</h3> <p> {journal.Description} </p> <a class="button" href="#/users/{opts.username}/journals/{opts.journalid}">View Journal</a> </section> <section class="section"> <button class="button" onclick="{newentry}">New Entry</button> </section> <section class="section"> <div class="box" each="{entry in entries.Entries}" onclick="{onentry}" style="cursor:pointer;"> <article class="media"> <div class="media-content"> <div class="content"> <p> <strong>{entry.Title}</strong> <small>@jzs</small> <small>31m</small> <br> <pre>{entry.Content.substring(0, 200)}...</pre> <br> <span each="{tag in parent.Tags}">{tag}</span> </p> </div> <nav class="level"> <div class="level-left"> <a class="level-item"> <span class="icon is-small"><i class="fa fa-reply"></i></span> </a> <a class="level-item"> <span class="icon is-small"><i class="fa fa-retweet"></i></span> </a> <a class="level-item"> <span class="icon is-small"><i class="fa fa-heart"></i></span> </a> </div> </nav> </div> </article> </div> <button class="button is-primary" if="{entries.HasNext}" onclick="{loadMore}">Load more</button> </section> </div> </section>', '', '', function(opts) {
 var self = this;
 self.entries = {Entries: []};
 self.journal = {
@@ -675,7 +682,7 @@ self.register = function(e) {
 
 });
 
-riot.tag2('page-profile', '<div class="container"> <section class="section"> <h3 class="title">Hi {profile.Name}</h3> <div class="container"> <label class="label">Full Name</label> <p class="control"> <input class="input" type="text" placeholder="Full Name" onkeyup="{onFullName}" riot-value="{profile.Name}"> </p> <label class="label">E-mail</label> <p class="control"> <input class="input" type="text" placeholder="E-mail" onkeyup="{onEmail}" riot-value="{profile.Email}"> </p> <button class="button is-primary is-medium" onclick="{save}">Save</button> </div> </section> <section class="section"> <h3 class="title">Memberships</h3> <hr> <p> You are currently subscribed to the basic plan. You can upgrade your subscription below. </p> <div class="columns"> <div class="column"> <div class="box"> <article class="media"> <div class="media-content"> <h3 class="title">Basic Plan</h3> <hr> <ul> <li>5 journals</li> <li>100 posts per journal</li> </ul> <p class="has-text-centered"> <h3 class="title has-text-centered">Free</h3> </p> <p class="hero-buttons"> <button class="button is-large is-primary">Free</button> </p> </div> </article> </div> </div> <div class="column"> <div class="box"> <article class="media"> <div class="media-content"> <h3 class="title">Full Plan</h3> <hr> <ul> <li>Unlimited journals</li> <li>Unlimited posts per journal</li> </ul> <p class="has-text-centered"> <h3 class="title has-text-centered">100 dkk/year</h3> </p> <p class="hero-buttons"> <button class="button is-large is-primary" onclick="{upgrade}">Upgrade</button> </p> </div> </article> </div> </div> </div> </section> <div class="modal {is-active : showmodal}"> <div class="modal-background"></div> <div class="modal-card"> <form action="/charge" method="post" id="payment-form"> <header class="modal-card-head"> <p class="modal-card-title">Upgrade to Paid plan</p> <button class="delete" onclick="{closemodal}"></button> </header> <section class="modal-card-body"> <p class="control"> <label for="email-element" class="label"> E-mail </label> <input class="input" placeholder="E-mail" type="text" riot-value="{profile.Email}" onkeyup="{onemail}"> <div id="email-errors">{emailerr}</div> </p> <p class="control"> <label class="label"> Name on debit or credit card </label> <input class="input" name="cardholder-name" placeholder="Name on debit or credit card" type="text"> </p> <p class="control"> <label for="card-element" class="label"> Credit or debit card </label> <div id="card-element"> </div> <div id="card-errors">{carderr}</div> </p> </section> <footer class="modal-card-foot"> <a class="button is-success {is-loading: upgrading}" onclick="{performUpgrade}">Pay 100 dkk</a> <a class="button" onclick="{closemodal}">Cancel</a> </footer> </form> </div> </div> </div>', '', '', function(opts) {
+riot.tag2('page-profile', '<div class="container"> <section class="section"> <h3 class="title">Hi {profile.Name}</h3> <div class="container"> <label class="label">Full Name</label> <p class="control"> <input class="input" type="text" placeholder="Full Name" onkeyup="{onFullName}" riot-value="{profile.Name}"> </p> <label class="label">E-mail</label> <p class="control"> <input class="input" type="text" placeholder="E-mail" onkeyup="{onEmail}" riot-value="{profile.Email}"> </p> <label class="label">Public profile description</label> <p class="control"> <textarea class="textarea" type="text" placeholder="Description" onkeyup="{onDesc}" riot-value="{profile.Description}"> </textarea> </p> <button class="button is-primary is-medium" onclick="{save}">Save</button> </div> </section> <section class="section"> <h3 class="title">Memberships</h3> <hr> <p> You are currently subscribed to the basic plan. You can upgrade your subscription below. </p> <div class="columns"> <div class="column"> <div class="box"> <article class="media"> <div class="media-content"> <h3 class="title">Basic Plan</h3> <hr> <ul> <li>5 journals</li> <li>100 posts per journal</li> </ul> <p class="has-text-centered"> <h3 class="title has-text-centered">Free</h3> </p> <p class="hero-buttons"> <button class="button is-large is-primary">Free</button> </p> </div> </article> </div> </div> <div class="column"> <div class="box"> <article class="media"> <div class="media-content"> <h3 class="title">Full Plan</h3> <hr> <ul> <li>Unlimited journals</li> <li>Unlimited posts per journal</li> </ul> <p class="has-text-centered"> <h3 class="title has-text-centered">100 dkk/year</h3> </p> <p class="hero-buttons"> <button class="button is-large is-primary" onclick="{upgrade}">Upgrade</button> </p> </div> </article> </div> </div> </div> </section> <div class="modal {is-active : showmodal}"> <div class="modal-background"></div> <div class="modal-card"> <form action="/charge" method="post" id="payment-form"> <header class="modal-card-head"> <p class="modal-card-title">Upgrade to Paid plan</p> <button class="delete" onclick="{closemodal}"></button> </header> <section class="modal-card-body"> <p class="control"> <label for="email-element" class="label"> E-mail </label> <input class="input" placeholder="E-mail" type="text" riot-value="{profile.Email}" onkeyup="{onemail}"> <div id="email-errors">{emailerr}</div> </p> <p class="control"> <label class="label"> Name on debit or credit card </label> <input class="input" name="cardholder-name" placeholder="Name on debit or credit card" type="text"> </p> <p class="control"> <label for="card-element" class="label"> Credit or debit card </label> <div id="card-element"> </div> <div id="card-errors">{carderr}</div> </p> </section> <footer class="modal-card-foot"> <a class="button is-success {is-loading: upgrading}" onclick="{performUpgrade}">Pay 100 dkk</a> <a class="button" onclick="{closemodal}">Cancel</a> </footer> </form> </div> </div> </div>', '', '', function(opts) {
 var self = this;
 self.showmodal = false;
 self.stripe = null;
@@ -736,6 +743,9 @@ self.onFullName = function(e) {
 };
 self.onEmail = function(e) {
 	self.profile.Email = e.target.value;
+};
+self.onDesc = function(e) {
+	self.profile.Description = e.target.value;
 };
 
 self.upgrade = function(e) {
@@ -869,13 +879,18 @@ self.register = function(e) {
 
 });
 
-riot.tag2('page-viewjournal', '<section class="section"> <div class="container"> <section class="section"> <h3 class="title">Journal: {journal.Title}</h3> <p> {journal.Description} </p> </section> <section class="section"> <div class="box" each="{entry in entries.Entries}" onclick="{onentry}" style="cursor:pointer;"> <article class="media"> <div class="media-content"> <div class="content"> <p> <strong>{entry.Title}</strong> <small>@jzs</small> <small>31m</small> <br> <pre>{entry.Content.substring(0, 200)}...</pre> <br> <span each="{tag in parent.Tags}">{tag}</span> </p> </div> <nav class="level"> <div class="level-left"> <a class="level-item"> <span class="icon is-small"><i class="fa fa-reply"></i></span> </a> <a class="level-item"> <span class="icon is-small"><i class="fa fa-retweet"></i></span> </a> <a class="level-item"> <span class="icon is-small"><i class="fa fa-heart"></i></span> </a> </div> </nav> </div> </article> </div> <button class="button is-primary" if="{entries.HasNext}" onclick="{loadMore}">Load more</button> </section> </div> </section>', '', '', function(opts) {
+riot.tag2('page-viewjournal', '<section class="section"> <div class="container"> <section class="section"> <h3 class="title">Journal: {journal.Title}</h3> <p> {journal.Description} </p> </section> <section class="section"> <div class="box" each="{entry in entries.Entries}" onclick="{onentry}" style="cursor:pointer;"> <article class="media"> <div class="media-content"> <div class="content"> <p> <h3 class="title">{entry.Title}</h3> <small>@{user.Username}</small> <small>{entry.Date}</small> <raw class="markdown" content="{entry.preview}"></raw> <br> <p if="{entry.Content.length > 2000}"><span>Read more</span></p> <span each="{tag in parent.Tags}">{tag}</span> </p> </div> </div> </article> </div> <button class="button is-primary" if="{entries.HasNext}" onclick="{loadMore}">Load more</button> </section> </div> </section>', '', '', function(opts) {
 var self = this;
+
+self.user = {};
 self.entries = {Entries: []};
 self.journal = {
 	Tags: [],
 	Entries: []
 };
+
+var converter = new showdown.Converter();
+converter.setFlavor('github');
 
 self.on('mount', function() {
 	_aj.get("/api/journals/" + opts.journalid, function(data, err) {
@@ -885,9 +900,20 @@ self.on('mount', function() {
 			return;
 		}
 		self.journal = data;
+
 		self.update();
 
 		getEntries(null);
+
+		_aj.get("/api/users/" + opts.username, function(data, err) {
+			if(err != null) {
+				self.err = err;
+				self.update();
+				return;
+			}
+			self.user = data;
+			self.update();
+		});
 	});
 });
 
@@ -910,6 +936,13 @@ var getEntries = function(from) {
 			self.update();
 			return;
 		}
+
+		for(var i = 0; i < data.Entries.length; i++) {
+			var j = data.Entries[i];
+			j.preview = converter.makeHtml(j.Content.substring(0, 2000));
+
+		}
+
 		Array.prototype.push.apply(self.entries.Entries, data.Entries);
 		self.entries.HasNext = data.HasNext;
 		self.entries.Next = data.Next;
@@ -949,7 +982,7 @@ self.on('mount', function() {
 riot.tag2('page-viewjournals', '', '', '', function(opts) {
 });
 
-riot.tag2('page-viewuser', '<section class="section"> <div class="container"> <section class="section"> <p> {user.Username} {profile.Description} </p> <h3 class="title">Journals</h3> <div class="box" each="{journal in journals}"> <article class="media"> <div class="media-content"> <div class="content" onclick="{tojournal}" style="cursor:pointer;"> <p> <strong>{journal.Title}</strong> <br> {journal.Description} </p> </div> </div> </article> </div> </section> </div> </section>', '', '', function(opts) {
+riot.tag2('page-viewuser', '<section class="section"> <div class="container"> <section class="section"> <div class="columns"> <div class="column is-one-quarter"> <img src="images/profile-placeholder.png"> </div> <div class="column"> <h3 class="title">{profile.Name} ({user.Username})</h3> {profile.Description} </div> </div> <p> </p> <h3 class="title">Journals</h3> <div class="box" each="{journal in journals}"> <article class="media"> <div class="media-content"> <div class="content" onclick="{tojournal}" style="cursor:pointer;"> <p> <strong>{journal.Title}</strong> <br> {journal.Description} </p> </div> </div> </article> </div> </section> </div> </section>', '', '', function(opts) {
 var self = this;
 self.journals = [];
 self.user = {Username: opts.username};
@@ -985,6 +1018,10 @@ self.on('mount', function() {
 		});
 	});
 });
+
+self.tojournal = function(e) {
+	route("/users/"+opts.username+"/journals/" + e.item.journal.ID);
+};
 });
 
 riot.tag2('raw', '<span></span>', '', '', function(opts) {

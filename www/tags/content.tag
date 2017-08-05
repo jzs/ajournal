@@ -6,7 +6,7 @@
 	<page-journal if={loggedin && journal} journalid={journalid}></page-journal>
 	<page-entryeditor if={loggedin && entry} journalid={journalid} entryid={entryid}></page-entryeditor>
 	<page-viewjournalentry if={viewjournalentry} journalid={journalid} entryid={entryid}></page-viewjournalentry>
-	<page-viewjournal if={viewjournal} journalid={journalid}></page-viewjournal>
+	<page-viewjournal if={viewjournal} username={username} journalid={journalid}></page-viewjournal>
 	<page-viewjournals if={viewjournals} userid={userid}></page-viewjournals>
 	<page-viewuser if={viewuser} username={username}></page-viewuser>
 	<page-profile if={profile} userid={userid}></page-profile>
@@ -68,7 +68,13 @@ route(function(collection, id, method, mid) {
 			self.viewjournal = true;
 			self.journalid = id;
 			break;
-		case 'viewuser':
+		case 'users':
+			if(method == 'journals') {
+				self.viewjournal = true;
+				self.journalid = mid;
+				self.username = id;
+				break;
+			}
 			self.viewuser = true;
 			self.username = id;
 			break;

@@ -2,9 +2,16 @@
 	<section class="section">
 		<div class="container">
 			<section class="section">
+				<div class="columns">
+					<div class="column is-one-quarter">
+					<img src="images/profile-placeholder.png"/>
+					</div>
+					<div class="column">
+						<h3 class="title">{profile.Name} ({user.Username})</h3>
+						{profile.Description}
+					</div>
+				</div>
 				<p>
-				{user.Username}
-				{profile.Description}
 				</p>
 				<h3 class="title">Journals</h3>
 				<div class="box" each={journal in journals}>
@@ -60,5 +67,9 @@ self.on('mount', function() {
 		});
 	});
 });
+
+self.tojournal = function(e) {
+	route("/users/"+opts.username+"/journals/" + e.item.journal.ID);
+};
 	</script>
 </page-viewuser>

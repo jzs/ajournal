@@ -46,6 +46,7 @@ self.showpreview = false;
 self.preview = "";
 self.saving = false;
 var converter = new showdown.Converter();
+converter.setFlavor('github');
 
 self.entry = {};
 

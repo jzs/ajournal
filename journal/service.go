@@ -75,11 +75,6 @@ func (s *service) MyJournals(ctx context.Context) ([]*Journal, error) {
 }
 
 func (s *service) Journal(ctx context.Context, id int64) (*Journal, error) {
-	usr := user.FromContext(ctx)
-	if usr == nil {
-		return nil, utils.NewAPIError(nil, http.StatusForbidden, "Cannot fetch journals without a user context")
-	}
-
 	journal, err := s.repo.FindByID(ctx, id)
 	switch {
 	case err == ErrJournalNotExist:
@@ -88,8 +83,9 @@ func (s *service) Journal(ctx context.Context, id int64) (*Journal, error) {
 		return nil, err
 	}
 
+	usr := user.FromContext(ctx)
 	// If it's another users journal and it is not public, then do not return it.
-	if journal.UserID != usr.ID && !journal.Public {
+	if !journal.Public && usr != nil && journal.UserID != usr.ID {
 		return nil, utils.NewAPIError(errors.New("User trying to access another users private journal"), http.StatusNotFound, ErrJournalNotExist.Error())
 	}
 

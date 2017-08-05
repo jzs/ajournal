@@ -59,7 +59,7 @@ func TestTransport(t *testing.T) {
 		},
 		{
 			URL:  "/journals/1",
-			Code: http.StatusForbidden,
+			Code: http.StatusNotFound,
 			Type: "GET",
 		},
 		{
