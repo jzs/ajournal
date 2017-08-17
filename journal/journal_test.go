@@ -2,9 +2,10 @@ package journal_test
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
+	"sort"
 	"strings"
 	"testing"
 
@@ -30,16 +31,11 @@ func TestTransport(t *testing.T) {
 	jr := NewInmemRepo()
 	js := journal.NewService(jr)
 
-	endpoint := os.Getenv("AJ_S3_ENDPOINT")
-	accessKey := os.Getenv("AJ_S3_ACCESSKEY")
-	secretKey := os.Getenv("AJ_S3_SECRETKEY")
-	if endpoint == "" || accessKey == "" || secretKey == "" {
-		t.Fatalf("S3 Credentials not specified, cannot test s3 integration")
-	}
-	br := services.NewS3Repo(endpoint, accessKey, secretKey, "ajournal-test")
+	br := services.NewS3MockRepo()
 	bs := blob.NewService(br)
+	log := logger.NewTestLogger()
 
-	journal.SetupHandler(m, js, bs, logger.NewTestLogger())
+	journal.SetupHandler(m, js, bs, log)
 
 	posts := []struct {
 		URL      string
@@ -85,6 +81,11 @@ func TestTransport(t *testing.T) {
 			Type:     "POST",
 			PostBody: "{}",
 		},
+		{
+			URL:  "/journals/latest",
+			Code: http.StatusOK,
+			Type: "GET",
+		},
 	}
 	for _, p := range posts {
 		t.Run(p.URL, func(t *testing.T) {
@@ -101,7 +102,8 @@ func TestTransport(t *testing.T) {
 			rw := httptest.NewRecorder()
 			m.ServeHTTP(rw, req)
 			if rw.Code != p.Code {
-				t.Errorf("Expected %v, got %v", p.Code, rw.Code)
+				log.Flush()
+				t.Errorf("Call to %v Expected %v, got %v", p.URL, p.Code, rw.Code)
 			}
 		})
 	}
@@ -343,6 +345,41 @@ func TestNoAuthAccess(t *testing.T) {
 
 }
 
+func TestLatest(t *testing.T) {
+	fu := &user.User{ID: 201, Username: "jzs"}
+	fctx, js := setupTest(fu)
+
+	title := "My first journal"
+	jrnl, err := js.Create(fctx, &journal.Journal{Title: title, Public: true})
+	if err != nil {
+		t.Fatalf("Expected to create journal, got: %v", err.Error())
+	}
+
+	entry := &journal.Entry{JournalID: jrnl.ID, Content: "Hello world"}
+	_, err = js.CreateEntry(fctx, entry)
+	if err != nil {
+		t.Fatalf("Expected sucessful creation of entry , got: %v", err.Error())
+	}
+
+	// Test if we don't return other users journals
+	u := &user.User{
+		ID:       500,
+		Username: "Bob",
+	}
+	ctx := user.TestContextWithUser(u)
+
+	//Test Journals for other user...
+	journals, err := js.LatestJournals(ctx, 3)
+	if err != nil {
+		t.Fatalf("Expected to get result, got %v", err.Error())
+	}
+	if len(journals.Journals) != 1 {
+		t.Errorf("Expected to get 1 result, got %v", len(journals.Journals))
+	}
+
+	// TODO: Test that it doesn't return private records!
+}
+
 // In memory repository of journal
 
 type journalRepo struct {
@@ -423,4 +460,31 @@ func (jr *journalRepo) FindAllEntries(ctx context.Context, journalID int64, args
 		}
 	}
 	return entries, nil
+}
+
+func (jr *journalRepo) FindNewest(ctx context.Context, args common.PaginationArgs) ([]*journal.Journal, error) {
+	es := make([]*journal.Entry, len(jr.entries))
+	copy(es, jr.entries)
+	sort.Slice(es, func(a, b int) bool { return es[a].Date.Before(es[b].Date) })
+	fmt.Println(es)
+
+	journals := []*journal.Journal{}
+	for _, e := range es {
+		contains := false
+		for _, j := range journals {
+			if j.ID == e.JournalID {
+				contains = true
+				break
+			}
+		}
+		if !contains {
+			// Fetch journal and insert it
+			for _, j := range jr.journals {
+				if j.ID == e.JournalID && j.Public {
+					journals = append(journals, j)
+				}
+			}
+		}
+	}
+	return journals, nil
 }

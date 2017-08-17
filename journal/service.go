@@ -26,6 +26,7 @@ type Service interface {
 	UpdateEntry(ctx context.Context, entry *Entry) (*Entry, error)
 	Entry(ctx context.Context, id int64) (*Entry, error)
 	Entries(ctx context.Context, id int64, args common.PaginationArgs) (*Entries, error)
+	LatestJournals(ctx context.Context, count uint64) (*LatestJournals, error)
 }
 
 // Entries represent a paginated version of entries
@@ -231,4 +232,49 @@ func (s *service) Entries(ctx context.Context, journalID int64, args common.Pagi
 		res.Next = fmt.Sprint(uint64(from) + args.Limit - 1)
 	}
 	return res, nil
+}
+
+// LatestJournals is a view model for returning the x latest journals
+type LatestJournals struct {
+	common.Pagination
+	Journals []*LatestJournal
+}
+
+// LatestJournal is a view model for returning the x latest journals
+type LatestJournal struct {
+	ID    int64
+	Title string
+	Entry *Entry
+}
+
+// LatestJournals returns a view of the latest x journals with the newest entry on.
+func (s *service) LatestJournals(ctx context.Context, count uint64) (*LatestJournals, error) {
+	pag := common.DefaultPagination()
+	pag.Limit = count
+	journals, err := s.repo.FindNewest(ctx, pag)
+	if err != nil {
+		return nil, err
+	}
+	result := []*LatestJournal{}
+	for _, j := range journals {
+		if !j.Public {
+			return nil, errors.New("Expected no private journals from repository")
+		}
+
+		entries, err := s.repo.FindAllEntries(ctx, j.ID, common.PaginationArgs{Limit: 1})
+		if err != nil {
+			return nil, err
+		}
+		if len(entries) != 1 {
+			return nil, errors.New("Expected one entry in journal, found none")
+		}
+
+		result = append(result, &LatestJournal{
+			ID:    j.ID,
+			Title: j.Title,
+			Entry: entries[0],
+		})
+	}
+
+	return &LatestJournals{Journals: result}, nil
 }

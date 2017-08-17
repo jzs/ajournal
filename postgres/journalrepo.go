@@ -122,6 +122,15 @@ func (jr *journalRepo) FindAllEntries(ctx context.Context, journalID int64, args
 	return result, nil
 }
 
+func (jr *journalRepo) FindNewest(ctx context.Context, args common.PaginationArgs) ([]*journal.Journal, error) {
+	journals := []*journal.Journal{}
+	err := jr.db.Select(&journals, "SELECT * FROM journal WHERE public = true AND id IN (SELECT b.journalid FROM (SELECT journalid, max(date) from entry GROUP BY journalid ORDER BY max DESC LIMIT $1) as b)", args.Limit)
+	if err != nil {
+		return nil, errors.Wrap(err, "JournalRepo:FindNewest failed")
+	}
+	return journals, nil
+}
+
 func mapToEntry(e *dbEntry) *journal.Entry {
 	var date time.Time
 	if e.Published.Valid {
