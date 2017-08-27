@@ -38,6 +38,17 @@ func SetupHandler(router *mux.Router, js Service, bs blob.Service, l logger.Logg
 		utils.JSONResp(r.Context(), l, r, w, journals, err)
 	})
 
+	router.Path("/journals/latest").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var intLimit uint64 = 3
+		limit := r.FormValue("limit")
+		if limit != "" {
+			//TODO: Parse limit
+		}
+
+		journals, err := js.LatestJournals(r.Context(), intLimit)
+		utils.JSONResp(r.Context(), l, r, w, journals, err)
+	})
+
 	router.Path("/journals/{id}").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		idstr := vars["id"]

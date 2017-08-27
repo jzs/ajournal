@@ -2,92 +2,98 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<title>Journal</title>
+		<title>a-Journal</title>
 		<link rel="stylesheet" href="css/font-awesome.min.css">
 		<link rel="stylesheet" href="css/bulma.css">
-		<link rel="stylesheet" href="css/document.css">
-		<link rel="stylesheet" href="css/app.css">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-
-		<script src="js/riot.min.js"></script>
-		<script src="js/route.min.js"></script>
-		<script src="js/riotcontrol.js"></script>
-		<script src="js/showdown.min.js"></script>
 		<script src="js/moment.js"></script>
 		<script src="js/utils.js"></script>
+		<script src="js/riot.min.js"></script>
 		<script src="js/dist.js"></script>
-		<style>
-.hidden {
-	display:none !important;
-}
-		</style>
 	</head>
 	<body>
 		<!-- page content -->
 		<div class="container" data-is="navbar">
 			<nav class="nav">
 				<div class="nav-left">
+					<a class="nav-item" href="/"><img src="images/logo.png"/></a>
 				</div>
 				<div class="nav-center">
 					<a class="nav-item"></a>
 				</div>
 				<div class="nav-right">
-					<a class="nav-item">Log out</a>
+					<a class="nav-item" href="/app">Sign in</a>
+					<div class="nav-item">
+						<a class="button is-primary" href="/app#/register">
+							Get started
+						</a>
+					</div>
 				</div>
 			</nav>
 		</div>
-
-		<div class="pagecontent" data-is="content">
-		</div>
-
-		<script src="https://js.stripe.com/v3/"></script>
-		<script>
-var loginstore = new function() {
-	riot.observable(this);
-	var self = this;
-
-	self.on('perform-login', function(user) {
-		self.setUser(user);
-	});
-	self.on('perform-logout', function(user) {
-		_aj.post("/api/users/logout", null, function(data, err) {
-			if( err != null ) {
-				return;
-			}
-			self.setUser(null);
-		});
-	});
-
-	// setUser sets the user internally in the store and triggers result.
-	self.setUser = function(user) {
-		if(user== null) {
-			// Present login screen
-			localStorage.removeItem('currentuser');
-			this.trigger('logout', null);
-		} else {
-			localStorage.setItem('currentuser', JSON.stringify(user));
-			this.trigger('login', user);
-		}
-	}
-};
-RiotControl.addStore(loginstore);
-
-riot.mount('*');
-
-var currentuser = JSON.parse(localStorage.getItem('currentuser'));
-loginstore.setUser(currentuser);
-
-route.start(true);
-
-if(currentuser != null) {
-	_aj.get("/api/users/me", function(data,err) {
-		if(err != null) {
-			loginstore.setUser(null);
-			route("/");
-		}
-	});
-}
-// Check whether user is logged in or not... if not then redirect to login screen
-		</script>
+		<div>
+			<div class="section hero">
+				<div class="hero-body">
+					<div class="container">
+						<div class="columns">
+							<div class="column">
+								<h1 class="title is-1">Need a home for your journal?<h1>
+								<h2 class="subtitle">a-journal can help you host your personal journals along with your public ones.</h2>
+								<a class="button is-info is-large" href="/app#/register">Get started</a>
+							</div>
+							<div class="column">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="section hero is-primary">
+				<div class="hero-body">
+					<div class="container">
+						<div class="columns">
+							<div class="column">
+							</div>
+							<div class="column">
+								<h1 class="title is-1">Do you want your journal to be private?<h1>
+										<h2 class="subtitle">You can create a private journal that only you and the people you invite can read.</h2>
+										<a class="button is-info is-large" href="/app#/register">Get started</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="section hero">
+				<div class="hero-body">
+					<div class="container">
+						<div class="columns">
+							<div class="column">
+								<h1 class="title is-1">Editor that makes you focus on your writing<h1>
+										<h2 class="subtitle">The editor is based on the markdown format that doesn't get in your way of writing. You can focus on your writing instead of your presentation</h2>
+										<a class="button is-info is-large" href="/app#/register">Get started</a>
+							</div>
+							<div class="column">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="section hero">
+				<div class="hero-body">
+					<div class="container">
+						<div class="columns">
+							<div class="column">
+								<h1 class="title is-1">Read latest journals<h1>
+										<h2 class="subtitle">Read some of the latest entries in public journals</h2>
+							</div>
+							<div class="column">
+								<div data-is="latestjournals"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 	</body>
+	<script>
+riot.mount('latestjournals');
+	</script>
 </html>

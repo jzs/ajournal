@@ -10,6 +10,7 @@ import (
 
 	"github.com/sketchground/ajournal/blob"
 	"github.com/sketchground/ajournal/journal"
+	//"github.com/sketchground/ajournal/oauth"
 	"github.com/sketchground/ajournal/postgres"
 	"github.com/sketchground/ajournal/profile"
 	"github.com/sketchground/ajournal/services"
@@ -126,6 +127,8 @@ func main() {
 	ps := profile.NewService(pr, sr)
 	profile.SetupHandler(apirouter, ps, log)
 
+	//oauth.SetupHandler(apirouter, log)
+
 	// Setup api router
 	baserouter.PathPrefix("/api").Handler(negroni.New(negroni.Wrap(apirouter)))
 
@@ -142,6 +145,10 @@ func main() {
 		id := vars["id"]
 
 		http.Redirect(w, r, fmt.Sprintf("/#/users/%v", id), http.StatusFound)
+	})
+
+	baserouter.HandleFunc("/app", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, wwwdir+"/app.html")
 	})
 
 	// Setup static file handler

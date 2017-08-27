@@ -57,4 +57,5 @@ type Repository interface {
 	UpdateEntry(ctx context.Context, entry *Entry) error
 	FindEntryByID(ctx context.Context, id int64) (*Entry, error)
 	FindAllEntries(ctx context.Context, journalID int64, args common.PaginationArgs) ([]*Entry, error)
+	FindNewest(ctx context.Context, args common.PaginationArgs) ([]*Journal, error)
 }

@@ -1,7 +1,7 @@
 <navbar>
 <nav class="nav">
 	<div class="nav-left">
-		<a class="nav-item" href="#/">a-Journal</a>
+		<a class="nav-item" href="#/"><img src="images/logo.png"/></a>
 	</div>
 	<div class="nav-center">
 		<a class="nav-item" href="#/profile">{user.Username}</a>

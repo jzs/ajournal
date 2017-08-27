@@ -256,7 +256,23 @@ self.date = function() {
 };
 });
 
-riot.tag2('navbar', '<nav class="nav"> <div class="nav-left"> <a class="nav-item" href="#/">a-Journal</a> </div> <div class="nav-center"> <a class="nav-item" href="#/profile">{user.Username}</a> </div> <span id="nav-toggle" class="nav-toggle {is-active: isActive}" onclick="{toggle}"> <span></span> <span></span> <span></span> </span> <div id="nav-menu" class="nav-right nav-menu {is-active: isActive}"> <a class="nav-item" href="#" onclick="{logout}" if="{user.Username}">Log out</a> </div> </nav>', '', '', function(opts) {
+riot.tag2('latestjournals', '<article class="media" each="{j in journals}"> <div class="media-content"> <div class="content"> <p> <strong>{j.Entry.Title}</strong> <br> <small>{j.Title}</small> <small>{moment(j.Entry.Date).format(\'YYYY/MM/DD\')}</small> <br> <small> <a href="/app#view/{j.ID}/entries/{j.Entry.ID}">Read more</a> </small> </p> </div> </div> </article>', '', '', function(opts) {
+var self = this;
+self.entries = {Entries: []};
+self.journals = [];
+_aj.get("/api/journals/latest?limit=3", function(data, err) {
+	if(err != null) {
+		self.err = err;
+		self.update();
+		return;
+	}
+	self.journals = data.Journals;
+	self.update();
+});
+
+});
+
+riot.tag2('navbar', '<nav class="nav"> <div class="nav-left"> <a class="nav-item" href="#/"><img src="images/logo.png"></a> </div> <div class="nav-center"> <a class="nav-item" href="#/profile">{user.Username}</a> </div> <span id="nav-toggle" class="nav-toggle {is-active: isActive}" onclick="{toggle}"> <span></span> <span></span> <span></span> </span> <div id="nav-menu" class="nav-right nav-menu {is-active: isActive}"> <a class="nav-item" href="#" onclick="{logout}" if="{user.Username}">Log out</a> </div> </nav>', '', '', function(opts) {
 var self = this;
 self.user = {};
 
@@ -287,7 +303,7 @@ RiotControl.on('logout', function() {
 });
 
 
-riot.tag2('page-dash', '<div class="section"> <div class="container"> <div class="columns"> <div class="column"> <h3 class="title">My Journals</h3> <section class="section"> <p> Welcome to a-Journal. <span if="{journals.length < 1 && !loading}">It looks like you haven\'t created any journals yet. Let me help you get started.</span> </p> </section> <span class="help is-danger" if="{err}">{err}</span> <div class="box" each="{journal in journals}"> <article class="media"> <div class="media-left"> <figure class="image is-64x64"> <img src="images/128x128.png" alt="Image"> </figure> </div> <div class="media-content"> <div class="content" onclick="{tojournal}" style="cursor:pointer;"> <p> <strong>{journal.Title}</strong> <small>@jzs</small> <small>31m</small> <br> {journal.Description} </p> </div> <nav class="level"> <div class="level-left"> <a class="level-item" onclick="{createentry}"> <span class="icon is-small"><i class="fa fa-plus"></i></span> </a> </div> <div class="level-right"> <span class="level-item" if="{!journal.Public}"> Private </span> </div> </nav> </div> </article> </div> <button class="button" onclick="{newjournal}">New Journal</button> </div> </div> </div> </div>', '', '', function(opts) {
+riot.tag2('page-dash', '<div class="section"> <div class="container"> <div class="columns"> <div class="column"> <h3 class="title">My Journals</h3> <section class="section" if="{journals.length < 1 && !loading}"> <p> <span>Welcome to a-Journal. It looks like you haven\'t created any journals yet. Let me help you get started.</span> </p> </section> <span class="help is-danger" if="{err}">{err}</span> <div class="box" each="{journal in journals}"> <article class="media"> <div class="media-left"> <figure class="image is-64x64"> <img src="images/128x128.png" alt="Image"> </figure> </div> <div class="media-content"> <div class="content" onclick="{tojournal}" style="cursor:pointer;"> <p> <strong>{journal.Title}</strong> <small>@jzs</small> <small>31m</small> <br> {journal.Description} </p> </div> <nav class="level"> <div class="level-left"> <a class="level-item" onclick="{createentry}"> <span class="icon is-small"><i class="fa fa-plus"></i></span> </a> </div> <div class="level-right"> <span class="level-item" if="{!journal.Public}"> Private </span> </div> </nav> </div> </article> </div> <button class="button" onclick="{newjournal}">New Journal</button> </div> </div> </div> </div>', '', '', function(opts) {
 var self = this;
 self.journals = [];
 self.loading = true;

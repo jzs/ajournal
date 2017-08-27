@@ -1,18 +1,12 @@
 <page-dash>
 	<div class="section">
-		<!-- 
-	  // TODO: Show current journals that you are writing.
-	  // Add entry to journal
-	  // Implement entry editor
-	  // Account page
-		-->
 		<div class="container">
 			<div class="columns">
 				<div class="column">
 					<h3 class="title">My Journals</h3>
-					<section class="section" >
+					<section class="section" if={journals.length < 1 && !loading}>
 						<p>
-						Welcome to a-Journal. <span if={journals.length < 1 && !loading}>It looks like you haven't created any journals yet. Let me help you get started.</span>
+						<span>Welcome to a-Journal. It looks like you haven't created any journals yet. Let me help you get started.</span>
 						</p>
 					</section>
 
