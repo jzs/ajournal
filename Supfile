@@ -16,6 +16,14 @@ networks: #Groups of hosts
       GOARCH: amd64
     hosts:
       - jzs@ajournal.dk:999
+  testing:
+    env:
+      AJBUILD: RELEASE
+      GOOS: linux
+      GOARCH: amd64
+    hosts:
+      - jzs@46.101.187.69
+
 
 commands:
   clean:
@@ -34,11 +42,11 @@ commands:
 
   copy-bin:
     desc: Copy binary
-    run: cp /tmp/dist/ajournal /usr/local/bin/ajournal
+    run: sudo cp /tmp/dist/ajournal /usr/local/bin/ajournal
 
   copy-www:
     desc: Copy www-data
-    run: cp -r /tmp/dist/www/* /var/www/ajournal/
+    run: sudo mkdir -p /var/www/ajournal; sudo cp -r /tmp/dist/www/* /var/www/ajournal/
 
   restart-service:
     desc: Restart systemd service
