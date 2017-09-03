@@ -8,6 +8,16 @@
 						<h3 class="title">Login</h3>
 						<div class="card">
 							<div class="card-content is-clearfix">
+								<div if={!loginuserpass}>
+								<div class="control">
+									<a class="button" href="/api/oauth/google">Sign in with google</a>
+								</div>
+								<div class="control">
+									<a class="button" onclick={clickloginuser}>Sign in username/password</a>
+								</div>
+								</div>
+
+								<div if={loginuserpass}>
 								<label class="label">Username</label>
 								<p class="control has-icon has-icon-right">
 								<input class="input" type="text" placeholder="Username" onkeyup={onusername} value="">
@@ -31,8 +41,13 @@
 									<a class="button is-link {is-disabled : loggingin}" href="#/register">Register</a>
 									</p>
 									<p class="control">
-									<button disabled={isdisabled} class="button is-success {is-loading : loggingin}" onclick={login}>Login</button>
+										<a class="button" href="/api/oauth/google">Login with google</a>
 									</p>
+									<p class="control">
+										<button disabled={isdisabled} class="button is-success {is-loading : loggingin}" onclick={login}>Login</button>
+									</p>
+								</div>
+
 								</div>
 							</div>
 						</div>
@@ -44,6 +59,11 @@
 	</section>
 	<script>
 var self = this;
+
+self.loginuserpass = false;
+self.clickloginuser = function(e) {
+	self.loginuserpass = true;
+}
 
 self.isdisabled = true; // login button disabled
 

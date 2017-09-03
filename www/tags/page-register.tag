@@ -45,6 +45,9 @@
 
 								<div class="control is-grouped is-pulled-right">
 									<p class"control">
+									<a class="button" href="/api/oauth/google">Register with google</a>
+									</p>
+									<p class"control">
 									<button disabled={formdisabled} class="button is-success {is-disabled : loggingin}" onclick={register}>Register</button>
 									</p>
 								</div>

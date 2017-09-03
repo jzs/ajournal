@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 	"github.com/sketchground/ajournal/user"
 )
 
@@ -38,7 +39,7 @@ func (ur *repo) Create(ctx context.Context, u *user.User) (*user.User, error) {
 	var id int64
 	err := ur.db.Get(&id, "INSERT INTO _User(Username, Password, Active, Created) VALUES($1, $2, $3, $4) RETURNING id", u.Username, u.Password, u.Active, u.Created)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "UserRepo.Create")
 	}
 	u.ID = id
 	return u, nil

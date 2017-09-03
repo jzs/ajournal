@@ -79,14 +79,22 @@ loginstore.setUser(currentuser);
 
 route.start(true);
 
-if(currentuser != null) {
-	_aj.get("/api/users/me", function(data,err) {
-		if(err != null) {
+// Always check if we are logged in with a valid cookie.
+_aj.get("/api/users/me", function(data,err) {
+	if(err != null) {
+		if(currentuser != null) {
+			// If there's an error and we have a session, then log out.
 			loginstore.setUser(null);
 			route("/");
-		}
-	});
-}
+		} 
+		return;
+	}
+	// If we are then redirect to logged in page
+	if(currentuser == null) {
+		loginstore.setUser(data);
+		route("/");
+	}
+});
 // Check whether user is logged in or not... if not then redirect to login screen
 		</script>
 	</body>

@@ -94,15 +94,7 @@ func SetupHandler(r *mux.Router, us Service, l logger.Logger) {
 			return
 		}
 
-		cookie := &http.Cookie{
-			Name:     cookieName,
-			Value:    token.Token,
-			Path:     "/",
-			Expires:  token.Expires,
-			HttpOnly: true,
-			//Secure: true,
-		}
-		http.SetCookie(w, cookie)
+		http.SetCookie(w, CreateCookie(token))
 
 		utils.JSONResp(r.Context(), l, r, w, token, err)
 	})
@@ -127,4 +119,17 @@ func SetupHandler(r *mux.Router, us Service, l logger.Logger) {
 		http.SetCookie(w, cookie)
 		utils.JSONResp(r.Context(), l, r, w, nil, nil)
 	})
+}
+
+// CreateCookie creates an authentication cookie
+func CreateCookie(token *Token) *http.Cookie {
+	cookie := &http.Cookie{
+		Name:     cookieName,
+		Value:    token.Token,
+		Path:     "/",
+		Expires:  token.Expires,
+		HttpOnly: true,
+		//Secure: true,
+	}
+	return cookie
 }

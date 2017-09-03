@@ -95,13 +95,7 @@ func (s *service) Login(ctx context.Context, username string, password string) (
 		return nil, errors.Wrap(err, "Login")
 	}
 
-	u1 := uuid.NewV4()
-	token := &Token{
-		Token:   u1.String(),
-		Expires: time.Now().Add(24 * 7 * time.Hour),
-		UserID:  u.ID,
-	}
-
+	token := GenerateToken(u.ID)
 	err = s.repo.CreateToken(ctx, token)
 	if err != nil {
 		return nil, errors.Wrap(err, "Login")
@@ -131,4 +125,15 @@ func (s *service) UserWithToken(ctx context.Context, token string) (*User, error
 	}
 	u.Password = "" // Setting password to blank such that we are not leaking the hash by mistake.
 	return u, nil
+}
+
+// GenerateToken generates a valid token
+func GenerateToken(userID int64) *Token {
+	u1 := uuid.NewV4()
+	token := &Token{
+		Token:   u1.String(),
+		Expires: time.Now().Add(24 * 7 * time.Hour),
+		UserID:  userID,
+	}
+	return token
 }

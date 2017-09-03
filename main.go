@@ -10,7 +10,7 @@ import (
 
 	"github.com/sketchground/ajournal/blob"
 	"github.com/sketchground/ajournal/journal"
-	//"github.com/sketchground/ajournal/oauth"
+	"github.com/sketchground/ajournal/oauth"
 	"github.com/sketchground/ajournal/postgres"
 	"github.com/sketchground/ajournal/profile"
 	"github.com/sketchground/ajournal/services"
@@ -109,8 +109,17 @@ func main() {
 	})
 
 	endpoint := os.Getenv("AJ_S3_ENDPOINT")
+	if endpoint == "" {
+		log.Fatalf(ctx, "Environment variable AJ_S3_ENDPOINT not set!\nRemember to set key")
+	}
 	accessKey := os.Getenv("AJ_S3_ACCESSKEY")
+	if endpoint == "" {
+		log.Fatalf(ctx, "Environment variable AJ_S3_ACCESSKEY not set!\nRemember to set key")
+	}
 	secretKey := os.Getenv("AJ_S3_SECRETKEY")
+	if endpoint == "" {
+		log.Fatalf(ctx, "Environment variable AJ_S3_SECRETKEY not set!\nRemember to set key")
+	}
 	br := services.NewS3Repo(endpoint, accessKey, secretKey, "ajournal")
 	bs := blob.NewService(br)
 
@@ -127,7 +136,15 @@ func main() {
 	ps := profile.NewService(pr, sr)
 	profile.SetupHandler(apirouter, ps, log)
 
-	//oauth.SetupHandler(apirouter, log)
+	creds := oauth.Credentials{
+		ClientID:     os.Getenv("AJ_OAUTH_CLIENT_ID"),
+		ClientSecret: os.Getenv("AJ_OAUTH_CLIENT_SECRET"),
+		RedirectURL:  os.Getenv("AJ_OAUTH_REDIRECT_URL"),
+		Provider:     oauth.ProviderGoogle,
+	}
+	or := postgres.NewOauthRepo(db)
+	oas := oauth.NewService(or, ur, pr)
+	oauth.SetupHandler(apirouter, oas, log, creds)
 
 	// Setup api router
 	baserouter.PathPrefix("/api").Handler(negroni.New(negroni.Wrap(apirouter)))
