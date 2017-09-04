@@ -6,14 +6,22 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"sync"
+	"time"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
 	"github.com/gorilla/mux"
+	uuid "github.com/satori/go.uuid"
 	"github.com/sketchground/ajournal/profile"
 	"github.com/sketchground/ajournal/user"
 	"github.com/sketchground/ajournal/utils/logger"
+)
+
+var (
+	auth map[string]time.Time = map[string]time.Time{}
+	lock sync.Mutex           = sync.Mutex{}
 )
 
 // SetupHandler sets up routes for the journal service
@@ -31,17 +39,35 @@ func SetupHandler(router *mux.Router, os Service, l logger.Logger, creds Credent
 	}
 
 	router.Path("/oauth/google").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		url := googleCfg.AuthCodeURL("random string", oauth2.AccessTypeOnline)
+
+		uid := uuid.NewV4().String()
+		lock.Lock()
+		if len(auth) > 10000 {
+			for k, v := range auth {
+				if time.Since(v) > 5*time.Minute {
+					delete(auth, k)
+				}
+			}
+		}
+		auth[uid] = time.Now()
+		lock.Unlock()
+		url := googleCfg.AuthCodeURL(uid, oauth2.AccessTypeOnline)
 		http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 	})
 
 	router.Path("/oauth/google/callback").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		state := r.FormValue("state")
-		if state != "random string" {
+
+		lock.Lock()
+		if _, ok := auth[state]; !ok {
+			lock.Unlock()
 			RenderInternalError(ctx, w, l, errors.New("Invalid state"))
 			return
 		}
+
+		delete(auth, state)
+		lock.Unlock()
 
 		code := r.FormValue("code")
 		token, err := googleCfg.Exchange(oauth2.NoContext, code)
