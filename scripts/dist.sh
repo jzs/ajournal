@@ -6,5 +6,6 @@ cp -r www/images dist/www/images
 cp -r www/js dist/www/js
 riot www/tags www/js/dist.js
 cp www/index.html dist/www/index.html
+cp www/app.html dist/www/app.html
 cp -r db dist/db
 cp -r i18n dist/www/i18n
