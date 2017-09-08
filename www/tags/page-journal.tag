@@ -2,9 +2,9 @@
 	<section class="section">
 		<div class="container">
 			<section class="section">
-				<h3 class="title">Journal: {journal.Title}</h3>
+				<h3 class="title">Journal: <edittext savefunc={savejournal} value={journal.Title} /></h3>
 				<p>
-				{journal.Description}
+				<div contenteditable>{journal.Description}</div>
 				</p>
 				<a class="button" href="#/users/{opts.username}/journals/{opts.journalid}">View Journal</a>
 			</section>
@@ -93,6 +93,15 @@ self.onentry = function(e) {
 
 self.loadMore = function(e) {
 	getEntries(self.entries.Next);
+}
+
+self.savejournal = function(e) {
+	self.journal.Title = e;
+	self.update();
+	_aj.post("/api/journals/" + self.journal.ID, self.journal, function(data, err) {
+		console.log(data);
+		console.log(err);
+	})
 }
 
 var getEntries = function(from) {
