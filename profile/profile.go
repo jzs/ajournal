@@ -17,6 +17,7 @@ type Repository interface {
 	Create(ctx context.Context, p *Profile) (*Profile, error)
 	Update(ctx context.Context, p *Profile) (*Profile, error)
 	FindByID(ctx context.Context, id int64) (*Profile, error)
+	FindByShortName(ctx context.Context, sn string) (*Profile, error)
 }
 
 // SubscriptionRepository describes the methods on the subscription repository
@@ -50,6 +51,7 @@ type Profile struct {
 	Name        string
 	Email       string
 	Plan        Plan
+	ShortName   string // Short name of the users profile. Used for public links
 	Description string
 }
 

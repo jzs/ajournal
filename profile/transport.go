@@ -57,6 +57,21 @@ func SetupHandler(r *mux.Router, ps Service, l logger.Logger) {
 		utils.JSONResp(r.Context(), l, r, w, profile, err)
 	})
 
+	r.Path("/profile/{userid}/shortname/{name}").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Validate short name. Make sure it doesn't exist. Return possible alternatives.
+		vars := mux.Vars(r)
+		idstr := vars["userid"]
+		name := vars["name"]
+		id, err := strconv.ParseInt(idstr, 10, 64)
+		if err != nil {
+			utils.JSONResp(r.Context(), l, r, w, nil, err)
+			return
+		}
+
+		valid := ps.ValidateShortName(r.Context(), id, name)
+		utils.JSONResp(r.Context(), l, r, w, valid, nil)
+	})
+
 	// Handler for subscribing a plan
 	r.Path("/profile/signup").Methods("POST").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sub := &Subscription{}

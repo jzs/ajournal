@@ -2,7 +2,10 @@ package profile
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"regexp"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -17,6 +20,8 @@ type Service interface {
 	UserProfile(ctx context.Context, userid int64) (*Profile, error)
 	UpdateProfile(ctx context.Context, p *Profile) (*Profile, error)
 	Subscribe(ctx context.Context, sub *Subscription) error
+	GenerateShortName(sn string) string
+	ValidateShortName(ctx context.Context, userID int64, sn string) bool
 }
 
 // NewService returns a new implementation of the Service interface
@@ -40,6 +45,14 @@ func (s *service) Create(ctx context.Context, p *Profile) (*Profile, error) {
 
 	if p.Plan == 0 {
 		p.Plan = PlanFree
+	}
+
+	if p.ShortName == "" {
+		p.ShortName = s.GenerateShortName(p.Email)
+	}
+
+	if !s.ValidateShortName(ctx, p.ID, p.ShortName) {
+		return nil, utils.NewAPIError(nil, http.StatusBadRequest, fmt.Sprintf("Shortname '%v' is not a valid short name", p.ShortName))
 	}
 
 	prof, err := s.pr.Create(ctx, p)
@@ -66,9 +79,12 @@ func (s *service) Profile(ctx context.Context) (*Profile, error) {
 	}
 
 	pro, err := s.pr.FindByID(ctx, usr.ID)
+	if err != nil && err != ErrProfileNotExist {
+		return nil, err
+	}
 	if err == ErrProfileNotExist {
 		// Create profile and return that.
-		pro, err = s.pr.Create(ctx, &Profile{ID: usr.ID, Plan: PlanFree})
+		pro, err = s.Create(ctx, &Profile{ID: usr.ID, Email: usr.Username, Plan: PlanFree})
 		if err != nil {
 			return nil, errors.Wrap(err, "Could not create profile for user")
 		}
@@ -84,6 +100,10 @@ func (s *service) UpdateProfile(ctx context.Context, p *Profile) (*Profile, erro
 	}
 	if usr.ID != p.ID {
 		return nil, utils.NewAPIError(nil, http.StatusBadRequest, "Cannot update another users profile")
+	}
+
+	if !s.ValidateShortName(ctx, p.ID, p.ShortName) {
+		return nil, utils.NewAPIError(nil, http.StatusBadRequest, fmt.Sprintf("Shortname '%v' is not a valid short name", p.ShortName))
 	}
 
 	prof, err := s.pr.Update(ctx, p)
@@ -105,4 +125,33 @@ type SubscriptionArgs struct {
 func (s *service) Subscribe(ctx context.Context, sub *Subscription) error {
 	_, err := s.sr.Create(ctx, sub)
 	return err
+}
+
+var reg = regexp.MustCompile("[^a-z0-9]")
+var regmatch = regexp.MustCompile("^[a-z0-9\\-]+$")
+
+// GenerateShortName takes an input string, shortens it down and tries to generate a valid short name.
+func (s *service) GenerateShortName(sn string) string {
+	// Strip @ to end.
+	sn = strings.Split(sn, "@")[0]
+	sn = strings.ToLower(sn)
+	sn = reg.ReplaceAllString(sn, "-")
+	return sn
+}
+
+// ValidateShortName validates whether a short name is valid for storage.
+func (s *service) ValidateShortName(ctx context.Context, userID int64, sn string) bool {
+	match := regmatch.MatchString(sn)
+	if !match {
+		return false
+	}
+	// look up if it already exists in db...
+	prof, err := s.pr.FindByShortName(ctx, sn)
+	if err == ErrProfileNotExist {
+		return true
+	}
+	if err != nil {
+		return false
+	}
+	return prof.ID == userID
 }

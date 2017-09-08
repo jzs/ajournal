@@ -2,6 +2,7 @@ package profile_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/sketchground/ajournal/profile"
@@ -19,13 +20,16 @@ func TestService(t *testing.T) {
 	}
 	ctx := user.TestContextWithUser(u)
 
-	prof := &profile.Profile{ID: 201, Name: "Bobo"}
+	prof := &profile.Profile{ID: 201, Name: "Bobo", Email: "bobo@bobo.bobo"}
 	p, err := ps.Create(ctx, prof)
 	if err != nil {
 		t.Fatalf("Expected creating profile, got: %v", err.Error())
 	}
 	if p.Name != prof.Name {
 		t.Fatalf("Expected %v profile, got: %v", prof.Name, p.Name)
+	}
+	if p.ShortName != "bobo" {
+		t.Fatalf("Expected %v shortname, got: %v", "bobo", p.ShortName)
 	}
 
 	p, err = ps.Profile(ctx)
@@ -93,7 +97,45 @@ func TestService(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err.Error())
 	}
+}
 
+func TestGenerateShortName(t *testing.T) {
+	pr := NewInmemRepo()
+	sr := NewInmemSubRepo()
+	ps := profile.NewService(pr, sr)
+
+	tests := map[string]string{
+		"bob@cat.de":  "bob",
+		"bob1@cat.de": "bob1",
+		"bobx@cat.de": "bobx",
+		"bob;@cat.de": "bob-",
+		"b;ob@cat.de": "b-ob",
+	}
+	for i, o := range tests {
+		r := ps.GenerateShortName(i)
+		if r != o {
+			t.Errorf("Generated short: %v does not match: %v", r, o)
+		}
+	}
+}
+
+func TestValidateShortName(t *testing.T) {
+	pr := NewInmemRepo()
+	sr := NewInmemSubRepo()
+	ps := profile.NewService(pr, sr)
+
+	tests := map[string]bool{
+		"bob@cat.de": false,
+		"bob":        true,
+		"bobcat-de":  true,
+		"bob-cat.de": false,
+	}
+	for i, o := range tests {
+		r := ps.ValidateShortName(context.Background(), 1, i)
+		if r != o {
+			t.Errorf("Validated short: %v is: %v expected: %v", i, r, o)
+		}
+	}
 }
 
 type profileRepo struct {
@@ -108,6 +150,12 @@ func NewInmemRepo() profile.Repository {
 }
 
 func (pr *profileRepo) Create(ctx context.Context, p *profile.Profile) (*profile.Profile, error) {
+	for _, pp := range pr.profiles {
+		// Uniqueness check
+		if pp.ShortName == p.ShortName {
+			return nil, errors.New("Profile already exists with short name: " + p.ShortName)
+		}
+	}
 	pr.profiles = append(pr.profiles, p)
 	return p, nil
 }
@@ -125,6 +173,15 @@ func (pr *profileRepo) Update(ctx context.Context, p *profile.Profile) (*profile
 func (pr *profileRepo) FindByID(ctx context.Context, id int64) (*profile.Profile, error) {
 	for _, p := range pr.profiles {
 		if p.ID == id {
+			return p, nil
+		}
+	}
+	return nil, profile.ErrProfileNotExist
+}
+
+func (pr *profileRepo) FindByShortName(ctx context.Context, sn string) (*profile.Profile, error) {
+	for _, p := range pr.profiles {
+		if p.ShortName == sn {
 			return p, nil
 		}
 	}

@@ -11,6 +11,9 @@
 				<p class="control">
 				<input class="input" type="text" placeholder="E-mail" onkeyup={onEmail} value={profile.Email} />
 				</p>
+				<p class="label">Short name</label>
+					<input class="input {is-danger: !shortnameValid}" type="text" placeholder="Short name" onkeyup={onShortName} value={profile.ShortName} />
+				</p>
 				<label class="label">Public profile description</label>
 				<p class="control">
 				<textarea class="textarea" type="text" placeholder="Description" onkeyup={onDesc} value={profile.Description}> </textarea>
@@ -129,6 +132,7 @@ self.showmodal = false;
 self.stripe = null;
 self.card = null;
 self.carderr = null;
+self.shortnameValid = true;
 
 self.profile = {};
 
@@ -188,6 +192,17 @@ self.onFullName = function(e) {
 self.onEmail = function(e) {
 	self.profile.Email = e.target.value;
 };
+self.onShortName= function(e) {
+	self.profile.ShortName = e.target.value;
+	_aj.get("/api/profile/"+self.profile.ID+"/shortname/"+e.target.value, function(data, err) {
+		if ( err != null ) {
+			return;
+		}
+		self.shortnameValid = data;
+		self.update();
+	});
+};
+
 self.onDesc = function(e) {
 	self.profile.Description = e.target.value;
 };

@@ -13,3 +13,7 @@
 	padding: 2px;
 	width: 160px;
 }
+
+.is-full-width {
+	width: 100%;
+}

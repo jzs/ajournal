@@ -1,19 +1,24 @@
 <page-login>
-	<section class="hero is-fullheight is-primary">
+	<section class="hero is-fullheight">
 		<div class="hero-head"></div>
 		<div class="hero-body">
 			<div class="container">
 				<div class="columns">
 					<div class="column is-half is-offset-one-quarter has-text-left">
-						<h3 class="title">Login</h3>
+						<h3 class="title">Sign in</h3>
 						<div class="card">
 							<div class="card-content is-clearfix">
+								<p class="subtitle has-text-black">Sign in to aJournal to create/edit your own journals</p>
 								<div if={!loginuserpass}>
+									<br/>
 								<div class="control">
-									<a class="button" href="/api/oauth/google">Sign in with google</a>
+									<a class="button is-large is-full-width is-primary" href="/api/oauth/google">Continue with google</a>
 								</div>
 								<div class="control">
-									<a class="button" onclick={clickloginuser}>Sign in username/password</a>
+									<a class="button is-large is-full-width is-primary" onclick={clickloginuser}>Sign in with email</a>
+								</div>
+								<div class="control is-pulled-right">
+									<a class="is-large is-full-width" href="#/register">Sign up with email</a>
 								</div>
 								</div>
 
@@ -37,12 +42,6 @@
 								</p>
 
 								<div class="control is-grouped is-pulled-right">
-									<p class"control">
-									<a class="button is-link {is-disabled : loggingin}" href="#/register">Register</a>
-									</p>
-									<p class="control">
-										<a class="button" href="/api/oauth/google">Login with google</a>
-									</p>
 									<p class="control">
 										<button disabled={isdisabled} class="button is-success {is-loading : loggingin}" onclick={login}>Login</button>
 									</p>
