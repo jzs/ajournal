@@ -161,7 +161,7 @@ func main() {
 		vars := mux.Vars(r)
 		id := vars["id"]
 
-		http.Redirect(w, r, fmt.Sprintf("/#/users/%v", id), http.StatusFound)
+		http.Redirect(w, r, fmt.Sprintf("/app#/users/%v", id), http.StatusFound)
 	})
 
 	baserouter.HandleFunc("/app", func(w http.ResponseWriter, r *http.Request) {

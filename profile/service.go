@@ -17,6 +17,7 @@ import (
 type Service interface {
 	Create(ctx context.Context, p *Profile) (*Profile, error)
 	Profile(ctx context.Context) (*Profile, error)
+	ProfileByShortName(ctx context.Context, sn string) (*Profile, error)
 	UserProfile(ctx context.Context, userid int64) (*Profile, error)
 	UpdateProfile(ctx context.Context, p *Profile) (*Profile, error)
 	Subscribe(ctx context.Context, sub *Subscription) error
@@ -65,6 +66,15 @@ func (s *service) Create(ctx context.Context, p *Profile) (*Profile, error) {
 
 func (s *service) UserProfile(ctx context.Context, userid int64) (*Profile, error) {
 	pro, err := s.pr.FindByID(ctx, userid)
+	if err == ErrProfileNotExist {
+		return nil, errors.Wrap(err, "Profile doesn't exist")
+	}
+	pro.Email = ""
+	return pro, nil
+}
+
+func (s *service) ProfileByShortName(ctx context.Context, sn string) (*Profile, error) {
+	pro, err := s.pr.FindByShortName(ctx, sn)
 	if err == ErrProfileNotExist {
 		return nil, errors.Wrap(err, "Profile doesn't exist")
 	}

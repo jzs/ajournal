@@ -26,6 +26,13 @@ func SetupHandler(r *mux.Router, ps Service, l logger.Logger) {
 		utils.JSONResp(r.Context(), l, r, w, profile, err)
 	})
 
+	r.Path("/profile/{shortName}").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		sn := vars["shortName"]
+		profile, err := ps.ProfileByShortName(r.Context(), sn)
+		utils.JSONResp(r.Context(), l, r, w, profile, err)
+	})
+
 	r.Path("/profile").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		profile, err := ps.Profile(r.Context())
 		utils.JSONResp(r.Context(), l, r, w, profile, err)

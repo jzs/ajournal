@@ -1023,23 +1023,22 @@ self.profile = {};
 
 self.on('mount', function() {
 
-	_aj.get("/api/users/" + opts.username, function(data, err) {
+	_aj.get("/api/profile/" + opts.username, function(data, err) {
 		if(err != null) {
-			self.err = err;
-			self.update();
 			return;
 		}
-		self.user = data;
+		self.profile = data;
 		self.update();
 
-		_aj.get("/api/users/" + data.ID + "/profile", function(data, err) {
+		_aj.get("/api/users/" + opts.username, function(data, err) {
 			if(err != null) {
+				self.err = err;
+				self.update();
 				return;
 			}
-			self.profile = data;
+			self.user = data;
 			self.update();
 		});
-
 		_aj.get("/api/users/" + data.ID + "/journals", function(data, err) {
 			if(err != null) {
 				self.err = err;
