@@ -26,6 +26,36 @@ func TestGetUserUnauthorized(t *testing.T) {
 	}
 }
 
+func TestLoginNonExistingUser(t *testing.T) {
+	ur := NewInmemRepo()
+	us := user.NewService(utils.NewTestTranslator(), ur)
+	ctx := context.Background()
+	us.Login(ctx, "scooby", "doo")
+}
+
+func TestLoginWrongPass(t *testing.T) {
+	ur := NewInmemRepo()
+	us := user.NewService(utils.NewTestTranslator(), ur)
+	ctx := context.Background()
+
+	err := us.Register(ctx, &user.User{Username: "bob@cat.de", Password: "abc"})
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	us.Login(ctx, "bob@cat.de", "doo")
+}
+
+func TestGetNonExistingUser(t *testing.T) {
+	ur := NewInmemRepo()
+	us := user.NewService(utils.NewTestTranslator(), ur)
+	ctx := context.Background()
+
+	u, err := us.User(ctx, "scooby")
+	if err == nil {
+		t.Fatalf("Expected error, got %v", u)
+	}
+}
+
 func TestService(t *testing.T) {
 	ur := NewInmemRepo()
 	us := user.NewService(utils.NewTestTranslator(), ur)
@@ -80,6 +110,15 @@ func TestService(t *testing.T) {
 	}
 	if token.UserID != u.ID {
 		t.Fatalf("Expected token for same user, got other users token")
+	}
+
+	// See if we can find user with token...
+	u, err = us.UserWithToken(ctx, token.Token)
+	if err != nil {
+		t.Fatalf("Expected user, got: %v", err.Error())
+	}
+	if u.Password != "" {
+		t.Errorf("Expected no password on fetched user, got: %v", u.Password)
 	}
 
 	err = us.Logout(ctx, token.Token)
