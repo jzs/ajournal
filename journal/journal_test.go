@@ -425,6 +425,16 @@ func (jr *journalRepo) FindAll(ctx context.Context, userid int64) ([]*journal.Jo
 	return js, nil
 }
 
+func (jr *journalRepo) Update(ctx context.Context, journal *journal.Journal) error {
+	for i, j := range jr.journals {
+		if j.ID == journal.ID {
+			jr.journals[i] = journal
+			break
+		}
+	}
+	return nil
+}
+
 func (jr *journalRepo) AddEntry(c context.Context, entry *journal.Entry) (*journal.Entry, error) {
 	entry.ID = jr.eid
 	jr.entries = append(jr.entries, entry)

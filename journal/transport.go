@@ -61,6 +61,31 @@ func SetupHandler(router *mux.Router, js Service, bs blob.Service, l logger.Logg
 		utils.JSONResp(r.Context(), l, r, w, journal, err)
 	})
 
+	router.Path("/journals/{id}").Methods("POST").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		idstr := vars["id"]
+		id, err := strconv.ParseInt(idstr, 10, 64)
+		if err != nil {
+			utils.JSONResp(r.Context(), l, r, w, nil, err)
+			return
+		}
+
+		j := &Journal{}
+		dec := json.NewDecoder(r.Body)
+		err = dec.Decode(&j)
+		if err != nil {
+			utils.JSONResp(r.Context(), l, r, w, nil, errors.Wrap(err, "Router: err decoding json"))
+			return
+		}
+		if j.ID != id {
+			utils.JSONResp(r.Context(), l, r, w, nil, utils.NewAPIError(nil, http.StatusBadRequest, "Mismatch between journal id's"))
+			return
+		}
+
+		err = js.UpdateJournal(r.Context(), j)
+		utils.JSONResp(r.Context(), l, r, w, j, err)
+	})
+
 	router.Path("/journals/{id}/entries").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		idstr := vars["id"]

@@ -20,6 +20,7 @@ type Service interface {
 	Create(ctx context.Context, journal *Journal) (*Journal, error)
 	MyJournals(ctx context.Context) ([]*Journal, error)
 	Journal(ctx context.Context, id int64) (*Journal, error)
+	UpdateJournal(ctx context.Context, j *Journal) error
 	Journals(ctx context.Context, userid int64) ([]*Journal, error)
 	// Interfaces for entry creation
 	CreateEntry(ctx context.Context, entry *Entry) (*Entry, error)
@@ -97,6 +98,18 @@ func (s *service) Journal(ctx context.Context, id int64) (*Journal, error) {
 	journal.Entries = uint64(len(entries))
 
 	return journal, nil
+}
+
+func (s *service) UpdateJournal(ctx context.Context, j *Journal) error {
+	usr := user.FromContext(ctx)
+	if usr == nil {
+		return utils.NewAPIError(errors.New(""), http.StatusForbidden, "")
+	}
+	// If it's another users journal and it is not public, then do not return it.
+	if j.UserID != usr.ID {
+		return utils.NewAPIError(errors.New("User trying to modify another users journal"), http.StatusForbidden, "")
+	}
+	return s.repo.Update(ctx, j)
 }
 
 func (s *service) Journals(ctx context.Context, userid int64) ([]*Journal, error) {

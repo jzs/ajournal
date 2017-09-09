@@ -68,6 +68,14 @@ func (jr *journalRepo) FindAll(ctx context.Context, userid int64) ([]*journal.Jo
 	return journals, nil
 }
 
+func (jr *journalRepo) Update(ctx context.Context, j *journal.Journal) error {
+	_, err := jr.db.Exec("UPDATE Journal SET Title=$1, Description=$2 WHERE id=$3", j.Title, j.Description, j.ID)
+	if err != nil {
+		return errors.Wrap(err, "JournalRepo:UpdateEntry failed")
+	}
+	return nil
+}
+
 func (jr *journalRepo) AddEntry(ctx context.Context, entry *journal.Entry) (*journal.Entry, error) {
 	var id int64
 	err := jr.db.Get(&id, "INSERT INTO Entry(JournalID, Date, Title, Content, Created, IsPublished) VALUES($1, $2, $3, $4, $5, $6) RETURNING id", entry.JournalID, entry.Date, entry.Title, entry.Content, entry.Created, entry.IsPublished)

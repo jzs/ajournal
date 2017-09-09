@@ -53,6 +53,7 @@ type Repository interface {
 	Create(ctx context.Context, journal *Journal) (*Journal, error)
 	FindByID(ctx context.Context, id int64) (*Journal, error)
 	FindAll(ctx context.Context, userid int64) ([]*Journal, error)
+	Update(ctx context.Context, journal *Journal) error
 	AddEntry(ctx context.Context, entry *Entry) (*Entry, error)
 	UpdateEntry(ctx context.Context, entry *Entry) error
 	FindEntryByID(ctx context.Context, id int64) (*Entry, error)
