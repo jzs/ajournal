@@ -2,17 +2,19 @@
 	<section class="section">
 		<div class="container">
 			<section class="section">
-				<h3 class="title">Journal: <edittext savefunc={savejournal} value={journal.Title} /></h3>
+				<h3 class="title">Journal: <edittext eid="Title" savefunc={savejournal} value={journal.Title} /></h3>
 				<p>
-				<div contenteditable>{journal.Description}</div>
+				<edittext eid="Description" isdiv="true" savefunc={savejournal} value={journal.Description}/>
 				</p>
+				<br/>
+				<div class="is-clearfix">
 				<a class="button" href="#/users/{opts.username}/journals/{opts.journalid}">View Journal</a>
+				</div>
 			</section>
 			<section class="section">
 				<button class="button" onclick={newentry}>New Entry</button>
 			</section>
 			<section class="section">
-
 				<div class="box" each={entry in entries.Entries} onclick={onentry} style="cursor:pointer;">
 					<article class="media">
 						<div class="media-content">
@@ -48,26 +50,7 @@
 	<script>
 var self = this;
 self.entries = {Entries: []};
-self.journal = {
-	Title: "Journal title",
-	Description: "A fine description of a fine wine",
-	Tags: [],
-	Entries: [{
-		ID: 1,
-		Date: "",
-		Title: "My first entry",
-		Content: "#My first content\n\nHello world",
-		Tags: ["diary"],
-		Created: "",
-		IsPublised: false
-	}, {
-		ID: 2,
-		Title: "My second entry",
-		Content: "",
-		Tags: []
-	}],
-	Created: ""
-};
+self.journal = {};
 
 self.on('mount', function() {
 	_aj.get("/api/journals/" + opts.journalid, function(data, err) {
@@ -78,7 +61,7 @@ self.on('mount', function() {
 		}
 		self.journal = data;
 		self.update();
-
+		self.trigger('data', data);
 		getEntries(null);
 	});
 });
@@ -95,13 +78,17 @@ self.loadMore = function(e) {
 	getEntries(self.entries.Next);
 }
 
-self.savejournal = function(e) {
-	self.journal.Title = e;
+self.savejournal = function(id, e) {
+	self.journal[id] = e;
 	self.update();
 	_aj.post("/api/journals/" + self.journal.ID, self.journal, function(data, err) {
 		console.log(data);
 		console.log(err);
 	})
+
+	// Consider what to do... reset contenteditable?
+
+	//
 }
 
 var getEntries = function(from) {
