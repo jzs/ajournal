@@ -97,6 +97,8 @@ func (s *service) Journal(ctx context.Context, id int64) (*Journal, error) {
 	}
 	journal.Entries = uint64(len(entries))
 
+	journal.HTMLContent = string(blackfriday.MarkdownCommon([]byte(journal.Description)))
+
 	return journal, nil
 }
 

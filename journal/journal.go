@@ -26,6 +26,7 @@ type Journal struct {
 	Public      bool       // Describes whether the journal is public or private
 	Title       string     // The title of the journal.
 	Description string     // A description of the journal. It could be the initiary of the trip or the goal
+	HTMLContent string     `json:"HtmlContent"` // A rendered html version of the markdown content
 	Tags        []string   // Tags of journal.
 	Entries     uint64     // a count of how many entries in the journal
 	From        *time.Time // Starting time of the journal. Especially interesting for a travel journal

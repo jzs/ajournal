@@ -4,7 +4,7 @@
 			<section class="section">
 				<h3 class="title">Journal: {journal.Title}</h3>
 				<p>
-				{journal.Description}
+				<raw class="markdown" content={journal.HtmlContent}></raw>
 				</p>
 			</section>
 			<section class="section">
