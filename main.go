@@ -120,7 +120,15 @@ func main() {
 	if endpoint == "" {
 		log.Fatalf(ctx, "Environment variable AJ_S3_SECRETKEY not set!\nRemember to set key")
 	}
-	br := services.NewS3Repo(endpoint, accessKey, secretKey, "ajournal")
+
+	var br blob.Repository
+	mockS3 := os.Getenv("AJ_S3_MOCK")
+	if mockS3 == "true" {
+		// Mock S3
+		br = services.NewS3MockRepo()
+	} else {
+		br = services.NewS3Repo(endpoint, accessKey, secretKey, "ajournal")
+	}
 	bs := blob.NewService(br)
 
 	jr := postgres.NewJournalRepo(db, log)
