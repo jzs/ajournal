@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/kelseyhightower/envconfig"
 	"github.com/sketchground/ajournal/blob"
 	"github.com/sketchground/ajournal/journal"
 	"github.com/sketchground/ajournal/oauth"
@@ -42,55 +43,48 @@ var (
 	BuildTime = "xxxx-xx-xx"
 )
 
+// Configuration contains all Environment settings that has to be present to run the service
+type Configuration struct {
+	TranslateFolder   string `split_words:"true" required:"true"`
+	StripeSK          string `split_words:"true" `
+	DBUser            string `envconfig:"db_user" default:"jzs"`
+	DBName            string `envconfig:"db_name" default:"ajournal"`
+	DBPass            string `envconfig:"db_pass"`
+	Port              string `default:":8080"`
+	WWWDir            string `envconfig:"www_dir" default:"/var/www/ajournal"`
+	S3Endpoint        string `split_words:"true" required:"true"`
+	S3AccessKey       string `envconfig:"s3_accesskey" required:"true"`
+	S3SecretKey       string `envconfig:"s3_secretkey" required:"true"`
+	S3Mock            bool   `split_words:"true"`
+	OauthClientID     string `split_words:"true"`
+	OauthClientSecret string `split_words:"true"`
+	OauthRedirectURL  string `split_words:"true"`
+}
+
 func main() {
 	ctx := context.Background()
 	log := logger.New(BuildType == BuildVersionDevel)
 
-	tFolder := os.Getenv("AJ_TRANSLATE_FOLDER")
-	if tFolder == "" {
-		log.Fatalf(ctx, "Environment variable AJ_TRANSLATE_FOLDER not set!\nRemember to set the path to your translate folder")
-		return
+	var s Configuration
+	err := envconfig.Process("aj", &s)
+	if err != nil {
+		log.Fatalf(ctx, "%v", err.Error())
 	}
 
-	translator, err := utils.NewTranslator(tFolder, log)
+	translator, err := utils.NewTranslator(s.TranslateFolder, log)
 	if err != nil {
 		log.Fatalf(ctx, "Could not load translator. Reason : %v", err)
 		return
 	}
 
-	stripeKey := os.Getenv("AJ_STRIPE_SK")
-	if stripeKey == "" {
-		log.Fatalf(ctx, "Environment variable AJ_STRIPE_SK not set!\nRemember to set your stripe private key")
-		return
-	}
-
-	dbuser := os.Getenv("AJ_DB_USER")
-	if dbuser == "" {
-		dbuser = "jzs"
-	}
-	dbname := os.Getenv("AJ_DB_NAME")
-	if dbname == "" {
-		dbname = "journal"
-	}
-	dbpass := os.Getenv("AJ_DB_PASS")
-
-	port := os.Getenv("AJ_PORT")
-	if port == "" {
-		port = ":8080"
-	}
-
-	wwwdir := os.Getenv("AJ_WWW_DIR")
-	if wwwdir == "" {
-		wwwdir = "/var/www/ajournal"
-	}
-	log.Printf(ctx, "AJ_WWW_DIR is set to %v", wwwdir)
+	log.Printf(ctx, "AJ_WWW_DIR is set to %v", s.WWWDir)
 
 	passwordstr := ""
-	if dbpass != "" {
-		passwordstr = fmt.Sprintf("password=%v", dbpass)
+	if s.DBPass != "" {
+		passwordstr = fmt.Sprintf("password=%v", s.DBPass)
 	}
 
-	db, err := sqlx.Connect("postgres", fmt.Sprintf("user=%v dbname=%v %v sslmode=disable", dbuser, dbname, passwordstr))
+	db, err := sqlx.Connect("postgres", fmt.Sprintf("user=%v dbname=%v %v sslmode=disable", s.DBUser, s.DBName, passwordstr))
 	if err != nil {
 		log.Fatalf(ctx, "Could not connect to database! %v", err)
 		return
@@ -108,19 +102,12 @@ func main() {
 		utils.JSONResp(r.Context(), log, r, w, version, nil)
 	})
 
-	endpoint := os.Getenv("AJ_S3_ENDPOINT")
-	if endpoint == "" {
-		log.Fatalf(ctx, "Environment variable AJ_S3_ENDPOINT not set!\nRemember to set key")
+	var br blob.Repository
+	if s.S3Mock {
+		br = services.NewS3MockRepo()
+	} else {
+		br = services.NewS3Repo(s.S3Endpoint, s.S3AccessKey, s.S3SecretKey, "ajournal")
 	}
-	accessKey := os.Getenv("AJ_S3_ACCESSKEY")
-	if endpoint == "" {
-		log.Fatalf(ctx, "Environment variable AJ_S3_ACCESSKEY not set!\nRemember to set key")
-	}
-	secretKey := os.Getenv("AJ_S3_SECRETKEY")
-	if endpoint == "" {
-		log.Fatalf(ctx, "Environment variable AJ_S3_SECRETKEY not set!\nRemember to set key")
-	}
-	br := services.NewS3Repo(endpoint, accessKey, secretKey, "ajournal")
 	bs := blob.NewService(br)
 
 	jr := postgres.NewJournalRepo(db, log)
@@ -132,14 +119,14 @@ func main() {
 	user.SetupHandler(apirouter, us, log)
 
 	pr := postgres.NewProfileRepo(db, log)
-	sr := services.NewStripeSubscriptionRepo(stripeKey, db)
+	sr := services.NewStripeSubscriptionRepo(s.StripeSK, db)
 	ps := profile.NewService(pr, sr)
 	profile.SetupHandler(apirouter, ps, log)
 
 	creds := oauth.Credentials{
-		ClientID:     os.Getenv("AJ_OAUTH_CLIENT_ID"),
-		ClientSecret: os.Getenv("AJ_OAUTH_CLIENT_SECRET"),
-		RedirectURL:  os.Getenv("AJ_OAUTH_REDIRECT_URL"),
+		ClientID:     s.OauthClientID,
+		ClientSecret: s.OauthClientSecret,
+		RedirectURL:  s.OauthRedirectURL,
 		Provider:     oauth.ProviderGoogle,
 	}
 	or := postgres.NewOauthRepo(db)
@@ -165,11 +152,11 @@ func main() {
 	})
 
 	baserouter.HandleFunc("/app", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, wwwdir+"/app.html")
+		http.ServeFile(w, r, s.WWWDir+"/app.html")
 	})
 
 	// Setup static file handler
-	baserouter.PathPrefix("/").Handler(http.FileServer(http.Dir(wwwdir)))
+	baserouter.PathPrefix("/").Handler(http.FileServer(http.Dir(s.WWWDir)))
 
 	base := negroni.New(negroni.NewRecovery(), log, translator)
 
@@ -182,8 +169,8 @@ func main() {
 	base.UseHandler(baserouter)
 
 	log.Printf(context.Background(), "Starting server: %v.%v \tAt:%v", BuildType, BuildVersion, BuildTime)
-	log.Printf(context.Background(), "Listening on: %v", port)
-	server := &http.Server{Addr: port, Handler: base}
+	log.Printf(context.Background(), "Listening on: %v", s.Port)
+	server := &http.Server{Addr: s.Port, Handler: base}
 
 	// subscribe to SIGINT signals
 	sigchan := make(chan os.Signal, 5)
