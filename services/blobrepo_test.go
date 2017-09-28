@@ -16,8 +16,11 @@ func TestS3Create(t *testing.T) {
 		t.Fatalf("S3 Credentials not specified, cannot test s3 integration")
 	}
 
-	repo := services.NewS3Repo(endpoint, accessKey, secretKey, "ajournal-test")
-	_, err := repo.Create("test/test.md", "text/plain", bytes.NewReader([]byte("Hello world!")))
+	repo, err := services.NewS3Repo(endpoint, accessKey, secretKey, "ajournal-test")
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	_, err = repo.Create("test/test.md", "text/plain", bytes.NewReader([]byte("Hello world!")))
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}

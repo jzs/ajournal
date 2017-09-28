@@ -2,29 +2,29 @@ package services
 
 import (
 	"io"
-	"log"
 	"net/http"
 	"strings"
 
 	minio "github.com/minio/minio-go"
+	"github.com/pkg/errors"
 	"github.com/sketchground/ajournal/blob"
 	"github.com/sketchground/ajournal/utils"
 )
 
 // NewS3Repo returns a new blob repository using an underlying s3 service
-func NewS3Repo(endpoint, accessKey, secretKey, bucket string) *S3Repo {
+func NewS3Repo(endpoint, accessKey, secretKey, bucket string) (*S3Repo, error) {
 	ssl := true
 	if strings.Contains(endpoint, "127.0.0.1") {
 		ssl = false
 	}
 	client, err := minio.New(endpoint, accessKey, secretKey, ssl)
 	if err != nil {
-		log.Fatalln(err)
+		return nil, errors.Wrap(err, "Failed configuring minio s3 service")
 	}
 	return &S3Repo{
 		client: client,
 		bucket: bucket,
-	}
+	}, nil
 }
 
 // S3Repo struct

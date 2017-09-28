@@ -28,6 +28,7 @@ func (l *testlogger) Errorf(ctx context.Context, format string, args ...interfac
 func (l *testlogger) Fatalf(ctx context.Context, format string, args ...interface{}) {
 	l.msgs = append(l.msgs, fmt.Sprintf(format, args...))
 	l.hasErrors = true
+	log.Fatalf(format, args...)
 }
 func (l *testlogger) Print(ctx context.Context, err error) {
 	if err == nil {
