@@ -361,6 +361,19 @@ func TestLatest(t *testing.T) {
 		t.Fatalf("Expected sucessful creation of entry , got: %v", err.Error())
 	}
 
+	// Create private journal
+	title = "My private journal"
+	jrnl, err = js.Create(fctx, &journal.Journal{Title: title, Public: false})
+	if err != nil {
+		t.Fatalf("Expected to create journal, got: %v", err.Error())
+	}
+
+	entry = &journal.Entry{JournalID: jrnl.ID, Content: "Hello private world"}
+	_, err = js.CreateEntry(fctx, entry)
+	if err != nil {
+		t.Fatalf("Expected sucessful creation of entry , got: %v", err.Error())
+	}
+
 	// Test if we don't return other users journals
 	u := &user.User{
 		ID:       500,
@@ -376,8 +389,6 @@ func TestLatest(t *testing.T) {
 	if len(journals.Journals) != 1 {
 		t.Errorf("Expected to get 1 result, got %v", len(journals.Journals))
 	}
-
-	// TODO: Test that it doesn't return private records!
 }
 
 // In memory repository of journal
