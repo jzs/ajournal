@@ -48,10 +48,7 @@ func SetupTestDB(ctx context.Context, log logger.Logger) (teardown func() error)
 // InitTestServer initiates a test server with a test transport
 func InitTestServer() (*httptest.Server, logger.Logger, func() error) {
 	ctx := context.Background()
-
-	// TODO: Replace with logger that can be dumped to stdout only when a test fails.
 	log := logger.NewTestLogger()
-
 	teardown := SetupTestDB(ctx, log)
 
 	ppath := fmt.Sprintf("%v/src/github.com/sketchground/ajournal", os.Getenv("GOPATH"))
