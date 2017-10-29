@@ -82,7 +82,10 @@ func (m *S3Repo) Create(key, mimetype string, r io.Reader) (*blob.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &blob.File{}, nil
+	return &blob.File{
+		Key:      key,
+		MIMEType: mimetype,
+	}, nil
 }
 
 // List lists files in a bucket with the given prefix

@@ -85,6 +85,7 @@ func Setup(ctx context.Context, s Configuration, log logger.Logger) http.Handler
 		br = brr
 	}
 	bs := blob.NewService(br)
+	blob.SetupHandler(apirouter, bs, log)
 
 	jr := postgres.NewJournalRepo(db, log)
 	js := journal.NewService(jr)
@@ -96,7 +97,7 @@ func Setup(ctx context.Context, s Configuration, log logger.Logger) http.Handler
 
 	pr := postgres.NewProfileRepo(db, log)
 	sr := services.NewStripeSubscriptionRepo(s.StripeSK, db)
-	ps := profile.NewService(pr, sr)
+	ps := profile.NewService(pr, sr, bs)
 	profile.SetupHandler(apirouter, ps, log)
 
 	creds := oauth.Credentials{
@@ -107,7 +108,7 @@ func Setup(ctx context.Context, s Configuration, log logger.Logger) http.Handler
 	}
 	or := postgres.NewOauthRepo(db)
 	oas := oauth.NewService(or, ur, pr)
-	oauth.SetupHandler(apirouter, oas, log, creds)
+	oauth.SetupHandler(apirouter, oas, ps, log, creds)
 
 	// Setup api router
 	baserouter.PathPrefix("/api").Handler(negroni.New(negroni.Wrap(apirouter)))

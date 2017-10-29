@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"sync"
@@ -25,7 +26,7 @@ var (
 )
 
 // SetupHandler sets up routes for the journal service
-func SetupHandler(router *mux.Router, os Service, l logger.Logger, creds Credentials) {
+func SetupHandler(router *mux.Router, os Service, ps profile.Service, l logger.Logger, creds Credentials) {
 	if creds.Provider != ProviderGoogle {
 		panic("Unsupported oauth provider")
 	}
@@ -93,14 +94,14 @@ func SetupHandler(router *mux.Router, os Service, l logger.Logger, creds Credent
 		}
 
 		// Check if we already have a user. If so, then log in, otherwise register.
-		tok, err := os.Login(ctx, uinfo.Email, ProviderGoogle)
+		uid, tok, err := os.Login(ctx, uinfo.Email, ProviderGoogle)
 		if err != nil {
 			err = os.Register(ctx, &user.User{Username: uinfo.Email}, &profile.Profile{Name: uinfo.Name, Email: uinfo.Email})
 			if err != nil {
 				RenderInternalError(ctx, w, l, err)
 				return
 			}
-			tok, err = os.Login(ctx, uinfo.Email, ProviderGoogle)
+			uid, tok, err = os.Login(ctx, uinfo.Email, ProviderGoogle)
 			if err != nil {
 				RenderInternalError(ctx, w, l, err)
 				return
@@ -108,8 +109,20 @@ func SetupHandler(router *mux.Router, os Service, l logger.Logger, creds Credent
 		}
 
 		http.SetCookie(w, user.CreateCookie(tok))
-		// TODO: Download profile picture (uinfo.Picture)
-		// TODO: Redirect to a sane url!
+
+		go func() {
+			resp, err := http.Get(uinfo.Picture)
+			if err != nil {
+				// Log error
+				fmt.Println(err)
+				return
+			}
+			err = ps.ChangePicture(ctx, uid, resp.Body, resp.Header["Content-Type"][0])
+			if err != nil {
+				fmt.Println(err)
+			}
+		}()
+
 		http.Redirect(w, r, "/app", http.StatusFound)
 	})
 }

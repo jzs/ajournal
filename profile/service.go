@@ -3,12 +3,15 @@ package profile
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
+	"path"
 	"regexp"
 	"strings"
 
 	"github.com/pkg/errors"
 
+	"github.com/sketchground/ajournal/blob"
 	"github.com/sketchground/ajournal/user"
 	"github.com/sketchground/ajournal/utils"
 )
@@ -23,16 +26,18 @@ type Service interface {
 	Subscribe(ctx context.Context, sub *Subscription) error
 	GenerateShortName(sn string) string
 	ValidateShortName(ctx context.Context, userID int64, sn string) bool
+	ChangePicture(ctx context.Context, userID int64, img io.Reader, filetype string) error
 }
 
 // NewService returns a new implementation of the Service interface
-func NewService(pr Repository, sr SubscriptionRepository) Service {
-	return &service{pr: pr, sr: sr}
+func NewService(pr Repository, sr SubscriptionRepository, bs blob.Service) Service {
+	return &service{pr: pr, sr: sr, bs: bs}
 }
 
 type service struct {
 	pr Repository
 	sr SubscriptionRepository
+	bs blob.Service
 }
 
 func (s *service) Create(ctx context.Context, p *Profile) (*Profile, error) {
@@ -164,4 +169,23 @@ func (s *service) ValidateShortName(ctx context.Context, userID int64, sn string
 		return false
 	}
 	return prof.ID == userID
+}
+
+func (s *service) ChangePicture(ctx context.Context, userID int64, file io.Reader, header string) error {
+	f, err := s.bs.Create(path.Join("users", fmt.Sprint(userID), "profile-pic"), header, file)
+	if err != nil {
+		return errors.Wrap(err, "ProfileService could not create blob")
+	}
+
+	pr, err := s.pr.FindByID(ctx, userID)
+	if err != nil {
+		return errors.Wrap(err, "ProfileService could not find profile for user")
+	}
+
+	pr.Picture = blob.File{Key: f.Key}
+	_, err = s.pr.Update(ctx, pr)
+	if err != nil {
+		return errors.Wrap(err, "ProfileService could not update profile for user")
+	}
+	return nil
 }
