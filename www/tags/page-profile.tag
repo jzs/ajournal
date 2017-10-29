@@ -3,6 +3,7 @@
 		<section class="section">
 			<h3 class="title">Hi {profile.Name}</h3>
 			<div class="container">
+				<div class="avatar" style="background-image:url('{profile.Picture.Links.Orig}');"></div>
 				<label class="label">Full Name</label>
 				<p class="control">
 				<input class="input" type="text" placeholder="Full Name" onkeyup={onFullName} value={profile.Name} />
@@ -12,7 +13,7 @@
 				<input class="input" type="text" placeholder="E-mail" onkeyup={onEmail} value={profile.Email} />
 				</p>
 				<p class="label">Short name</label>
-					<input class="input {is-danger: !shortnameValid}" type="text" placeholder="Short name" onkeyup={onShortName} value={profile.ShortName} />
+			<input class="input {is-danger: !shortnameValid}" type="text" placeholder="Short name" onkeyup={onShortName} value={profile.ShortName} />
 				</p>
 				<label class="label">Public profile description</label>
 				<p class="control">
@@ -127,14 +128,14 @@
 
 	</div>
 	<script>
-var self = this;
+		var self = this;
 self.showmodal = false;
 self.stripe = null;
 self.card = null;
 self.carderr = null;
 self.shortnameValid = true;
 
-self.profile = {};
+self.profile = {Picture: {Links: {}}};
 
 self.on('mount', function() {
 

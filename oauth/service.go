@@ -11,7 +11,7 @@ import (
 
 // Service interface for oauth support
 type Service interface {
-	Login(ctx context.Context, username string, provider Provider) (*user.Token, error)
+	Login(ctx context.Context, username string, provider Provider) (userID int64, token *user.Token, err error)
 	Register(ctx context.Context, u *user.User, p *profile.Profile) error
 }
 
@@ -30,14 +30,14 @@ type service struct {
 	pr   profile.Repository
 }
 
-func (s *service) Login(ctx context.Context, username string, provider Provider) (*user.Token, error) {
+func (s *service) Login(ctx context.Context, username string, provider Provider) (userID int64, token *user.Token, err error) {
 	u, err := s.ur.FindByUsername(ctx, username)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 	providers, err := s.repo.Find(ctx, u.ID)
 	if err != nil {
-		return nil, err
+		return u.ID, nil, err
 	}
 
 	for _, p := range providers {
@@ -45,13 +45,13 @@ func (s *service) Login(ctx context.Context, username string, provider Provider)
 			token := user.GenerateToken(u.ID)
 			err = s.ur.CreateToken(ctx, token)
 			if err != nil {
-				return nil, errors.Wrap(err, "Oauth Login")
+				return u.ID, nil, errors.Wrap(err, "Oauth Login")
 			}
-			return token, nil
+			return u.ID, token, nil
 		}
 	}
 
-	return nil, errors.New("Could not find a valid provider")
+	return u.ID, nil, errors.New("Could not find a valid provider")
 }
 
 func (s *service) Register(ctx context.Context, u *user.User, p *profile.Profile) error {

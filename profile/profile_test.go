@@ -12,7 +12,7 @@ import (
 func TestService(t *testing.T) {
 	pr := NewInmemRepo()
 	sr := NewInmemSubRepo()
-	ps := profile.NewService(pr, sr)
+	ps := profile.NewService(pr, sr, nil)
 
 	u := &user.User{
 		ID:       201,
@@ -102,7 +102,7 @@ func TestService(t *testing.T) {
 func TestGenerateShortName(t *testing.T) {
 	pr := NewInmemRepo()
 	sr := NewInmemSubRepo()
-	ps := profile.NewService(pr, sr)
+	ps := profile.NewService(pr, sr, nil)
 
 	tests := map[string]string{
 		"bob@cat.de":  "bob",
@@ -122,7 +122,7 @@ func TestGenerateShortName(t *testing.T) {
 func TestValidateShortName(t *testing.T) {
 	pr := NewInmemRepo()
 	sr := NewInmemSubRepo()
-	ps := profile.NewService(pr, sr)
+	ps := profile.NewService(pr, sr, nil)
 
 	tests := map[string]bool{
 		"bob@cat.de": false,

@@ -17,3 +17,14 @@
 .is-full-width {
 	width: 100%;
 }
+
+.avatar {
+    width: 7em;
+    height: 7em;
+    background-size: cover;
+    border-radius: 100%;
+    margin-right: 0em;
+    margin-left: 0.5em;
+    margin-top: 0.75em;
+    pointer-events: auto;
+}

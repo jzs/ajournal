@@ -6,6 +6,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
+	"github.com/sketchground/ajournal/blob"
 	"github.com/sketchground/ajournal/profile"
 	"github.com/sketchground/ajournal/utils/logger"
 )
@@ -15,7 +16,8 @@ type dbProfile struct {
 	Name        string
 	Email       string
 	Description string
-	ShortName   *string // UNIQUE
+	ShortName   sql.NullString // UNIQUE
+	Picture     sql.NullString
 }
 
 type profileRepo struct {
@@ -30,7 +32,7 @@ func NewProfileRepo(db *sqlx.DB, logger logger.Logger) profile.Repository {
 
 func (pr *profileRepo) Create(ctx context.Context, p *profile.Profile) (*profile.Profile, error) {
 	var id int64
-	err := pr.db.Get(&id, "INSERT INTO Profile(UserID, Name, ShortName, Email, Description) VALUES($1, $2, $3, $4, $5) RETURNING UserID", p.ID, p.Name, p.ShortName, p.Email, p.Description)
+	err := pr.db.Get(&id, "INSERT INTO Profile(UserID, Name, ShortName, Email, Description, Picture) VALUES($1, $2, $3, $4, $5, $6) RETURNING UserID", p.ID, p.Name, p.ShortName, p.Email, p.Description, p.Picture)
 	if err != nil {
 		return nil, errors.Wrap(err, "ProfileRepo:Create failed")
 	}
@@ -39,7 +41,7 @@ func (pr *profileRepo) Create(ctx context.Context, p *profile.Profile) (*profile
 }
 
 func (pr *profileRepo) Update(ctx context.Context, p *profile.Profile) (*profile.Profile, error) {
-	res, err := pr.db.Exec("UPDATE Profile SET Name = $1, Email = $2, Description = $3, ShortName = $5 WHERE UserID=$4", p.Name, p.Email, p.Description, p.ID, p.ShortName)
+	res, err := pr.db.Exec("UPDATE Profile SET Name = $1, Email = $2, Description = $3, ShortName = $5, Picture = $6 WHERE UserID=$4", p.Name, p.Email, p.Description, p.ID, p.ShortName, p.Picture)
 	if err != nil {
 		return nil, errors.Wrap(err, "ProfileRepo:Update failed")
 	}
@@ -86,8 +88,12 @@ func toProfile(p *dbProfile) *profile.Profile {
 		Email:       p.Email,
 		Description: p.Description,
 	}
-	if p.ShortName != nil {
-		prof.ShortName = *p.ShortName
+	if p.ShortName.Valid {
+		prof.ShortName = p.ShortName.String
 	}
+	if p.Picture.Valid {
+		prof.Picture = blob.FileFromKey(p.Picture.String)
+	}
+
 	return prof
 }

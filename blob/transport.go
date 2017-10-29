@@ -12,13 +12,14 @@ import (
 // SetupHandler sets up the blob endpoint
 func SetupHandler(router *mux.Router, bs Service, l logger.Logger) {
 
-	router.Path("/blobs/{key}").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	router.Path("/blobs/{key:.*}").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		key := vars["key"]
 
 		details, err := bs.Details(key)
 		if err != nil {
 			utils.JSONResp(r.Context(), l, r, w, nil, err)
+			return
 		}
 		w.Header().Add("Content-Type", details.MIMEType)
 		w.WriteHeader(http.StatusOK)
@@ -27,6 +28,7 @@ func SetupHandler(router *mux.Router, bs Service, l logger.Logger) {
 		reader, err := bs.Value(key)
 		if err != nil {
 			utils.JSONResp(r.Context(), l, r, w, nil, err)
+			return
 		}
 
 		// make a buffer to keep chunks that are read
@@ -54,6 +56,7 @@ func SetupHandler(router *mux.Router, bs Service, l logger.Logger) {
 		bd, err := bs.Details(key)
 		if err != nil {
 			utils.JSONResp(r.Context(), l, r, w, nil, err)
+			return
 		}
 		utils.JSONResp(r.Context(), l, r, w, bd, nil)
 	})

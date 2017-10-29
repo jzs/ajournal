@@ -15,7 +15,7 @@ func TestTransport(t *testing.T) {
 	m := mux.NewRouter()
 	pr := NewInmemRepo()
 	sr := NewInmemSubRepo()
-	ps := profile.NewService(pr, sr)
+	ps := profile.NewService(pr, sr, nil)
 	profile.SetupHandler(m, ps, logger.NewTestLogger())
 
 	posts := []struct {

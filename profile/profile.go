@@ -3,6 +3,8 @@ package profile
 import (
 	"context"
 	"errors"
+
+	"github.com/sketchground/ajournal/blob"
 )
 
 // ErrProfileNotExist custom error
@@ -53,6 +55,7 @@ type Profile struct {
 	Plan        Plan
 	ShortName   string // Short name of the users profile. Used for public links
 	Description string
+	Picture     blob.File
 }
 
 // Subscription is a user subscription
