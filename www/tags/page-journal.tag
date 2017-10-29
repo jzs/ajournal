@@ -6,12 +6,9 @@
 				<p>
 				<edittext eid="Description" isdiv="true" savefunc={savejournal} value={journal.Description}/>
 				</p>
-				<br/>
-				<div class="is-clearfix">
-				<a class="button" href="#/users/{opts.username}/journals/{opts.journalid}">View Journal</a>
-				</div>
 			</section>
 			<section class="section">
+				<a class="button" href="#/users/{opts.username}/journals/{opts.journalid}">View Journal</a>
 				<button class="button" onclick={newentry}>New Entry</button>
 			</section>
 			<section class="section">
@@ -37,7 +34,7 @@
 		</div>
 	</section>
 	<script>
-var self = this;
+		var self = this;
 self.entries = {Entries: []};
 self.journal = {};
 

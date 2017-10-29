@@ -29,6 +29,11 @@
     pointer-events: auto;
 }
 
+.avatar-large {
+    width: 15em;
+    height: 15em;
+}
+
 .entry-preview-text {
 	white-space: pre-wrap;
 }

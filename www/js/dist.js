@@ -594,8 +594,8 @@ self.create = function() {
 };
 });
 
-riot.tag2('page-journal', '<section class="section"> <div class="container"> <section class="section"> <h3 class="title">Journal: <edittext eid="Title" savefunc="{savejournal}" riot-value="{journal.Title}"></edittext></h3> <p> <edittext eid="Description" isdiv="true" savefunc="{savejournal}" riot-value="{journal.Description}"></edittext> </p> <br> <div class="is-clearfix"> <a class="button" href="#/users/{opts.username}/journals/{opts.journalid}">View Journal</a> </div> </section> <section class="section"> <button class="button" onclick="{newentry}">New Entry</button> </section> <section class="section"> <div class="box" each="{entry in entries.Entries}" onclick="{onentry}" style="cursor:pointer;"> <article class="media"> <div class="media-content"> <div class="content"> <p> <strong>{entry.Title}</strong> <br> <small>{moment(entry.Date).format(\'LL\')}</small> <br> <div class="entry-preview-text">{entry.Content.substring(0, 400)}</div> <br> <span each="{tag in parent.Tags}">{tag}</span> </p> </div> </div> </article> </div> <button class="button is-primary" if="{entries.HasNext}" onclick="{loadMore}">Load more</button> </section> </div> </section>', '', '', function(opts) {
-var self = this;
+riot.tag2('page-journal', '<section class="section"> <div class="container"> <section class="section"> <h3 class="title">Journal: <edittext eid="Title" savefunc="{savejournal}" riot-value="{journal.Title}"></edittext></h3> <p> <edittext eid="Description" isdiv="true" savefunc="{savejournal}" riot-value="{journal.Description}"></edittext> </p> </section> <section class="section"> <a class="button" href="#/users/{opts.username}/journals/{opts.journalid}">View Journal</a> <button class="button" onclick="{newentry}">New Entry</button> </section> <section class="section"> <div class="box" each="{entry in entries.Entries}" onclick="{onentry}" style="cursor:pointer;"> <article class="media"> <div class="media-content"> <div class="content"> <p> <strong>{entry.Title}</strong> <br> <small>{moment(entry.Date).format(\'LL\')}</small> <br> <div class="entry-preview-text">{entry.Content.substring(0, 400)}</div> <br> <span each="{tag in parent.Tags}">{tag}</span> </p> </div> </div> </article> </div> <button class="button is-primary" if="{entries.HasNext}" onclick="{loadMore}">Load more</button> </section> </div> </section>', '', '', function(opts) {
+		var self = this;
 self.entries = {Entries: []};
 self.journal = {};
 
@@ -749,7 +749,7 @@ self.card = null;
 self.carderr = null;
 self.shortnameValid = true;
 
-self.profile = {Picture: {Links: {}}};
+self.profile = {Picture: {Links: {Orig: "/images/profile-placeholder.png"}}};
 
 self.on('mount', function() {
 
@@ -1053,11 +1053,11 @@ self.on('mount', function() {
 riot.tag2('page-viewjournals', '', '', '', function(opts) {
 });
 
-riot.tag2('page-viewuser', '<section class="section"> <div class="container"> <section class="section"> <div class="columns"> <div class="column is-one-quarter"> <img src="images/profile-placeholder.png"> </div> <div class="column"> <h3 class="title">{profile.Name} ({user.Username})</h3> {profile.Description} </div> </div> <p> </p> <h3 class="title">Journals</h3> <div class="box" each="{journal in journals}"> <article class="media"> <div class="media-content"> <div class="content" onclick="{tojournal}" style="cursor:pointer;"> <p> <strong>{journal.Title}</strong> <br> {journal.Description} </p> </div> </div> </article> </div> </section> </div> </section>', '', '', function(opts) {
+riot.tag2('page-viewuser', '<section class="section"> <div class="container"> <section class="section"> <div class="columns"> <div class="column is-one-quarter"> <div class="avatar avatar-large" riot-style="background-image:url(\'{profile.Picture.Links.Orig}\');"></div> </div> <div class="column"> <h3 class="title">{profile.Name} ({user.Username})</h3> {profile.Description} </div> </div> <p> </p> <h3 class="title">Journals</h3> <div class="box" each="{journal in journals}"> <article class="media"> <div class="media-content"> <div class="content" onclick="{tojournal}" style="cursor:pointer;"> <p> <strong>{journal.Title}</strong> <br> {journal.Description} </p> </div> </div> </article> </div> </section> </div> </section>', '', '', function(opts) {
 var self = this;
 self.journals = [];
 self.user = {Username: opts.username};
-self.profile = {};
+self.profile = {Picture: {Links: {Orig: "/images/profile-placeholder.png"}}};
 
 self.on('mount', function() {
 

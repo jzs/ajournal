@@ -135,7 +135,7 @@ self.card = null;
 self.carderr = null;
 self.shortnameValid = true;
 
-self.profile = {Picture: {Links: {}}};
+self.profile = {Picture: {Links: {Orig: "/images/profile-placeholder.png"}}};
 
 self.on('mount', function() {
 

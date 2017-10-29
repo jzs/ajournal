@@ -4,7 +4,7 @@
 			<section class="section">
 				<div class="columns">
 					<div class="column is-one-quarter">
-						<img src="images/profile-placeholder.png"/>
+						<div class="avatar avatar-large" style="background-image:url('{profile.Picture.Links.Orig}');"></div>
 					</div>
 					<div class="column">
 						<h3 class="title">{profile.Name} ({user.Username})</h3>
@@ -35,7 +35,7 @@
 var self = this;
 self.journals = [];
 self.user = {Username: opts.username};
-self.profile = {};
+self.profile = {Picture: {Links: {Orig: "/images/profile-placeholder.png"}}};
 
 self.on('mount', function() {
 	// Fetch journals for user...
