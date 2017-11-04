@@ -32,7 +32,7 @@ func NewProfileRepo(db *sqlx.DB, logger logger.Logger) profile.Repository {
 
 func (pr *profileRepo) Create(ctx context.Context, p *profile.Profile) (*profile.Profile, error) {
 	var id int64
-	err := pr.db.Get(&id, "INSERT INTO Profile(UserID, Name, ShortName, Email, Description, Picture) VALUES($1, $2, $3, $4, $5, $6) RETURNING UserID", p.ID, p.Name, p.ShortName, p.Email, p.Description, p.Picture)
+	err := pr.db.Get(&id, "INSERT INTO Profile(UserID, Name, ShortName, Email, Description, Picture) VALUES($1, $2, $3, $4, $5, $6) RETURNING UserID", p.ID, p.Name, p.ShortName, p.Email, p.Description, p.Picture.Key)
 	if err != nil {
 		return nil, errors.Wrap(err, "ProfileRepo:Create failed")
 	}

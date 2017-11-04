@@ -26,6 +26,8 @@ type Configuration struct {
 	DBUser            string `envconfig:"db_user" default:"jzs"`
 	DBName            string `envconfig:"db_name" default:"ajournal"`
 	DBPass            string `envconfig:"db_pass"`
+	DBHost            string `envconfig:"db_host" default:"localhost"`
+	DBPort            string `envconfig:"db_port"`
 	Port              string `default:":8080"`
 	WWWDir            string `envconfig:"www_dir" default:"/var/www/ajournal"`
 	S3Endpoint        string `split_words:"true" required:"true"`
@@ -54,8 +56,11 @@ func Setup(ctx context.Context, s Configuration, log logger.Logger) http.Handler
 	if s.DBPass != "" {
 		passwordstr = fmt.Sprintf("password=%v", s.DBPass)
 	}
+	if s.DBPort != "" {
+		passwordstr = fmt.Sprintf("%v port=%v", passwordstr, s.DBPort)
+	}
 
-	db, err := sqlx.Connect("postgres", fmt.Sprintf("user=%v dbname=%v %v sslmode=disable", s.DBUser, s.DBName, passwordstr))
+	db, err := sqlx.Connect("postgres", fmt.Sprintf("user=%v dbname=%v host=%v %v sslmode=disable", s.DBUser, s.DBName, s.DBHost, passwordstr))
 	if err != nil {
 		log.Fatalf(ctx, "Could not connect to database! %v", err)
 		return nil
