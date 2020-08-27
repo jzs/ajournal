@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/sketchground/ajournal/user"
-	"github.com/sketchground/ajournal/utils"
+	"github.com/jzs/ajournal/user"
+	"github.com/jzs/ajournal/utils"
 )
 
 func TestGetUserUnauthorized(t *testing.T) {

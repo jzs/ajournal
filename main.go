@@ -10,8 +10,8 @@ import (
 
 	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
-	ajournal "github.com/sketchground/ajournal/app"
-	"github.com/sketchground/ajournal/utils/logger"
+	ajournal "github.com/jzs/ajournal/app"
+	"github.com/jzs/ajournal/utils/logger"
 )
 
 const (

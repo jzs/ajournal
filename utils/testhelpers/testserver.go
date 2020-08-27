@@ -8,8 +8,8 @@ import (
 	"os/exec"
 
 	"github.com/mattes/migrate"
-	ajournal "github.com/sketchground/ajournal/app"
-	"github.com/sketchground/ajournal/utils/logger"
+	ajournal "github.com/jzs/ajournal/app"
+	"github.com/jzs/ajournal/utils/logger"
 
 	_ "github.com/mattes/migrate/database/postgres" // support postgres migrate
 	_ "github.com/mattes/migrate/source/file"
@@ -25,7 +25,7 @@ func SetupTestDB(ctx context.Context, log logger.Logger) (teardown func() error)
 		log.Fatalf(ctx, "Failed creating test database: %v", err)
 	}
 
-	ppath := fmt.Sprintf("%v/src/github.com/sketchground/ajournal", os.Getenv("GOPATH"))
+	ppath := fmt.Sprintf("%v/src/github.com/jzs/ajournal", os.Getenv("GOPATH"))
 	mig, err := migrate.New(fmt.Sprintf("file://%v/%v", ppath, "db/migrations"), "postgres://jzs@localhost:5432/ajournal_test?sslmode=disable")
 	if err != nil {
 		log.Fatalf(ctx, "Failed migrating database reason: %v", err)
@@ -51,7 +51,7 @@ func InitTestServer() (*httptest.Server, logger.Logger, func() error) {
 	log := logger.NewTestLogger()
 	teardown := SetupTestDB(ctx, log)
 
-	ppath := fmt.Sprintf("%v/src/github.com/sketchground/ajournal", os.Getenv("GOPATH"))
+	ppath := fmt.Sprintf("%v/src/github.com/jzs/ajournal", os.Getenv("GOPATH"))
 	// Setenv for all needed configuration...
 	cfg := ajournal.Configuration{
 		TranslateFolder: fmt.Sprintf("%v/%v", ppath, "i18n"),

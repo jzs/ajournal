@@ -15,9 +15,9 @@ import (
 
 	"github.com/gorilla/mux"
 	uuid "github.com/satori/go.uuid"
-	"github.com/sketchground/ajournal/profile"
-	"github.com/sketchground/ajournal/user"
-	"github.com/sketchground/ajournal/utils/logger"
+	"github.com/jzs/ajournal/profile"
+	"github.com/jzs/ajournal/user"
+	"github.com/jzs/ajournal/utils/logger"
 )
 
 var (

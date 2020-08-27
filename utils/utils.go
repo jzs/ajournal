@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/sketchground/ajournal/utils/logger"
+	"github.com/jzs/ajournal/utils/logger"
 )
 
 // JSONResp formats responses in json

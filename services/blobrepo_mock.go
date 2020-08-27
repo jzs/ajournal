@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/pkg/errors"
-	"github.com/sketchground/ajournal/blob"
-	"github.com/sketchground/ajournal/utils"
+	"github.com/jzs/ajournal/blob"
+	"github.com/jzs/ajournal/utils"
 )
 
 // NewS3MockRepo returns a new mock blob repository

@@ -5,8 +5,8 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
-	"github.com/sketchground/ajournal/oauth"
-	"github.com/sketchground/ajournal/user"
+	"github.com/jzs/ajournal/oauth"
+	"github.com/jzs/ajournal/user"
 )
 
 type oauthRepo struct {

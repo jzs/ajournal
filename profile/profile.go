@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/sketchground/ajournal/blob"
+	"github.com/jzs/ajournal/blob"
 )
 
 // ErrProfileNotExist custom error

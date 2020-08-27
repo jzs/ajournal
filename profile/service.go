@@ -11,9 +11,9 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/sketchground/ajournal/blob"
-	"github.com/sketchground/ajournal/user"
-	"github.com/sketchground/ajournal/utils"
+	"github.com/jzs/ajournal/blob"
+	"github.com/jzs/ajournal/user"
+	"github.com/jzs/ajournal/utils"
 )
 
 // Service describes the methods on a profile service

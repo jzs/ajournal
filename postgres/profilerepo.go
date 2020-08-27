@@ -6,9 +6,9 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
-	"github.com/sketchground/ajournal/blob"
-	"github.com/sketchground/ajournal/profile"
-	"github.com/sketchground/ajournal/utils/logger"
+	"github.com/jzs/ajournal/blob"
+	"github.com/jzs/ajournal/profile"
+	"github.com/jzs/ajournal/utils/logger"
 )
 
 type dbProfile struct {

@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/sketchground/ajournal/utils/testhelpers"
+	"github.com/jzs/ajournal/utils/testhelpers"
 )
 
 func TestEndpoints(t *testing.T) {

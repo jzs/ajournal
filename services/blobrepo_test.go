@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/sketchground/ajournal/services"
+	"github.com/jzs/ajournal/services"
 )
 
 func TestS3Create(t *testing.T) {

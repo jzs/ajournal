@@ -11,7 +11,7 @@ import (
 
 	"github.com/jzs/translate-i18-go"
 	"github.com/nicksnyder/go-i18n/i18n/bundle"
-	"github.com/sketchground/ajournal/utils/logger"
+	"github.com/jzs/ajournal/utils/logger"
 	"golang.org/x/text/language"
 )
 

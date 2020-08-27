@@ -24,7 +24,7 @@ Planned Coming features:
 The code is go gettable and can be fetched by
 
 ```
-go get -u bitbucket.org/sketchground/ajournal
+go get -u bitbucket.org/jzs/ajournal
 ```
 
 For database migrations i use migrate [https://github.com/mattes/migrate](https://github.com/mattes/migrate).

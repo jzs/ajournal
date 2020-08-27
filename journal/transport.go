@@ -9,11 +9,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/sketchground/ajournal/blob"
-	"github.com/sketchground/ajournal/common"
-	"github.com/sketchground/ajournal/user"
-	"github.com/sketchground/ajournal/utils"
-	"github.com/sketchground/ajournal/utils/logger"
+	"github.com/jzs/ajournal/blob"
+	"github.com/jzs/ajournal/common"
+	"github.com/jzs/ajournal/user"
+	"github.com/jzs/ajournal/utils"
+	"github.com/jzs/ajournal/utils/logger"
 
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"

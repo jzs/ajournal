@@ -9,12 +9,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/sketchground/ajournal/blob"
-	"github.com/sketchground/ajournal/common"
-	"github.com/sketchground/ajournal/journal"
-	"github.com/sketchground/ajournal/services"
-	"github.com/sketchground/ajournal/user"
-	"github.com/sketchground/ajournal/utils/logger"
+	"github.com/jzs/ajournal/blob"
+	"github.com/jzs/ajournal/common"
+	"github.com/jzs/ajournal/journal"
+	"github.com/jzs/ajournal/services"
+	"github.com/jzs/ajournal/user"
+	"github.com/jzs/ajournal/utils/logger"
 
 	"github.com/gorilla/mux"
 )

@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/sketchground/ajournal/profile"
-	"github.com/sketchground/ajournal/user"
+	"github.com/jzs/ajournal/profile"
+	"github.com/jzs/ajournal/user"
 )
 
 func TestService(t *testing.T) {

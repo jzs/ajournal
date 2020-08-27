@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sketchground/ajournal/blob"
+	"github.com/jzs/ajournal/blob"
 )
 
 func TestCreate(t *testing.T) {

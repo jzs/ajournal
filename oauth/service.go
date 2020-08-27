@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/sketchground/ajournal/profile"
-	"github.com/sketchground/ajournal/user"
+	"github.com/jzs/ajournal/profile"
+	"github.com/jzs/ajournal/user"
 )
 
 // Service interface for oauth support

@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/sketchground/ajournal/postgres"
-	"github.com/sketchground/ajournal/user"
-	"github.com/sketchground/ajournal/utils/logger"
-	"github.com/sketchground/ajournal/utils/testhelpers"
+	"github.com/jzs/ajournal/postgres"
+	"github.com/jzs/ajournal/user"
+	"github.com/jzs/ajournal/utils/logger"
+	"github.com/jzs/ajournal/utils/testhelpers"
 )
 
 func TestCreateUser(t *testing.T) {

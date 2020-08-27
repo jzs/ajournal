@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/sketchground/ajournal/common"
+	"github.com/jzs/ajournal/common"
 )
 
 // ErrJournalNotExist error

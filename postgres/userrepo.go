@@ -5,7 +5,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
-	"github.com/sketchground/ajournal/user"
+	"github.com/jzs/ajournal/user"
 )
 
 type repo struct {

@@ -9,9 +9,9 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/russross/blackfriday"
-	"github.com/sketchground/ajournal/common"
-	"github.com/sketchground/ajournal/user"
-	"github.com/sketchground/ajournal/utils"
+	"github.com/jzs/ajournal/common"
+	"github.com/jzs/ajournal/user"
+	"github.com/jzs/ajournal/utils"
 )
 
 // Service interface for journals

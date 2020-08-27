@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/gorilla/mux"
-	"github.com/sketchground/ajournal/profile"
-	"github.com/sketchground/ajournal/utils/logger"
+	"github.com/jzs/ajournal/profile"
+	"github.com/jzs/ajournal/utils/logger"
 )
 
 func TestTransport(t *testing.T) {
